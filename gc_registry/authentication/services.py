@@ -43,12 +43,7 @@ def get_user(user_name: str, read_session: Session) -> User | None:
         user: The User object matching the provided name.
 
     """
-    # check if user exists:
-    if read_session.exec(select(User).filter_by(name=user_name).exists()).scalar():
-        user = read_session.exec(select(User).where(User.name == user_name)).first()
-    else:
-        return None
-    return user
+    return read_session.exec(select(User).where(User.name == user_name)).first()
 
 
 def authenticate_user(user_name: str, password: str, read_session: Session) -> User:

@@ -12,10 +12,13 @@ def validate_account(account, read_session):
         raise HTTPException(status_code=400, detail="Cannot update deleted accounts.")
 
     # Account names must be unique
-    account_exists_query = (
-        select(Account).filter(Account.account_name == account.account_name).exists()
-    )
-    account_exists = read_session.execute(select(account_exists_query)).scalar()
+    account_exists = read_session.exec(
+        select(
+            select(Account)
+            .filter(Account.account_name == account.account_name)
+            .exists()
+        )
+    ).scalar()
 
     if account_exists:
         raise HTTPException(
