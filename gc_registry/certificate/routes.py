@@ -2,6 +2,7 @@ from esdbclient import EventStoreDBClient
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 
+from gc_registry.authentication.services import get_current_user
 from gc_registry.certificate.models import (
     GranularCertificateAction,
     GranularCertificateBundle,
@@ -38,6 +39,7 @@ router = APIRouter(tags=["Certificates"])
 )
 def create_certificate_bundle(
     certificate_bundle: GranularCertificateBundleBase,
+    headers: dict = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
@@ -70,6 +72,7 @@ def create_certificate_bundle(
 )
 def create_issuance_metadata(
     issuance_metadata: IssuanceMetaDataBase,
+    headers: dict = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
@@ -100,6 +103,7 @@ def create_issuance_metadata(
 )
 def certificate_bundle_transfer(
     certificate_transfer: GranularCertificateTransfer,
+    headers: dict = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
@@ -123,6 +127,7 @@ def certificate_bundle_transfer(
 )
 def query_certificate_bundles_route(
     certificate_bundle_query: GranularCertificateQuery,
+    headers: dict = Depends(get_current_user),
     read_session: Session = Depends(db.get_read_session),
 ):
     """Return all certificates from the specified Account that match the provided search criteria."""
@@ -158,6 +163,7 @@ def query_certificate_bundles_route(
 )
 def certificate_bundle_cancellation(
     certificate_cancel: GranularCertificateCancel,
+    headers: dict = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
@@ -186,6 +192,7 @@ def certificate_bundle_cancellation(
 )
 def certificate_bundle_recurring_transfer(
     certificate_bundle_action: GranularCertificateAction,
+    headers: dict = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
@@ -209,6 +216,7 @@ def certificate_bundle_recurring_transfer(
 )
 def certificate_bundle_recurring_cancellation(
     certificate_bundle_action: GranularCertificateAction,
+    headers: dict = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
@@ -231,6 +239,7 @@ def certificate_bundle_recurring_cancellation(
 )
 def certificate_bundle_claim(
     certificate_bundle_action: GranularCertificateAction,
+    headers: dict = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
@@ -257,6 +266,7 @@ def certificate_bundle_claim(
 )
 def certificate_bundle_withdraw(
     certificate_bundle_action: GranularCertificateAction,
+    headers: dict = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
@@ -278,6 +288,7 @@ def certificate_bundle_withdraw(
 )
 def certificate_bundle_reserve(
     certificate_bundle_action: GranularCertificateAction,
+    headers: dict = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),

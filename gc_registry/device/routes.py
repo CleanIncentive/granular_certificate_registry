@@ -3,6 +3,7 @@ from esdbclient import EventStoreDBClient
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 
+from gc_registry.authentication.services import get_current_user
 from gc_registry.core.database import db, events
 from gc_registry.device import models
 
@@ -13,6 +14,7 @@ router = APIRouter(tags=["Devices"])
 @router.post("/create", response_model=models.DeviceRead)
 def create_device(
     device_base: models.DeviceBase,
+    headers: dict = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
@@ -31,6 +33,7 @@ def create_device(
 @router.get("/{device_id}", response_model=models.DeviceRead)
 def read_device(
     device_id: int,
+    headers: dict = Depends(get_current_user),
     read_session: Session = Depends(db.get_read_session),
 ):
     device = models.Device.by_id(device_id, read_session)
@@ -42,6 +45,7 @@ def read_device(
 def update_device(
     device_id: int,
     device_update: models.DeviceUpdate,
+    headers: dict = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
@@ -54,6 +58,7 @@ def update_device(
 @router.delete("/delete/{device_id}", response_model=models.DeviceRead)
 def delete_device(
     device_id: int,
+    headers: dict = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),

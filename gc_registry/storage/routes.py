@@ -2,6 +2,7 @@ from esdbclient import EventStoreDBClient
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
+from gc_registry.authentication.services import get_current_user
 from gc_registry.certificate.models import GranularCertificateBundle
 from gc_registry.certificate.schemas import (
     GranularCertificateBundleCreate,
@@ -31,6 +32,7 @@ router = APIRouter(tags=["Storage"])
 )
 def create_SCR(
     scr_base: StorageChargeRecordBase,
+    headers: dict = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
@@ -48,6 +50,7 @@ def create_SCR(
 )
 def query_SCR(
     scr_query: StorageAction,
+    headers: dict = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
@@ -67,6 +70,7 @@ def query_SCR(
 )
 def create_SDR(
     sdr_base: StorageDischargeRecordBase,
+    headers: dict = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
@@ -86,6 +90,7 @@ def create_SDR(
 )
 def query_SDR(
     sdr_query: StorageAction,
+    headers: dict = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
@@ -105,6 +110,7 @@ def query_SDR(
 )
 def SCR_withdraw(
     storage_action_base: StorageAction,
+    headers: dict = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
@@ -124,6 +130,7 @@ def SCR_withdraw(
 )
 def SDR_withdraw(
     storage_action_base: StorageAction,
+    headers: dict = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
@@ -143,6 +150,7 @@ def SDR_withdraw(
 )
 def issue_SDGC(
     sdgc_create: GranularCertificateBundleCreate,
+    headers: dict = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
