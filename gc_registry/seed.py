@@ -4,6 +4,7 @@ from typing import Any, Hashable
 import pandas as pd
 
 from gc_registry.account.models import Account
+from gc_registry.authentication.services import get_password_hash
 from gc_registry.certificate.models import GranularCertificateBundle, IssuanceMetaData
 from gc_registry.certificate.services import issue_certificates_in_date_range
 from gc_registry.core.database import cqrs, db, events
@@ -38,11 +39,12 @@ def seed_data():
 
     device_capacities = client.get_device_capacities(bmu_ids)
 
-    # Create a User to add the certificates to
+    # Create an inital Admin user
     user_dict = {
         "primary_contact": "a_user@usermail.com",
-        "name": "A User",
-        "roles": [UserRoles.PRODUCTION_USER],
+        "name": "Admin",
+        "hashed_password": get_password_hash("admin"),
+        "role": [UserRoles.ADMIN],
     }
     user = User.create(user_dict, write_session, read_session, esdb_client)[0]
 
@@ -131,6 +133,7 @@ def create_device_account_and_user(
     user_dict = {
         "primary_contact": "a_user@usermail.com",
         "name": f"Default user for {device_name}",
+        "hashed_password": get_password_hash("password"),
         "roles": [UserRoles.PRODUCTION_USER],
     }
     user = User.create(user_dict, write_session, read_session, esdb_client)[0]
