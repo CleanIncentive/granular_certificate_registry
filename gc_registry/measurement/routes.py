@@ -7,6 +7,7 @@ from gc_registry.authentication.services import get_current_user
 from gc_registry.core.database import db, events
 from gc_registry.measurement import models
 from gc_registry.measurement.services import parse_measurement_json
+from gc_registry.user.models import User
 
 # Router initialisation
 router = APIRouter(tags=["Measurements"])
@@ -17,7 +18,7 @@ router = APIRouter(tags=["Measurements"])
 @router.post("/submit_readings", response_model=models.MeasurementSubmissionResponse)
 def submit_readings(
     measurement_json: str,
-    headers: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
@@ -61,7 +62,7 @@ def submit_readings(
 @router.post("/create", response_model=models.MeasurementReportRead)
 def create_measurement(
     measurement_base: models.MeasurementReportBase,
-    headers: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
@@ -76,7 +77,7 @@ def create_measurement(
 @router.get("/{measurement_id}", response_model=models.MeasurementReportRead)
 def read_measurement(
     measurement_id: int,
-    headers: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     read_session: Session = Depends(db.get_read_session),
 ):
     measurement = models.MeasurementReport.by_id(measurement_id, read_session)
@@ -88,7 +89,7 @@ def read_measurement(
 def update_measurement(
     measurement_id: int,
     measurement_update: models.MeasurementReportUpdate,
-    headers: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
@@ -103,7 +104,7 @@ def update_measurement(
 @router.delete("/delete/{id}", response_model=models.MeasurementReportRead)
 def delete_measurement(
     measurement_id: int,
-    headers: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),

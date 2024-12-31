@@ -10,6 +10,9 @@ from gc_registry.account.validation import (
 )
 from gc_registry.authentication.services import get_current_user
 from gc_registry.core.database import db, events
+from gc_registry.core.models.base import UserRoles
+from gc_registry.user.models import User
+from gc_registry.user.validation import validate_user_role
 
 # Router initialisation
 router = APIRouter(tags=["Accounts"])
@@ -18,11 +21,12 @@ router = APIRouter(tags=["Accounts"])
 @router.post("/create", status_code=201, response_model=AccountRead)
 def create_account(
     account_base: AccountBase,
-    headers: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
 ):
+    validate_user_role(current_user, required_role=UserRoles.PRODUCTION_USER)
     validate_account(account_base, read_session)
     accounts = Account.create(account_base, write_session, read_session, esdb_client)
     if not accounts:
@@ -36,7 +40,7 @@ def create_account(
 @router.get("/{account_id}", response_model=AccountRead)
 def read_account(
     account_id: int,
-    headers: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     read_session: Session = Depends(db.get_read_session),
 ):
     account = Account.by_id(account_id, read_session)
@@ -49,7 +53,7 @@ def read_account(
 def update_account(
     account_id: int,
     account_update: AccountUpdate,
-    headers: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
@@ -74,7 +78,7 @@ def update_account(
 def update_whitelist(
     account_id: int,
     account_whitelist_update: AccountWhitelist,
-    headers: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
@@ -104,7 +108,7 @@ def update_whitelist(
 @router.delete("/delete/{account_id}", status_code=200, response_model=AccountRead)
 def delete_account(
     account_id: int,
-    headers: dict = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
