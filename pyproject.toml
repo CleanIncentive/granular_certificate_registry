@@ -69,6 +69,7 @@ psycopg2 = "^2.9.9"
 esdbclient = "^1.1.1"
 fluent-validator = "^0.1.0"
 
+pytest-asyncio = "^0.25.0"
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.5"
 ipython = "^8.27.0"
