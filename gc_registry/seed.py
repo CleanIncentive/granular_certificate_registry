@@ -44,7 +44,7 @@ def seed_data():
         "primary_contact": "a_user@usermail.com",
         "name": "Admin",
         "hashed_password": get_password_hash("admin"),
-        "role": [UserRoles.ADMIN],
+        "roles": [UserRoles.ADMIN],
     }
     user = User.create(user_dict, write_session, read_session, esdb_client)[0]
 

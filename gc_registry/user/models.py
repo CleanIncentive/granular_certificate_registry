@@ -51,3 +51,4 @@ class UserUpdate(BaseModel):
     primary_contact: str | None = None
     account_ids: List[int] | None = None
     organisation: str | None = None
+    hashed_password: str | None = None
