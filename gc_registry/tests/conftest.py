@@ -13,6 +13,7 @@ from testcontainers.core.waiting_utils import wait_for_logs  # type: ignore
 from testcontainers.postgres import PostgresContainer  # type: ignore
 
 from gc_registry.account.models import Account
+from gc_registry.authentication.services import get_password_hash
 from gc_registry.certificate.models import (
     GranularCertificateBundle,
     IssuanceMetaData,
@@ -230,6 +231,7 @@ def fake_db_user(write_session: Session, read_session: Session) -> User:
     user_dict = {
         "name": "fake_user",
         "primary_contact": "jake_fake@fakecorp.com",
+        "hashed_password": get_password_hash("password"),
         "roles": [UserRoles.ADMIN],
     }
 
