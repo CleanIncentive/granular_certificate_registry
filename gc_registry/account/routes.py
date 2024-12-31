@@ -12,7 +12,7 @@ from gc_registry.authentication.services import get_current_user
 from gc_registry.core.database import db, events
 from gc_registry.core.models.base import UserRoles
 from gc_registry.user.models import User
-from gc_registry.user.validation import validate_user_role
+from gc_registry.user.validation import validate_user_access, validate_user_role
 
 # Router initialisation
 router = APIRouter(tags=["Accounts"])
@@ -58,6 +58,9 @@ def update_account(
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
 ):
+    validate_user_role(current_user, required_role=UserRoles.TRADING_USER)
+    validate_user_access(current_user, account_id, read_session)
+    validate_account(account_update, read_session)
     account = Account.by_id(account_id, write_session)
     if not account:
         raise HTTPException(
@@ -83,6 +86,9 @@ def update_whitelist(
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
 ):
+    validate_user_role(current_user, required_role=UserRoles.TRADING_USER)
+    validate_user_access(current_user, account_id, read_session)
+
     account = Account.by_id(account_id, write_session)
     if not account:
         raise HTTPException(
@@ -113,6 +119,8 @@ def delete_account(
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
 ):
+    validate_user_role(current_user, required_role=UserRoles.TRADING_USER)
+    validate_user_access(current_user, account_id, read_session)
     try:
         account = Account.by_id(account_id, write_session)
         accounts = account.delete(write_session, read_session, esdb_client)

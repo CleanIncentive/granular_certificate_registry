@@ -6,7 +6,8 @@ from gc_registry.account.schemas import AccountWhitelist
 from gc_registry.user.models import User
 
 
-def validate_account(account, read_session):
+def validate_account(account: Account, read_session: Session):
+    """Validates account creation and update requests."""
     # Make sure operations cannot be performed on deleted accounts
     if account.is_deleted:
         raise HTTPException(status_code=400, detail="Cannot update deleted accounts.")
@@ -23,7 +24,7 @@ def validate_account(account, read_session):
 
     # All user_ids linked to the account must exist in the database
     user_ids_in_db = (
-        read_session.query(User.id).filter(User.id.in_(account.user_ids)).all()
+        read_session.exec(User.id).filter(User.id.in_(account.user_ids)).all()
     )
     user_ids_in_db_set = {user_id for (user_id,) in user_ids_in_db}
     if user_ids_in_db_set != set(account.user_ids):
