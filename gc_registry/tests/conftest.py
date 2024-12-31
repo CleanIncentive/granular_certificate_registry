@@ -232,7 +232,7 @@ def fake_db_user(write_session: Session, read_session: Session) -> User:
         "name": "fake_user",
         "primary_contact": "jake_fake@fakecorp.com",
         "hashed_password": get_password_hash("password"),
-        "roles": [UserRoles.ADMIN],
+        "role": UserRoles.ADMIN,
     }
 
     user_write = User.model_validate(user_dict)
@@ -247,7 +247,6 @@ def fake_db_account(write_session: Session, read_session: Session) -> Account:
     account_dict = {
         "account_name": "fake_account",
         "user_ids": [],
-        "roles": [UserRoles.ADMIN],
     }
     account_write = Account.model_validate(account_dict)
 
@@ -263,7 +262,6 @@ def fake_db_account_2(write_session: Session, read_session: Session) -> Account:
     account_dict = {
         "account_name": "fake_account_2",
         "user_ids": [],
-        "roles": [UserRoles.ADMIN],
     }
     account_write = Account.model_validate(account_dict)
 

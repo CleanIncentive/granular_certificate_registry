@@ -44,7 +44,7 @@ def seed_data():
         "primary_contact": "a_user@usermail.com",
         "name": "Admin",
         "hashed_password": get_password_hash("admin"),
-        "roles": [UserRoles.ADMIN],
+        "role": UserRoles.ADMIN,
     }
     user = User.create(user_dict, write_session, read_session, esdb_client)[0]
 
@@ -134,7 +134,7 @@ def create_device_account_and_user(
         "primary_contact": "a_user@usermail.com",
         "name": f"Default user for {device_name}",
         "hashed_password": get_password_hash("password"),
-        "roles": [UserRoles.PRODUCTION_USER],
+        "role": UserRoles.PRODUCTION_USER,
     }
     user = User.create(user_dict, write_session, read_session, esdb_client)[0]
 

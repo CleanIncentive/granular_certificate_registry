@@ -140,7 +140,7 @@ async def get_current_active_admin(
         HTTPException: If the user is not an Admin, return a 401.
 
     """
-    if UserRoles.ADMIN not in current_user.roles:
+    if current_user.role != UserRoles.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User must be an Admin to perform this action.",
