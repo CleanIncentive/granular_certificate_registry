@@ -1,15 +1,7 @@
-import datetime
-
 from sqlmodel import Field
 
-from gc_registry import utils
+from gc_registry.authentication.schemas import TokenRecordsBase
 
 
-class TokenRecords(utils.ActiveRecord, table=True):
-    user_name: str = Field(primary_key=True, default="anonymous")
-    token: str = Field(primary_key=True)
-    expires: datetime.datetime = Field(
-        primary_key=True,
-        default=datetime.datetime.now(tz=datetime.timezone.utc)
-        + datetime.timedelta(minutes=15),
-    )
+class TokenRecords(TokenRecordsBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)

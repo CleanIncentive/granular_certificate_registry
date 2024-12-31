@@ -26,13 +26,7 @@ async def login_for_access_token(
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
 ):
-    user = authenticate_user(form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    user = authenticate_user(form_data.username, form_data.password, read_session)
     access_token_expires = timedelta(minutes=st.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.name}, expires_delta=access_token_expires
