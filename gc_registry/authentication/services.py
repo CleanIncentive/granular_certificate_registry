@@ -13,7 +13,7 @@ from gc_registry.user.models import User
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="authentication/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 CredentialsException = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
