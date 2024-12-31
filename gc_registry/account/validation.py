@@ -13,14 +13,10 @@ def validate_account(account, read_session):
 
     # Account names must be unique
     account_exists = read_session.exec(
-        select(
-            select(Account)
-            .filter(Account.account_name == account.account_name)
-            .exists()
-        )
-    ).scalar()
+        select(Account).filter(Account.account_name == account.account_name)
+    ).first()
 
-    if account_exists:
+    if account_exists is not None:
         raise HTTPException(
             status_code=400, detail="Account name already exists in the database."
         )
