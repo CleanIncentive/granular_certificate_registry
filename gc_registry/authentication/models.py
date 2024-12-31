@@ -1,39 +1,15 @@
-from sqlmodel import Field, SQLModel
+import datetime
 
-from gc_registry.authentication.schemas import TokenBlacklistBase
+from sqlmodel import Field
+
+from gc_registry import utils
 
 
-class TokenBlacklist(TokenBlacklistBase, table=True):
+class TokenRecords(utils.ActiveRecord, table=True):
+    user_name: str = Field(primary_key=True, default="anonymous")
     token: str = Field(primary_key=True)
-    is_deleted: bool = Field(default=False)
-
-
-class TokenBlacklistWrite(TokenBlacklistBase):
-    token: str
-
-
-class Token(SQLModel):
-    access_token: str
-    token_type: str
-
-
-class APIUser(SQLModel):
-    username: str = Field(primary_key=True)
-    name: str
-    email: str | None = None
-    picture: str | None = None
-    scopes: str | None = None
-
-
-class SecureAPIUser(APIUser, table=True):
-    hashed_password: str | None = None
-    is_deleted: bool = Field(default=False)
-
-
-class SecureAPIUserUpdate(SQLModel):
-    username: str | None = None
-    name: str | None = None
-    email: str | None = None
-    picture: str | None = None
-    scopes: str | None = None
-    hashed_password: str | None = None
+    expires: datetime.datetime = Field(
+        primary_key=True,
+        default=datetime.datetime.now(tz=datetime.timezone.utc)
+        + datetime.timedelta(minutes=15),
+    )

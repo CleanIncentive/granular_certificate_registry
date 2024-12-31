@@ -1,5 +1,6 @@
 from sqlmodel import SQLModel
 
 
-class TokenBlacklistBase(SQLModel):
-    pass
+class Token(SQLModel):
+    access_token: str
+    token_type: str
