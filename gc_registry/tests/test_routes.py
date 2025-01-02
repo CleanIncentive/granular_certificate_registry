@@ -11,11 +11,11 @@ class TestRoutes:
         self, api_client: TestClient, token: str, fake_db_account: Account
     ):
         """Test that entities can be read from the database by ID."""
-        fake_db_account_from_db = api_client.get(
+        fake_db_account_response = api_client.get(
             f"account/{fake_db_account.id}",
             headers={"Authorization": f"Bearer {token}"},
         )
-        fake_db_account_from_db = Account(**fake_db_account_from_db.json())
+        fake_db_account_from_db = Account(**fake_db_account_response.json())  # type: ignore
 
         different_fields = [
             {
@@ -29,7 +29,7 @@ class TestRoutes:
         ]
 
         fake_db_account_from_db.created_at = datetime.datetime.fromisoformat(
-            fake_db_account_from_db.created_at
+            str(fake_db_account_from_db.created_at)
         )
 
         assert (
@@ -41,18 +41,18 @@ class TestRoutes:
 
         new_account = AccountBase(account_name="Test Account", user_ids=[1])
 
-        created_account = api_client.post(
+        created_account_response = api_client.post(
             "account/create",
             content=new_account.model_dump_json(),
             headers={"Authorization": f"Bearer {token}"},
         )
-        created_account = Account(**created_account.json())
+        created_account = Account(**created_account_response.json())
 
-        created_account_from_db = api_client.get(
+        created_account_response = api_client.get(
             f"account/{created_account.id}",
             headers={"Authorization": f"Bearer {token}"},
         )
-        created_account_from_db = Account(**created_account_from_db.json())
+        created_account_from_db = Account(**created_account_response.json())
 
         assert (
             created_account.account_name == created_account_from_db.account_name
@@ -67,20 +67,20 @@ class TestRoutes:
     ):
         """Test that entities can be updated in the database via their FastAPI routes."""
 
-        updated_account = AccountUpdate(account_name="Test Account UPDATED")
+        account_update = AccountUpdate(account_name="Test Account UPDATED")
 
         updated_account_response = api_client.patch(
             f"account/update/{fake_db_account.id}",
-            content=updated_account.model_dump_json(),
+            content=account_update.model_dump_json(),
             headers={"Authorization": f"Bearer {token}"},
         )
         updated_account = Account(**updated_account_response.json())
 
-        updated_account_from_db = api_client.get(
+        updated_account_response = api_client.get(
             f"account/{fake_db_account.id}",
             headers={"Authorization": f"Bearer {token}"},
         )
-        updated_account_from_db = Account(**updated_account_from_db.json())
+        updated_account_from_db = Account(**updated_account_response.json())
 
         assert (
             updated_account_from_db.account_name == updated_account.account_name
@@ -96,11 +96,11 @@ class TestRoutes:
             headers={"Authorization": f"Bearer {token}"},
         )
 
-        deleted_account = api_client.get(
+        deleted_account_response = api_client.get(
             f"account/{fake_db_account.id}",
             headers={"Authorization": f"Bearer {token}"},
         )
-        deleted_account = Account(**deleted_account.json())
+        deleted_account = Account(**deleted_account_response.json())
 
         assert (
             deleted_account.is_deleted

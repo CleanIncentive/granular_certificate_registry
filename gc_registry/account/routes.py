@@ -60,16 +60,20 @@ def update_account(
 ):
     validate_user_role(current_user, required_role=UserRoles.TRADING_USER)
     validate_user_access(current_user, account_id, read_session)
-    validate_account(account_update, read_session, is_update=True)
+
     account = Account.by_id(account_id, write_session)
     if not account:
         raise HTTPException(
             status_code=404, detail=f"Account ID not found: {account_id}"
         )
 
+    if account.is_deleted:
+        raise HTTPException(status_code=400, detail="Cannot update deleted accounts.")
+
     updated_account = account.update(
         account_update, write_session, read_session, esdb_client
     )
+
     if not updated_account:
         raise HTTPException(
             status_code=400, detail=f"Error during account update: {account_id}"

@@ -2,20 +2,12 @@ from fastapi import HTTPException
 from sqlmodel import Session, select
 
 from gc_registry.account.models import Account
-from gc_registry.account.schemas import AccountUpdate, AccountWhitelist
+from gc_registry.account.schemas import AccountBase, AccountWhitelist
 from gc_registry.user.models import User
 
 
-def validate_account(
-    account: Account | AccountUpdate, read_session: Session, is_update: bool = False
-):
+def validate_account(account: Account | AccountBase, read_session: Session):
     """Validates account creation and update requests."""
-    # Make sure operations cannot be performed on deleted accounts
-    if not is_update:
-        if account.is_deleted:
-            raise HTTPException(
-                status_code=400, detail="Cannot update deleted accounts."
-            )
 
     # Account names must be unique
     account_exists = read_session.exec(
@@ -30,7 +22,7 @@ def validate_account(
     # All user_ids linked to the account must exist in the database
     if account.user_ids is not None:
         user_ids_in_db = read_session.exec(
-            select(User.id).filter(User.id.in_(account.user_ids))
+            select(User.id).filter(User.id.in_(account.user_ids))  # type: ignore
         ).all()
         user_ids_in_db_set = {user_id for (user_id,) in user_ids_in_db}
         if user_ids_in_db_set != set(account.user_ids):

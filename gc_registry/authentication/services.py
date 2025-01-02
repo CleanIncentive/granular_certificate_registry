@@ -22,7 +22,7 @@ CredentialsException = HTTPException(
 )
 
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
+def verify_password(plain_password: str, hashed_password: str | None) -> bool:
     """Verify that the provided password matches the hashed password."""
     return pwd_context.verify(plain_password, hashed_password)
 
@@ -114,7 +114,7 @@ async def get_current_user(
     """
     try:
         payload = jwt.decode(token, st.JWT_SECRET_KEY, algorithms=[st.JWT_ALGORITHM])
-        user_name: str = payload.get("sub")
+        user_name = payload.get("sub")
         if user_name is None:
             raise CredentialsException
     except JWTError:
