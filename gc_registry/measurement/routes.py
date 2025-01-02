@@ -5,9 +5,12 @@ from sqlmodel import Session
 
 from gc_registry.authentication.services import get_current_user
 from gc_registry.core.database import db, events
+from gc_registry.core.models.base import UserRoles
+from gc_registry.device.models import Device
 from gc_registry.measurement import models
 from gc_registry.measurement.services import parse_measurement_json
 from gc_registry.user.models import User
+from gc_registry.user.validation import validate_user_access, validate_user_role
 
 # Router initialisation
 router = APIRouter(tags=["Measurements"])
@@ -33,7 +36,14 @@ def submit_readings(
     Returns:
         models.MeasurementSubmissionResponse: A summary of the readings submitted.
     """
+    validate_user_role(current_user, required_role=UserRoles.PRODUCTION_USER)
+
     measurement_df = parse_measurement_json(measurement_json, to_df=True)
+
+    # Check that each device ID is associated with an account that the user has access to
+    for device_id in measurement_df["device_id"].unique():
+        device = Device.by_id(device_id, read_session)
+        validate_user_access(current_user, device.account_id, read_session)
 
     readings = models.MeasurementReport.create(
         measurement_df.to_dict(orient="records"),
@@ -67,6 +77,11 @@ def create_measurement(
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
 ):
+    validate_user_role(current_user, required_role=UserRoles.PRODUCTION_USER)
+
+    device = Device.by_id(measurement_base.device_id, read_session)
+    validate_user_access(current_user, device.account_id, read_session)
+
     measurement = models.MeasurementReport.create(
         measurement_base, write_session, read_session, esdb_client
     )
@@ -80,6 +95,8 @@ def read_measurement(
     current_user: User = Depends(get_current_user),
     read_session: Session = Depends(db.get_read_session),
 ):
+    validate_user_role(current_user, required_role=UserRoles.AUDIT_USER)
+
     measurement = models.MeasurementReport.by_id(measurement_id, read_session)
 
     return measurement
@@ -94,6 +111,9 @@ def update_measurement(
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
 ):
+    # Measurement updates are only allowed for Admin users as GCs may have been issued against them
+    validate_user_role(current_user, required_role=UserRoles.ADMIN)
+
     measurement = models.MeasurementReport.by_id(measurement_id, read_session)
 
     return measurement.update(
@@ -109,5 +129,9 @@ def delete_measurement(
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
 ):
+    # Measurement deletions are only allowed for Admin users as GCs may have been issued against them
+    validate_user_role(current_user, required_role=UserRoles.ADMIN)
+
     db_measurement = models.MeasurementReport.by_id(measurement_id, write_session)
+
     return db_measurement.delete(write_session, read_session, esdb_client)

@@ -34,6 +34,7 @@ def read_user(
     current_user: User = Depends(get_current_user),
     read_session: Session = Depends(db.get_read_session),
 ):
+    validate_user_role(current_user, required_role=UserRoles.AUDIT_USER)
     user = User.by_id(user_id, read_session)
 
     return user
@@ -76,6 +77,8 @@ def delete_user(
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
 ):
+    validate_user_role(current_user, required_role=UserRoles.ADMIN)
+
     user = User.by_id(user_id, read_session)
     return user.delete(write_session, read_session, esdb_client)
 
@@ -89,7 +92,8 @@ def change_role(
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
 ):
-    """Only Admins can change user roles"""
     validate_user_role(current_user, required_role=UserRoles.ADMIN)
+
     user = User.by_id(user_id, write_session)
-    return user.update(role, write_session, read_session, esdb_client)
+    role_update = UserUpdate(role=role)
+    return user.update(role_update, write_session, read_session, esdb_client)

@@ -24,9 +24,10 @@ from gc_registry.certificate.services import (
     query_certificate_bundles,
 )
 from gc_registry.core.database import db, events
-from gc_registry.core.models.base import CertificateActionType
+from gc_registry.core.models.base import CertificateActionType, UserRoles
 from gc_registry.core.services import create_bundle_hash
 from gc_registry.user.models import User
+from gc_registry.user.validation import validate_user_access, validate_user_role
 
 # Router initialisation
 router = APIRouter(tags=["Certificates"])
@@ -46,7 +47,7 @@ def create_certificate_bundle(
     nonce: str | None = None,
 ):
     """Create a GC Bundle with the specified properties."""
-
+    validate_user_role(current_user, required_role=UserRoles.ADMIN)
     try:
         certificate_bundle.issuance_id = create_issuance_id(certificate_bundle)
         certificate_bundle.hash = create_bundle_hash(certificate_bundle, nonce)
@@ -78,7 +79,7 @@ def create_issuance_metadata(
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
 ):
     """Create GC issuance metadata with the specified properties."""
-
+    validate_user_role(current_user, required_role=UserRoles.ADMIN)
     try:
         db_issuance_metadata = IssuanceMetaData.create(
             issuance_metadata, write_session, read_session, esdb_client
@@ -109,6 +110,8 @@ def certificate_bundle_transfer(
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
 ):
     """Transfer a fixed number of certificates matched to the given filter parameters to the specified target Account."""
+    validate_user_role(current_user, required_role=UserRoles.TRADING_USER)
+    validate_user_access(current_user, certificate_transfer.source_id, read_session)
 
     try:
         db_certificate_action = process_certificate_bundle_action(
@@ -131,6 +134,8 @@ def query_certificate_bundles_route(
     read_session: Session = Depends(db.get_read_session),
 ):
     """Return all certificates from the specified Account that match the provided search criteria."""
+    validate_user_role(current_user, required_role=UserRoles.AUDIT_USER)
+    validate_user_access(current_user, certificate_bundle_query.source_id, read_session)
 
     try:
         certificate_bundles_from_query = query_certificate_bundles(
@@ -169,6 +174,8 @@ def certificate_bundle_cancellation(
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
 ):
     """Cancel a fixed number of certificates matched to the given filter parameters within the specified Account."""
+    validate_user_role(current_user, required_role=UserRoles.TRADING_USER)
+    validate_user_access(current_user, certificate_cancel.source_id, read_session)
 
     try:
         # If no beneficiary is specified, default to the account holder
@@ -198,6 +205,10 @@ def certificate_bundle_recurring_transfer(
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
 ):
     """Set up a protocol that transfers a fixed number of certificates matching the provided search criteria to a given target Account once per time period."""
+    validate_user_role(current_user, required_role=UserRoles.TRADING_USER)
+    validate_user_access(
+        current_user, certificate_bundle_action.source_id, read_session
+    )
 
     try:
         db_certificate_action = GranularCertificateAction.create(
@@ -222,6 +233,11 @@ def certificate_bundle_recurring_cancellation(
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
 ):
     """Set up a protocol that cancels a fixed number of certificates matching the provided search criteria within a given Account once per time period."""
+    validate_user_role(current_user, required_role=UserRoles.TRADING_USER)
+    validate_user_access(
+        current_user, certificate_bundle_action.source_id, read_session
+    )
+
     try:
         db_certificate_action = GranularCertificateAction.create(
             certificate_bundle_action, write_session, read_session, esdb_client
@@ -247,6 +263,10 @@ def certificate_bundle_claim(
     """Claim a fixed number of cancelled certificates matching the provided search criteria within a given Account,
     if the User is specified as the Beneficiary of those cancelled GCs. For more information on the claim process,
     please see page 15 of the EnergyTag GC Scheme Standard document."""
+    validate_user_role(current_user, required_role=UserRoles.TRADING_USER)
+    validate_user_access(
+        current_user, certificate_bundle_action.source_id, read_session
+    )
 
     try:
         certificate_bundle_action.action_type = CertificateActionType.CLAIM
@@ -272,7 +292,8 @@ def certificate_bundle_withdraw(
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
 ):
     """(Issuing Body only) - Withdraw a fixed number of certificates from the specified Account matching the provided search criteria."""
-    # TODO add validation that only the IB user can access this endpoint
+    validate_user_role(current_user, required_role=UserRoles.ADMIN)
+
     certificate_bundle_action.action_type = CertificateActionType.WITHDRAW
     db_certificate_action = process_certificate_bundle_action(
         certificate_bundle_action, write_session, read_session, esdb_client
@@ -294,6 +315,10 @@ def certificate_bundle_reserve(
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
 ):
     """Label a fixed number of certificates as Reserved from the specified Account matching the provided search criteria."""
+    validate_user_role(current_user, required_role=UserRoles.TRADING_USER)
+    validate_user_access(
+        current_user, certificate_bundle_action.source_id, read_session
+    )
     certificate_bundle_action.action_type = CertificateActionType.RESERVE
     db_certificate_action = process_certificate_bundle_action(
         certificate_bundle_action, write_session, read_session, esdb_client
