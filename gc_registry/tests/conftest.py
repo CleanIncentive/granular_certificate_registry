@@ -243,10 +243,25 @@ def fake_db_user(write_session: Session, read_session: Session) -> User:
 
 
 @pytest.fixture()
-def fake_db_account(write_session: Session, read_session: Session) -> Account:
+def token(api_client, fake_db_user: User):
+    token = api_client.post(
+        "auth/login",
+        data={
+            "username": "fake_user",
+            "password": "password",
+        },
+    )
+
+    return token.json()["access_token"]
+
+
+@pytest.fixture()
+def fake_db_account(
+    write_session: Session, read_session: Session, fake_db_user: User
+) -> Account:
     account_dict = {
         "account_name": "fake_account",
-        "user_ids": [],
+        "user_ids": [fake_db_user.id],
     }
     account_write = Account.model_validate(account_dict)
 
@@ -258,10 +273,12 @@ def fake_db_account(write_session: Session, read_session: Session) -> Account:
 
 
 @pytest.fixture()
-def fake_db_account_2(write_session: Session, read_session: Session) -> Account:
+def fake_db_account_2(
+    write_session: Session, read_session: Session, fake_db_user: User
+) -> Account:
     account_dict = {
         "account_name": "fake_account_2",
-        "user_ids": [],
+        "user_ids": [fake_db_user.id],
     }
     account_write = Account.model_validate(account_dict)
 
