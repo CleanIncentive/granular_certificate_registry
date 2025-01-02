@@ -24,7 +24,7 @@ class AccountBase(utils.ActiveRecord):
 
 class AccountUpdate(BaseModel):
     account_name: str | None = None
-    user_ids: List[int] | None = None
+    user_ids: List[int | None] = []
     account_whitelist: List[int] | None = None
 
 
