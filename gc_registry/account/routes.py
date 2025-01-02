@@ -60,7 +60,7 @@ def update_account(
 ):
     validate_user_role(current_user, required_role=UserRoles.TRADING_USER)
     validate_user_access(current_user, account_id, read_session)
-    validate_account(account_update, read_session)
+    validate_account(account_update, read_session, is_update=True)
     account = Account.by_id(account_id, write_session)
     if not account:
         raise HTTPException(

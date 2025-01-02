@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from esdbclient import EventStoreDBClient
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session
 

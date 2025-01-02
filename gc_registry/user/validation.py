@@ -1,6 +1,7 @@
 from fastapi import HTTPException, status
 from sqlmodel import Session
 
+from gc_registry.account.models import Account
 from gc_registry.core.models.base import UserRoles
 from gc_registry.user.models import User
 
@@ -18,12 +19,10 @@ def validate_user_access(current_user: User, account_id: int, read_session: Sess
         HTTPException: If the user action is rejected, return a 401 with the reason for rejection.
     """
 
-    user_account_ids = (
-        [] if current_user.account_ids is None else current_user.account_ids
-    )
+    account = Account.by_id(account_id, read_session)
 
     # Assert that the user has access to the source account
-    if account_id not in user_account_ids:
+    if current_user.id not in account.user_ids:
         msg = "User does not have access to the specified source account"
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=msg)
 
