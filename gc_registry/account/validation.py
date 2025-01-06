@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+from sqlalchemy import func
 from sqlmodel import Session, select
 
 from gc_registry.account.models import Account
@@ -9,9 +10,11 @@ from gc_registry.user.models import User
 def validate_account(account: Account | AccountBase, read_session: Session):
     """Validates account creation and update requests."""
 
-    # Account names must be unique
+    # Account names must be unique and case insensitive
     account_exists = read_session.exec(
-        select(Account).filter(Account.account_name == account.account_name)
+        select(Account).filter(
+            func.lower(Account.account_name) == func.lower(account.account_name)
+        )
     ).first()
 
     if account_exists is not None:
