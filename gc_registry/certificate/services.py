@@ -252,7 +252,7 @@ def issue_certificates_by_device_in_date_range(
         list[GranularCertificateBundle]: The list of certificates issued
     """
 
-    if not device.id or not device.meter_data_id:
+    if not device.id or not device.local_device_identifier:
         logger.error(f"No device ID or meter data ID for device: {device}")
         return None
 
@@ -281,11 +281,13 @@ def issue_certificates_by_device_in_date_range(
         )
     else:
         meter_data = meter_data_client.get_metering_by_device_in_datetime_range(
-            from_datetime, to_datetime, device.meter_data_id
+            from_datetime, to_datetime, device.local_device_identifier
         )
 
     if not meter_data:
-        logger.info(f"No meter data retrieved for device: {device.meter_data_id}")
+        logger.info(
+            f"No meter data retrieved for device: {device.local_device_identifier}"
+        )
         return None
 
     # Map the meter data to certificates
@@ -307,7 +309,9 @@ def issue_certificates_by_device_in_date_range(
     )
 
     if not certificates:
-        err_msg = f"No meter data retrieved for device: {device.meter_data_id}"
+        err_msg = (
+            f"No meter data retrieved for device: {device.local_device_identifier}"
+        )
         logger.error(err_msg)
         return None
 
@@ -396,7 +400,7 @@ def issue_certificates_in_date_range(
         logger.info(f"Issuing certificates for device: {device.id}")
 
         # Get the meter data for the device
-        if not device.meter_data_id:
+        if not device.local_device_identifier:
             logger.error(f"No meter data ID for device: {device.id}")
             continue
 
@@ -540,7 +544,9 @@ def apply_bundle_quantity_or_percentage(
                 granular_certificate_bundle.bundle_quantity
                 <= certificate_bundle_action.certificate_quantity
             ):
-                certificates_bundles_to_transfer.append(granular_certificate_bundle)
+                certificates_bundles_to_transfer.append(
+                    write_session.merge(granular_certificate_bundle)
+                )
                 continue
 
         child_bundle_1, _child_bundle_2 = split_certificate_bundle(
@@ -551,7 +557,7 @@ def apply_bundle_quantity_or_percentage(
             esdb_client,
         )
         if child_bundle_1:
-            certificates_bundles_to_transfer.append(child_bundle_1)
+            certificates_bundles_to_transfer.append(write_session.merge(child_bundle_1))
 
     return certificates_bundles_to_transfer
 
@@ -592,7 +598,7 @@ def query_certificate_bundles(
     # certificates
     stmt: SelectOfScalar = select(GranularCertificateBundle).where(
         GranularCertificateBundle.account_id == certificate_query.source_id,
-        ~GranularCertificateBundle.is_deleted,
+        GranularCertificateBundle.is_deleted == False,  # noqa
     )
 
     exclude = {"user_id", "localise_time", "source_id"}

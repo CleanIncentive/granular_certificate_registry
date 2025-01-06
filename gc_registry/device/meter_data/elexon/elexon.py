@@ -46,7 +46,7 @@ psr_type_to_energy_source = {
     "Hydro Water Reservoir": "hydro",
     "Nuclear": "nuclear",
     "Other renewable": "other renewable",
-    "Solar": "solar",
+    "Solar": "solar_pv",
 }
 
 
@@ -152,17 +152,17 @@ class ElexonClient:
         self,
         from_datetime: datetime.datetime,
         to_datetime: datetime.datetime,
-        meter_data_id: str,
+        local_device_identifier: str,
         dataset="B1610",
     ) -> list[dict[str, Any]]:
         data = self.get_dataset_in_datetime_range(
             dataset=dataset,
             from_datetime=from_datetime,
             to_datetime=to_datetime,
-            bmu_ids=[meter_data_id],
+            bmu_ids=[local_device_identifier],
         )
 
-        logger.info(f"Data for {meter_data_id}: {len(data)}")
+        logger.info(f"Data for {local_device_identifier}: {len(data)}")
         if not data:
             return []
 
@@ -238,7 +238,7 @@ class ElexonClient:
         self,
         bmu_ids: list[str],
         from_date: datetime.date = datetime.datetime.now().date()
-        - datetime.timedelta(days=365 * 2),
+        - datetime.timedelta(days=365 * 4),
         to_date: datetime.date = datetime.datetime.now().date(),
         dataset: str = "IGCPU",
     ) -> dict[str, Any]:
@@ -254,9 +254,18 @@ class ElexonClient:
         Returns:
             The device capacities for the given BMU IDs in the given date range in MW
         """
-        data = self.get_asset_dataset_in_datetime_range(dataset, from_date, to_date)
 
-        df = pd.DataFrame(data["data"])
+        data = []
+        for from_date_i in pd.date_range(from_date, to_date, freq="365D"):
+            to_date_i = from_date_i + pd.Timedelta(days=365)
+            if to_date_i > pd.to_datetime(to_date):
+                to_date_i = pd.to_datetime(to_date)
+            data_chunk = self.get_asset_dataset_in_datetime_range(
+                dataset, from_date_i, to_date_i
+            )
+            data.extend(data_chunk["data"])
+
+        df = pd.DataFrame(data)
 
         df.sort_values("effectiveFrom", inplace=True, ascending=True)
         df.drop_duplicates(subset=["registeredResourceName"], inplace=True, keep="last")

@@ -17,6 +17,7 @@ def test_transfer_certificate(
     fake_db_user: User,
     fake_db_account: Account,
     fake_db_account_2: Account,
+    token: str,
     write_session: Session,
     read_session: Session,
     esdb_client: EventStoreDBClient,
@@ -28,7 +29,11 @@ def test_transfer_certificate(
         "source_id": fake_db_account.id,
     }
 
-    response = api_client.post("/certificate/transfer", json=test_data_1)
+    response = api_client.post(
+        "/certificate/transfer",
+        json=test_data_1,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 422
 
@@ -39,7 +44,11 @@ def test_transfer_certificate(
     test_data_1.pop("source_id")
     test_data_1["target_id"] = fake_db_account_2.id
 
-    response = api_client.post("/certificate/transfer", json=test_data_1)
+    response = api_client.post(
+        "/certificate/transfer",
+        json=test_data_1,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.json()["detail"][0]["type"] == "missing"
     assert "source_id" in response.json()["detail"][0]["loc"]
@@ -69,7 +78,11 @@ def test_transfer_certificate(
         "target_id": fake_db_account_2.id,
     }
 
-    response = api_client.post("/certificate/transfer", json=test_data_2)
+    response = api_client.post(
+        "/certificate/transfer",
+        json=test_data_2,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 202
 
@@ -82,7 +95,11 @@ def test_transfer_certificate(
         "certificate_bundle_percentage": 0.75,
     }
 
-    response = api_client.post("/certificate/transfer", json=test_data_3)
+    response = api_client.post(
+        "/certificate/transfer",
+        json=test_data_3,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 202
 
@@ -96,7 +113,11 @@ def test_transfer_certificate(
         "certificate_bundle_percentage": 1.5,
     }
 
-    response = api_client.post("/certificate/transfer", json=test_data_4)
+    response = api_client.post(
+        "/certificate/transfer",
+        json=test_data_4,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 422
 
@@ -115,7 +136,11 @@ def test_transfer_certificate(
         "action_type": "cancel",
     }
 
-    response = api_client.post("/certificate/transfer", json=test_data_5)
+    response = api_client.post(
+        "/certificate/transfer",
+        json=test_data_5,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 422
 
@@ -127,7 +152,8 @@ def test_transfer_certificate(
 
 
 def test_cancel_certificate_no_source_id(
-    api_client,
+    api_client: TestClient,
+    token: str,
     fake_db_granular_certificate_bundle: GranularCertificateBundle,
     fake_db_user: User,
 ):
@@ -137,7 +163,11 @@ def test_cancel_certificate_no_source_id(
         "user_id": fake_db_user.id,
     }
 
-    response = api_client.post("/certificate/cancel/", json=test_data_1)
+    response = api_client.post(
+        "/certificate/cancel/",
+        json=test_data_1,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 422
 
@@ -147,6 +177,7 @@ def test_cancel_certificate_no_source_id(
 
 def test_cancel_certificate_successfully(
     api_client: TestClient,
+    token: str,
     fake_db_granular_certificate_bundle: GranularCertificateBundle,
     fake_db_user: User,
     fake_db_account: Account,
@@ -158,13 +189,18 @@ def test_cancel_certificate_successfully(
         "source_id": fake_db_account.id,
     }
 
-    response = api_client.post("/certificate/cancel/", json=test_data_2)
+    response = api_client.post(
+        "/certificate/cancel/",
+        json=test_data_2,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 202
 
 
 def test_cancel_certificate_fraction(
     api_client: TestClient,
+    token: str,
     fake_db_granular_certificate_bundle: GranularCertificateBundle,
     fake_db_user: User,
     fake_db_account: Account,
@@ -177,7 +213,11 @@ def test_cancel_certificate_fraction(
         "certificate_bundle_percentage": 0.35,
     }
 
-    response = api_client.post("/certificate/cancel/", json=test_data_3)
+    response = api_client.post(
+        "/certificate/cancel/",
+        json=test_data_3,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 202
 
@@ -189,7 +229,11 @@ def test_cancel_certificate_fraction(
         "certificate_bundle_percentage": 0,
     }
 
-    response = api_client.post("/certificate/cancel/", json=test_data_4)
+    response = api_client.post(
+        "/certificate/cancel/",
+        json=test_data_4,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 422
 
@@ -198,7 +242,8 @@ def test_cancel_certificate_fraction(
 
 
 def test_query_certificate_bundles(
-    api_client,
+    api_client: TestClient,
+    token: str,
     fake_db_granular_certificate_bundle: GranularCertificateBundle,
     fake_db_granular_certificate_bundle_2: GranularCertificateBundle,
     fake_db_user: User,
@@ -214,7 +259,11 @@ def test_query_certificate_bundles(
         "user_id": fake_db_user.id,
     }
 
-    response = api_client.post("/certificate/query", json=test_data_1)
+    response = api_client.post(
+        "/certificate/query",
+        json=test_data_1,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 202
     assert "total_certificate_volume" in response.json().keys()
@@ -229,7 +278,11 @@ def test_query_certificate_bundles(
         "user_id": fake_db_user.id,
     }
 
-    response = api_client.post("/certificate/query", json=test_data_2)
+    response = api_client.post(
+        "/certificate/query",
+        json=test_data_2,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 422
 
@@ -246,7 +299,11 @@ def test_query_certificate_bundles(
         "user_id": fake_db_user.id,
     }
 
-    response = api_client.post("/certificate/query", json=test_data_3)
+    response = api_client.post(
+        "/certificate/query",
+        json=test_data_3,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 202
     assert "total_certificate_volume" in response.json().keys()
@@ -267,7 +324,11 @@ def test_query_certificate_bundles(
         "user_id": fake_db_user.id,
     }
 
-    response = api_client.post("/certificate/query", json=test_data_4)
+    response = api_client.post(
+        "/certificate/query",
+        json=test_data_4,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 422
 
@@ -281,7 +342,11 @@ def test_query_certificate_bundles(
         "certificate_period_end": "2020-01-01",
     }
 
-    response = api_client.post("/certificate/query", json=test_data_5)
+    response = api_client.post(
+        "/certificate/query",
+        json=test_data_5,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 422
     assert (
@@ -297,7 +362,11 @@ def test_query_certificate_bundles(
         "certificate_period_end": "2024-05-01",
     }
 
-    response = api_client.post("/certificate/query", json=test_data_6)
+    response = api_client.post(
+        "/certificate/query",
+        json=test_data_6,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 422
     assert (
@@ -314,7 +383,11 @@ def test_query_certificate_bundles(
         "certificate_period_end": "2024-01-02",
     }
 
-    response = api_client.post("/certificate/query", json=test_data_7)
+    response = api_client.post(
+        "/certificate/query",
+        json=test_data_7,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 422
 
@@ -331,7 +404,11 @@ def test_query_certificate_bundles(
         "certificate_period_end": "another date string",
     }
 
-    response = api_client.post("/certificate/query", json=test_data_8)
+    response = api_client.post(
+        "/certificate/query",
+        json=test_data_8,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 422
     assert response.json()["detail"][0]["type"] == "datetime_from_date_parsing"
@@ -347,7 +424,11 @@ def test_query_certificate_bundles(
         "certificate_period_start": "2023-01-01",
     }
 
-    response = api_client.post("/certificate/query", json=test_data_9)
+    response = api_client.post(
+        "/certificate/query",
+        json=test_data_9,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 422
     assert (
@@ -362,7 +443,11 @@ def test_query_certificate_bundles(
         "certificate_period_end": "2023-01-01",
     }
 
-    response = api_client.post("/certificate/query", json=test_data_10)
+    response = api_client.post(
+        "/certificate/query",
+        json=test_data_10,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 422
     assert (
@@ -377,7 +462,11 @@ def test_query_certificate_bundles(
         "energy_source": "windy",
     }
 
-    response = api_client.post("/certificate/query", json=test_data_11)
+    response = api_client.post(
+        "/certificate/query",
+        json=test_data_11,
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
     assert response.status_code == 422
 

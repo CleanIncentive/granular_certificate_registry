@@ -40,7 +40,8 @@ ci: lint typecheck workflow
 
 .PHONY: db.update
 db.update:
-	docker compose run --rm gc_registry alembic upgrade head
+	docker compose run --rm gc_registry alembic upgrade head && \
+	docker compose down
 
 .PHONY: db.fix
 db.fix:
@@ -69,7 +70,8 @@ db.fix:
 			alembic upgrade head; \
 		else \
 			echo "No multiple heads detected. No fix needed."; \
-		fi'
+		fi' && \
+	docker compose down
 
 .PHONY: db.fix.merge
 db.fix.merge:
@@ -83,14 +85,16 @@ db.fix.merge:
 			echo "Please commit the newly generated merge migration file."; \
 		else \
 			echo "No multiple heads detected. No merge needed."; \
-		fi'
+		fi' && \
+		docker compose down
 
 .PHONY: db.revision
 db.revision:
 	make db.fix  && \
 		echo "Creating new revision..." && \
 		docker compose run --rm gc_registry alembic revision --autogenerate -m $(NAME) && \
-		echo "Revision created successfully."
+		echo "Revision created successfully." && \
+		docker compose down
 
 .PHONY: db.reset
 db.reset:
@@ -109,6 +113,10 @@ db.test.migrations:
 .PHONY: db.seed
 db.seed:
 	docker compose run --rm gc_registry poetry run seed-db
+
+.PHONY: db.seed.elexon
+db.seed.elexon:
+	docker compose run --rm gc_registry poetry run seed-db-elexon
 
 .PHONY: dev
 dev:

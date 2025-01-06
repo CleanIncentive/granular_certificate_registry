@@ -13,6 +13,7 @@ from pyinstrument.renderers.speedscope import SpeedscopeRenderer
 from starlette.middleware.sessions import SessionMiddleware
 
 from .account.routes import router as account_router
+from .authentication.routes import router as auth_router
 from .certificate.routes import router as certificate_router
 from .core.database.db import get_db_name_to_client
 from .core.models.base import LoggingLevelRequest
@@ -64,15 +65,12 @@ app = FastAPI(
         "name": "Please direct feedback to",
         "email": "connor@futureenergy.associates",
     },
-    docs_url=None,
+    docs_url="/docs",
     dependencies=[Depends(get_db_name_to_client)],
 )
 
 app.add_middleware(SessionMiddleware, secret_key=settings.MIDDLEWARE_SECRET_KEY)
 
-# add instantiated instance of sync functionality here
-
-# app.include_router(authentication.router)
 app.include_router(
     certificate_router,
     prefix="/certificate",
@@ -96,6 +94,10 @@ app.include_router(
 app.include_router(
     measurements_router,
     prefix="/measurement",
+)
+app.include_router(
+    auth_router,
+    prefix="/auth",
 )
 
 openapi_data = app.openapi()

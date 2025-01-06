@@ -4,7 +4,11 @@ from gc_registry.account.schemas import AccountWhitelist
 
 class TestAccountRoutes:
     def test_update_whitelist(
-        self, api_client, fake_db_account: Account, fake_db_account_2: Account
+        self,
+        api_client,
+        fake_db_account: Account,
+        fake_db_account_2: Account,
+        token: str,
     ):
         """Test that the whitelist can be updated in the database via their FastAPI routes."""
 
@@ -14,8 +18,12 @@ class TestAccountRoutes:
         _updated_whitelist_response = api_client.patch(
             f"account/update_whitelist/{fake_db_account.id}",
             content=updated_whitelist.model_dump_json(),
+            headers={"Authorization": f"Bearer {token}"},
         )
-        updated_whitelist_from_db = api_client.get(f"account/{fake_db_account.id}")
+        updated_whitelist_from_db = api_client.get(
+            f"account/{fake_db_account.id}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
         updated_whitelist_from_db = Account(**updated_whitelist_from_db.json())
 
         assert (
@@ -30,9 +38,13 @@ class TestAccountRoutes:
         _updated_whitelist_response = api_client.patch(
             f"account/update_whitelist/{fake_db_account.id}",
             content=updated_whitelist.model_dump_json(),
+            headers={"Authorization": f"Bearer {token}"},
         )
 
-        updated_whitelist_from_db = api_client.get(f"account/{fake_db_account.id}")
+        updated_whitelist_from_db = api_client.get(
+            f"account/{fake_db_account.id}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
         updated_whitelist_from_db = Account(**updated_whitelist_from_db.json())
 
         assert (
@@ -45,6 +57,7 @@ class TestAccountRoutes:
         _updated_whitelist_response = api_client.patch(
             f"account/update_whitelist/{fake_db_account.id}",
             content=updated_whitelist.model_dump_json(),
+            headers={"Authorization": f"Bearer {token}"},
         )
 
         assert _updated_whitelist_response.status_code == 404
@@ -58,6 +71,7 @@ class TestAccountRoutes:
         _updated_whitelist_response = api_client.patch(
             f"account/update_whitelist/{fake_db_account.id}",
             content=updated_whitelist.model_dump_json(),
+            headers={"Authorization": f"Bearer {token}"},
         )
 
         assert _updated_whitelist_response.status_code == 400

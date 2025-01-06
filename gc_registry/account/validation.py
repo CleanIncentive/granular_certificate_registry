@@ -1,36 +1,38 @@
 from fastapi import HTTPException
+from sqlalchemy import func
 from sqlmodel import Session, select
 
 from gc_registry.account.models import Account
-from gc_registry.account.schemas import AccountWhitelist
+from gc_registry.account.schemas import AccountBase, AccountWhitelist
 from gc_registry.user.models import User
 
 
-def validate_account(account, read_session):
-    # Make sure operations cannot be performed on deleted accounts
-    if account.is_deleted:
-        raise HTTPException(status_code=400, detail="Cannot update deleted accounts.")
+def validate_account(account: Account | AccountBase, read_session: Session):
+    """Validates account creation and update requests."""
 
-    # Account names must be unique
-    account_exists_query = (
-        select(Account).filter(Account.account_name == account.account_name).exists()
-    )
-    account_exists = read_session.execute(select(account_exists_query)).scalar()
+    # Account names must be unique and case insensitive
+    account_exists = read_session.exec(
+        select(Account).filter(
+            func.lower(Account.account_name) == func.lower(account.account_name)
+        )
+    ).first()
 
-    if account_exists:
+    if account_exists is not None:
         raise HTTPException(
             status_code=400, detail="Account name already exists in the database."
         )
 
     # All user_ids linked to the account must exist in the database
-    stmt = select(User.id).filter(User.id.in_(account.user_ids))
-    user_ids_in_db = read_session.execute(stmt).scalars().all()
-
-    if set(user_ids_in_db) != set(account.user_ids):
-        raise HTTPException(
-            status_code=400,
-            detail="One or more users assigned to this account do not exist in the database.",
-        )
+    if account.user_ids is not None:
+        user_ids_in_db = read_session.exec(
+            select(User.id).filter(User.id.in_(account.user_ids))  # type: ignore
+        ).all()
+        user_ids_in_db_set = {user_id for (user_id,) in user_ids_in_db}
+        if user_ids_in_db_set != set(account.user_ids):
+            raise HTTPException(
+                status_code=400,
+                detail="One or more users assigned to this account do not exist in the database.",
+            )
 
 
 def validate_account_whitelist_update(
@@ -46,7 +48,9 @@ def validate_account_whitelist_update(
     Returns:
         modified_whitelist: The modified whitelist to be applied to the account.
     """
-    existing_user_ids = [] if account.user_ids is None else account.user_ids
+    existing_whitelist = (
+        [] if account.account_whitelist is None else account.account_whitelist
+    )
 
     if account_whitelist_update.add_to_whitelist is not None:
         for account_id_to_add in account_whitelist_update.add_to_whitelist:
@@ -61,12 +65,13 @@ def validate_account_whitelist_update(
                     detail=f"Account ID to add not found: {account_id_to_add}",
                 )
         modified_whitelist = list(
-            set(existing_user_ids + account_whitelist_update.add_to_whitelist)  # type: ignore
+            set(existing_whitelist + account_whitelist_update.add_to_whitelist)  # type: ignore
         )
 
     if account_whitelist_update.remove_from_whitelist is not None:
         modified_whitelist = list(
-            set(existing_user_ids) - set(account_whitelist_update.remove_from_whitelist)  # type: ignore
+            set(existing_whitelist)
+            - set(account_whitelist_update.remove_from_whitelist)  # type: ignore
         )
 
     return modified_whitelist

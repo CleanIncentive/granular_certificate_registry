@@ -13,6 +13,7 @@ from testcontainers.core.waiting_utils import wait_for_logs  # type: ignore
 from testcontainers.postgres import PostgresContainer  # type: ignore
 
 from gc_registry.account.models import Account
+from gc_registry.authentication.services import get_password_hash
 from gc_registry.certificate.models import (
     GranularCertificateBundle,
     IssuanceMetaData,
@@ -23,6 +24,7 @@ from gc_registry.core.models.base import (
     DeviceTechnologyType,
     EnergyCarrierType,
     EnergySourceType,
+    UserRoles,
 )
 from gc_registry.core.services import create_bundle_hash
 from gc_registry.device.models import Device
@@ -229,7 +231,8 @@ def fake_db_user(write_session: Session, read_session: Session) -> User:
     user_dict = {
         "name": "fake_user",
         "primary_contact": "jake_fake@fakecorp.com",
-        "roles": ["admin"],
+        "hashed_password": get_password_hash("password"),
+        "role": UserRoles.ADMIN,
     }
 
     user_write = User.model_validate(user_dict)
@@ -240,11 +243,25 @@ def fake_db_user(write_session: Session, read_session: Session) -> User:
 
 
 @pytest.fixture()
-def fake_db_account(write_session: Session, read_session: Session) -> Account:
+def token(api_client, fake_db_user: User):
+    token = api_client.post(
+        "auth/login",
+        data={
+            "username": "fake_user",
+            "password": "password",
+        },
+    )
+
+    return token.json()["access_token"]
+
+
+@pytest.fixture()
+def fake_db_account(
+    write_session: Session, read_session: Session, fake_db_user: User
+) -> Account:
     account_dict = {
         "account_name": "fake_account",
-        "user_ids": [],
-        "roles": ["admin"],
+        "user_ids": [fake_db_user.id],
     }
     account_write = Account.model_validate(account_dict)
 
@@ -256,11 +273,12 @@ def fake_db_account(write_session: Session, read_session: Session) -> Account:
 
 
 @pytest.fixture()
-def fake_db_account_2(write_session: Session, read_session: Session) -> Account:
+def fake_db_account_2(
+    write_session: Session, read_session: Session, fake_db_user: User
+) -> Account:
     account_dict = {
         "account_name": "fake_account_2",
-        "user_ids": [],
-        "roles": ["admin"],
+        "user_ids": [fake_db_user.id],
     }
     account_write = Account.model_validate(account_dict)
 
@@ -277,7 +295,7 @@ def fake_db_wind_device(
 ) -> Device:
     device_dict = {
         "device_name": "fake_wind_device",
-        "meter_data_id": "BMU-XYZ",
+        "local_device_identifier": "BMU-XYZ",
         "grid": "fake_grid",
         "energy_source": EnergySourceType.wind,
         "technology_type": DeviceTechnologyType.wind_turbine,
@@ -308,7 +326,7 @@ def fake_db_solar_device(
         "grid": "fake_grid",
         "energy_source": EnergySourceType.solar_pv,
         "technology_type": DeviceTechnologyType.solar_pv,
-        "meter_data_id": "BMU-ABC",
+        "local_device_identifier": "BMU-ABC",
         "capacity": 1000,
         "account_id": fake_db_account.id,
         "fuel_source": "solar",
