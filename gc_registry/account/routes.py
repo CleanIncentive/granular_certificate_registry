@@ -135,3 +135,14 @@ def delete_account(
         raise HTTPException(
             status_code=404, detail="Could not delete Account not found"
         )
+
+
+@router.get("/list", response_model=list[AccountRead])
+def list_all_accounts(
+    current_user: User = Depends(get_current_user),
+    read_session: Session = Depends(db.get_read_session),
+):
+    """List all active accounts on the registry."""
+    validate_user_role(current_user, required_role=UserRoles.TRADING_USER)
+    accounts = Account.all(read_session)
+    return accounts
