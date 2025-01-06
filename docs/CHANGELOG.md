@@ -2,6 +2,12 @@
 
 Tracks changes between releases following the semantic versioning outlined in the development documentation.
 
+### v. 0.2.0
+
+**New Features**
+- Adds user access controls via OAuth2, built-in to the FastAPI middleware
+- Endpoints require a bearer token retrievable through `auth/login` and validate access based on role
+
 ### v. 0.1.1
 
 **New Features**

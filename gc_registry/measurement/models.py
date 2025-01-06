@@ -24,4 +24,4 @@ class MeasurementSubmissionResponse(BaseModel):
     message: str
     first_reading_datetime: datetime.datetime
     last_reading_datetime: datetime.datetime
-    total_usage_per_device: dict[int, float]
+    total_device_usage: int
