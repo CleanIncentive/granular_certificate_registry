@@ -42,7 +42,13 @@ def submit_readings(
 
     # Check that the device ID is associated with an account that the user has access to
     device_id = measurement_df["device_id"].unique()
-    device = Device.by_id(device_id, read_session)
+    if len(device_id) != 1:
+        raise HTTPException(
+            status_code=400,
+            detail="Measurement JSON must contain readings for a single device.",
+        )
+
+    device = Device.by_id(device_id[0], read_session)
     validate_user_access(current_user, device.account_id, read_session)
 
     readings = models.MeasurementReport.create(
