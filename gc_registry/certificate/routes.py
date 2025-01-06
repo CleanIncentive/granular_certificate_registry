@@ -1,6 +1,6 @@
 from esdbclient import EventStoreDBClient
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from gc_registry.authentication.services import get_current_user
 from gc_registry.certificate.models import (
@@ -155,6 +155,58 @@ def query_certificate_bundles_route(
         query_dict["granular_certificate_bundles"] = granular_certificate_bundles_read
 
         certificate_query = GranularCertificateQueryRead.model_validate(query_dict)
+
+        return certificate_query
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@router.get("/{account_id}", response_model=GranularCertificateQueryRead)
+def list_all_account_bundles(
+    account_id: int,
+    limit: int | None = None,
+    current_user: User = Depends(get_current_user),
+    read_session: Session = Depends(db.get_read_session),
+):
+    """Return all certificate bundles from the specified Account.
+
+    Args:
+        account_id (int): The account ID to list certificate bundles from
+        limit (int | None): The maximum number of certificate bundles to return
+
+    Returns:
+        GranularCertificateQueryRead: The certificate query response
+    """
+    validate_user_role(current_user, required_role=UserRoles.AUDIT_USER)
+    validate_user_access(current_user, account_id, read_session)
+
+    try:
+        certificate_bundle_query = (
+            select(GranularCertificateBundle)
+            .filter(
+                GranularCertificateBundle.account_id == account_id,
+                GranularCertificateBundle.is_deleted == False,  # noqa: E712
+            )
+            .order_by(GranularCertificateBundle.production_starting_interval.desc())
+        )
+
+        if limit:
+            certificate_bundle_query = certificate_bundle_query.limit(limit)
+
+        certificate_bundles = read_session.exec(certificate_bundle_query).all()
+
+        if not certificate_bundles:
+            raise HTTPException(status_code=422, detail="No certificates found")
+
+        granular_certificate_bundles_read = [
+            GranularCertificateBundleRead.model_validate(certificate.model_dump())
+            for certificate in certificate_bundles
+        ]
+
+        certificate_query = GranularCertificateQueryRead(
+            source_id=account_id,
+            granular_certificate_bundles=granular_certificate_bundles_read,
+        )
 
         return certificate_query
     except Exception as e:
