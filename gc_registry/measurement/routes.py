@@ -26,7 +26,7 @@ def submit_readings(
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
 ):
-    """Submit meter readings as a JSON-serialised CSV file for one or more devices,
+    """Submit meter readings as a JSON-serialised CSV file for a single device,
     creating a MeasurementReport for each production interval against which GC
     Bundles can be issued. Returns a summary of the readings submitted.
 
@@ -40,10 +40,10 @@ def submit_readings(
 
     measurement_df = parse_measurement_json(measurement_json, to_df=True)
 
-    # Check that each device ID is associated with an account that the user has access to
-    for device_id in measurement_df["device_id"].unique():
-        device = Device.by_id(device_id, read_session)
-        validate_user_access(current_user, device.account_id, read_session)
+    # Check that the device ID is associated with an account that the user has access to
+    device_id = measurement_df["device_id"].unique()
+    device = Device.by_id(device_id, read_session)
+    validate_user_access(current_user, device.account_id, read_session)
 
     readings = models.MeasurementReport.create(
         measurement_df.to_dict(orient="records"),
@@ -59,11 +59,9 @@ def submit_readings(
 
     measurement_response = models.MeasurementSubmissionResponse(
         message="Readings submitted successfully.",
-        total_usage_per_device=measurement_df.groupby("device_id")["interval_usage"]
-        .sum()
-        .to_dict(),
+        total_device_usage=measurement_df["interval_usage"].sum().astype(int),
         first_reading_datetime=measurement_df["interval_start_datetime"].min(),
-        last_reading_datetime=measurement_df["interval_end_datetime"].max(),
+        last_reading_datetime=measurement_df["interval_start_datetime"].max(),
     )
 
     return measurement_response
