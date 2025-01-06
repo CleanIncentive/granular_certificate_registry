@@ -31,3 +31,11 @@ class AccountUpdate(BaseModel):
 class AccountWhitelist(BaseModel):
     add_to_whitelist: List[int] | None = None
     remove_from_whitelist: List[int] | None = None
+
+
+class AccountSummary(BaseModel):
+    id: int
+    account_name: str
+    num_devices: int
+    num_granular_certificate_bundles: int
+    total_certificate_energy: int

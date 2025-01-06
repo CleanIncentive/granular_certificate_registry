@@ -1,14 +1,16 @@
 from esdbclient import EventStoreDBClient
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session
+from sqlalchemy import func
+from sqlmodel import Session, select
 
 from gc_registry.account.models import Account, AccountBase, AccountRead
-from gc_registry.account.schemas import AccountUpdate, AccountWhitelist
+from gc_registry.account.schemas import AccountSummary, AccountUpdate, AccountWhitelist
 from gc_registry.account.validation import (
     validate_account,
     validate_account_whitelist_update,
 )
 from gc_registry.authentication.services import get_current_user
+from gc_registry.certificate.models import GranularCertificateBundle
 from gc_registry.core.database import db, events
 from gc_registry.core.models.base import UserRoles
 from gc_registry.user.models import User
@@ -146,3 +148,37 @@ def list_all_accounts(
     validate_user_role(current_user, required_role=UserRoles.TRADING_USER)
     accounts = Account.all(read_session)
     return accounts
+
+
+@router.get("/{account_id}/summary", response_model=AccountSummary)
+def get_account_summary(
+    account_id: int,
+    current_user: User = Depends(get_current_user),
+    read_session: Session = Depends(db.get_read_session),
+):
+    """Get a summary of an account."""
+    validate_user_role(current_user, required_role=UserRoles.AUDIT_USER)
+    account = Account.by_id(account_id, read_session)
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    # Retrieve summary information
+    num_devices = len(account.devices) if account.devices else 0
+    num_granular_certificate_bundles = read_session.exec(
+        select(func.count(GranularCertificateBundle.id)).filter(
+            GranularCertificateBundle.account_id == account_id
+        )
+    ).scalar()
+    total_certificate_energy = read_session.exec(
+        select(func.sum(GranularCertificateBundle.bundle_quantity)).filter(
+            GranularCertificateBundle.account_id == account_id
+        )
+    ).scalar()
+
+    return AccountSummary(
+        id=account.id,
+        account_name=account.account_name,
+        num_devices=num_devices,
+        num_granular_certificate_bundles=num_granular_certificate_bundles,
+        total_certificate_energy=total_certificate_energy,
+    )
