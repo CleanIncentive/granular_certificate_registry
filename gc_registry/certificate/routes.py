@@ -12,6 +12,7 @@ from gc_registry.certificate.schemas import (
     GranularCertificateActionRead,
     GranularCertificateBundleBase,
     GranularCertificateBundleRead,
+    GranularCertificateBundleReadFull,
     GranularCertificateCancel,
     GranularCertificateQuery,
     GranularCertificateQueryRead,
@@ -211,6 +212,33 @@ def list_all_account_bundles(
         return certificate_query
     except Exception as e:
         raise HTTPException(status_code=422, detail=str(e))
+
+
+@router.get("/{id}", response_model=GranularCertificateBundleReadFull)
+def read_certificate_bundle(
+    id: int,
+    current_user: User = Depends(get_current_user),
+    read_session: Session = Depends(db.get_read_session),
+):
+    """Return the full view of a given granular certificate bundle by ID."""
+    validate_user_role(current_user, required_role=UserRoles.AUDIT_USER)
+
+    certificate_bundle = GranularCertificateBundle.by_id(id, read_session)
+    if not certificate_bundle:
+        raise HTTPException(status_code=404, detail="Certificate bundle not found")
+
+    validate_user_access(current_user, certificate_bundle.account_id, read_session)
+
+    # Merge the issuance metadata into the certificate bundle
+    issuance_metadata = IssuanceMetaData.by_id(
+        certificate_bundle.metadata_id, read_session
+    )
+
+    certificate_bundle_full = (
+        certificate_bundle.model_dump() | issuance_metadata.model_dump()
+    )
+
+    return certificate_bundle_full
 
 
 @router.post(
