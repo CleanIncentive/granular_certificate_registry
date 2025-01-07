@@ -1,4 +1,5 @@
-from locust import HttpUser, task, between
+from locust import HttpUser, between, task
+
 
 class BackendUser(HttpUser):
     wait_time = between(5, 10)
@@ -6,7 +7,6 @@ class BackendUser(HttpUser):
 
     @task
     def query_transfer_certificates(self):
-
         response = self.client.post(
             "/auth/login",
             data={
@@ -17,13 +17,13 @@ class BackendUser(HttpUser):
 
         response.raise_for_status()
 
-        token =  response.json()["access_token"]
+        token = response.json()["access_token"]
 
         payload = {
             "source_id": 1,
             "user_id": 1,
         }
-        headers={"Authorization": f"Bearer {token}"}
+        headers = {"Authorization": f"Bearer {token}"}
         self.client.post("/certificate/query", json=payload, headers=headers)
 
 
