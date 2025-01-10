@@ -1,8 +1,8 @@
 from esdbclient import EventStoreDBClient
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import func
-from sqlmodel import Session, select
+from sqlmodel import Session
 
+import gc_registry.device.services as device_services
 from gc_registry.account.models import Account, AccountBase, AccountRead
 from gc_registry.account.schemas import AccountSummary, AccountUpdate, AccountWhitelist
 from gc_registry.account.validation import (
@@ -10,13 +10,13 @@ from gc_registry.account.validation import (
     validate_account_whitelist_update,
 )
 from gc_registry.authentication.services import get_current_user
-from gc_registry.certificate.models import GranularCertificateBundle
 from gc_registry.core.database import db, events
 from gc_registry.core.models.base import UserRoles
 from gc_registry.device.models import DeviceRead
-from gc_registry.device.services import get_devices_by_account_id
 from gc_registry.user.models import User
 from gc_registry.user.validation import validate_user_access, validate_user_role
+
+from . import services
 
 # Router initialisation
 router = APIRouter(tags=["Accounts"])
@@ -152,6 +152,33 @@ def list_all_accounts(
     return accounts
 
 
+@router.get("/{account_id}/users", response_model=list[User])
+def get_users_by_account_id(
+    account_id: int,
+    current_user: User = Depends(get_current_user),
+    read_session: Session = Depends(db.get_read_session),
+):
+    """Get all users associated with an account."""
+    validate_user_role(current_user, required_role=UserRoles.ADMIN)
+    account = Account.by_id(account_id, read_session)
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    if account.is_deleted:
+        raise HTTPException(
+            status_code=400, detail="Cannot get users for deleted accounts."
+        )
+
+    users = services.get_users_by_account_id(account_id, read_session)
+
+    if not users:
+        raise HTTPException(status_code=404, detail="No users found for account")
+
+    print(users)
+
+    return [user.model_dump() for user in users]
+
+
 @router.get("/{account_id}/summary", response_model=AccountSummary)
 def get_account_summary(
     account_id: int,
@@ -164,29 +191,20 @@ def get_account_summary(
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
 
-    # Retrieve summary information
-    num_devices = len(account.devices) if account.devices else 0
-    num_granular_certificate_bundles = read_session.exec(
-        select(func.count(GranularCertificateBundle.id)).filter(
-            GranularCertificateBundle.account_id == account_id
+    if account.is_deleted:
+        raise HTTPException(
+            status_code=400, detail="Cannot get summary for deleted accounts."
         )
-    ).scalar()
-    total_certificate_energy = read_session.exec(
-        select(func.sum(GranularCertificateBundle.bundle_quantity)).filter(
-            GranularCertificateBundle.account_id == account_id
-        )
-    ).scalar()
 
-    return AccountSummary(
-        id=account.id,
-        account_name=account.account_name,
-        num_devices=num_devices,
-        num_granular_certificate_bundles=num_granular_certificate_bundles,
-        total_certificate_energy=total_certificate_energy,
-    )
+    if not account.id:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    account_summary = services.get_account_summary(account, read_session)
+
+    return AccountSummary.model_validate(account_summary)
 
 
-@router.get("/{account_id}/devices", response_model=DeviceRead)
+@router.get("/{account_id}/devices", response_model=list[DeviceRead])
 def get_all_devices_by_account_id(
     account_id: int,
     current_user: User = Depends(get_current_user),
@@ -194,7 +212,7 @@ def get_all_devices_by_account_id(
 ):
     validate_user_role(current_user, required_role=UserRoles.AUDIT_USER)
 
-    devices = get_devices_by_account_id(account_id, read_session)
+    devices = device_services.get_devices_by_account_id(account_id, read_session)
 
     if not devices:
         raise HTTPException(status_code=404, detail="No devices found for account")
@@ -202,5 +220,4 @@ def get_all_devices_by_account_id(
     for device in devices:
         validate_user_access(current_user, device.account_id, read_session)
 
-    return devices
-
+    return [device.model_dump() for device in devices]

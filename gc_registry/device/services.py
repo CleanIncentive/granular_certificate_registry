@@ -11,6 +11,7 @@ def get_all_devices(db_session: Session) -> list[Device]:
 
     return list(devices)
 
+
 def get_devices_by_account_id(account_id: int, db_session: Session) -> list[Device]:
     stmt: SelectOfScalar = select(Device).where(Device.account_id == account_id)
     devices = db_session.exec(stmt).all()

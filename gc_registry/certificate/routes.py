@@ -1,6 +1,7 @@
 from esdbclient import EventStoreDBClient
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
+from sqlmodel.sql.expression import SelectOfScalar
 
 from gc_registry.authentication.services import get_current_user
 from gc_registry.certificate.models import (
@@ -182,13 +183,13 @@ def list_all_account_bundles(
     validate_user_access(current_user, account_id, read_session)
 
     try:
-        certificate_bundle_query = (
+        certificate_bundle_query: SelectOfScalar = (
             select(GranularCertificateBundle)
             .filter(
                 GranularCertificateBundle.account_id == account_id,
                 GranularCertificateBundle.is_deleted == False,  # noqa: E712
             )
-            .order_by(GranularCertificateBundle.production_starting_interval.desc())
+            .order_by(GranularCertificateBundle.production_starting_interval.desc())  # type: ignore
         )
 
         if limit:

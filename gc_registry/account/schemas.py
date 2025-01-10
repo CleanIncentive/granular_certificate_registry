@@ -39,3 +39,4 @@ class AccountSummary(BaseModel):
     num_devices: int
     num_granular_certificate_bundles: int
     total_certificate_energy: int
+    energy_by_fuel_type: dict[str, int] | None = None
