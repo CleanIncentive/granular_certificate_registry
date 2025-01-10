@@ -27,8 +27,8 @@ def get_account_summary(account: Account, read_session: Session):
         )
     ).first()
 
-    stmt = ( # type: ignore
-        select(
+    stmt = (  # type: ignore
+        select(  # type: ignore
             GranularCertificateBundle.energy_source,
             func.sum(GranularCertificateBundle.bundle_quantity),
         )
