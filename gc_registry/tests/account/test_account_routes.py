@@ -1,5 +1,8 @@
 from gc_registry.account.models import Account
 from gc_registry.account.schemas import AccountWhitelist
+from gc_registry.certificate.models import GranularCertificateBundle
+from gc_registry.device.models import Device
+from gc_registry.user.models import User
 
 
 class TestAccountRoutes:
@@ -79,26 +82,70 @@ class TestAccountRoutes:
             "detail": "Cannot add an account to its own whitelist."
         }
 
-
-    def test_get_all_devices_by_account_id(self,
+    def test_get_all_devices_by_account_id(
+        self,
         api_client,
         fake_db_account: Account,
-        fake_db_device: Account,
+        fake_db_wind_device: Device,
+        fake_db_solar_device: Device,
         token: str,
     ):
-        
         # Test getting all devices by account ID
-        devices = api_client.get(
-            f"/account/{fake_db_account.id}",
+        response = api_client.get(
+            f"/account/{fake_db_account.id}/devices",
             headers={"Authorization": f"Bearer {token}"},
         )
-        assert devices.status_code == 200
-        assert devices.json() == []
+        assert response.status_code == 200
+
+        assert response.json()[0]["device_name"] == "fake_wind_device"
+        assert response.json()[0]["local_device_identifier"] == "BMU-XYZ"
 
         # Test getting all devices by account ID that does not exist
-        devices = api_client.get(
-            f"device/account/999",
+        response = api_client.get(
+            "/account/999/devices",
             headers={"Authorization": f"Bearer {token}"},
         )
-        assert devices.status_code == 404
-        assert devices.json() == {"detail": "Account not found"}
+        assert response.status_code == 404
+        assert response.json()["detail"] == "No devices found for account"
+
+    def test_get_account_summary(
+        self,
+        api_client,
+        fake_db_account: Account,
+        fake_db_wind_device: Device,
+        fake_db_solar_device: Device,
+        fake_db_granular_certificate_bundle: GranularCertificateBundle,
+        token: str,
+    ):
+        # Test getting all devices by account ID
+        response = api_client.get(
+            f"/account/{fake_db_account.id}/summary",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert response.status_code == 200
+        assert response.json()["energy_by_fuel_type"] == {"wind": 1000}
+
+        # Test getting all devices by account ID that does not exist
+        fake_id = 1234
+        response = api_client.get(
+            f"/account/{fake_id}/summary",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert response.status_code == 404
+        assert response.json()["detail"] == f"Account with id {fake_id} not found"
+
+    def test_get_users_by_account_id(
+        self,
+        api_client,
+        fake_db_account: Account,
+        fake_db_user: User,
+        token: str,
+    ):
+        # Test getting all devices by account ID
+        response = api_client.get(
+            f"/account/{fake_db_account.id}/users",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        print(response.json())
+        assert response.status_code == 200
+        assert response.json()[0]["primary_contact"] == "jake_fake@fakecorp.com"
