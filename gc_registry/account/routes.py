@@ -13,6 +13,8 @@ from gc_registry.authentication.services import get_current_user
 from gc_registry.certificate.models import GranularCertificateBundle
 from gc_registry.core.database import db, events
 from gc_registry.core.models.base import UserRoles
+from gc_registry.device.models import DeviceRead
+from gc_registry.device.services import get_devices_by_account_id
 from gc_registry.user.models import User
 from gc_registry.user.validation import validate_user_access, validate_user_role
 
@@ -182,3 +184,23 @@ def get_account_summary(
         num_granular_certificate_bundles=num_granular_certificate_bundles,
         total_certificate_energy=total_certificate_energy,
     )
+
+
+@router.get("/{account_id}/devices", response_model=DeviceRead)
+def get_all_devices_by_account_id(
+    account_id: int,
+    current_user: User = Depends(get_current_user),
+    read_session: Session = Depends(db.get_read_session),
+):
+    validate_user_role(current_user, required_role=UserRoles.AUDIT_USER)
+
+    devices = get_devices_by_account_id(account_id, read_session)
+
+    if not devices:
+        raise HTTPException(status_code=404, detail="No devices found for account")
+
+    for device in devices:
+        validate_user_access(current_user, device.account_id, read_session)
+
+    return devices
+

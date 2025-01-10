@@ -50,7 +50,6 @@ def read_device(
 
     return device
 
-
 @router.patch("/update/{device_id}", response_model=models.DeviceRead)
 def update_device(
     device_id: int,

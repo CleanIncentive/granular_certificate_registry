@@ -78,3 +78,27 @@ class TestAccountRoutes:
         assert _updated_whitelist_response.json() == {
             "detail": "Cannot add an account to its own whitelist."
         }
+
+
+    def test_get_all_devices_by_account_id(self,
+        api_client,
+        fake_db_account: Account,
+        fake_db_device: Account,
+        token: str,
+    ):
+        
+        # Test getting all devices by account ID
+        devices = api_client.get(
+            f"/account/{fake_db_account.id}",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert devices.status_code == 200
+        assert devices.json() == []
+
+        # Test getting all devices by account ID that does not exist
+        devices = api_client.get(
+            f"device/account/999",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert devices.status_code == 404
+        assert devices.json() == {"detail": "Account not found"}
