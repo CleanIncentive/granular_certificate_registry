@@ -5,6 +5,7 @@ from sqlalchemy import ARRAY, Column, String
 from sqlmodel import Field, Relationship
 
 from gc_registry import utils
+from gc_registry.core.models.base import UserRoles
 from gc_registry.user.schemas import UserBase
 
 if TYPE_CHECKING:
@@ -49,6 +50,7 @@ class UserRead(UserBase):
 class UserUpdate(BaseModel):
     name: str | None = None
     primary_contact: str | None = None
-    roles: List[str] | None = None
     account_ids: List[int] | None = None
     organisation: str | None = None
+    hashed_password: str | None = None
+    role: UserRoles | None = None

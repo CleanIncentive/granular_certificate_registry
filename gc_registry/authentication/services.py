@@ -1,40 +1,19 @@
 import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlmodel import Session, select
-from starlette.requests import Request
 
-from gc_registry import utils
-from gc_registry.authentication.models import (
-    APIUser,
-    SecureAPIUser,
-    Token,
-    TokenBlacklist,
-)
 from gc_registry.core.database import db
-from gc_registry.settings import settings
-
-# router initialisation
-
-router = APIRouter(tags=["Authentication"])
+from gc_registry.core.models.base import UserRoles
+from gc_registry.settings import settings as st
+from gc_registry.user.models import User
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-fake_users_db = {
-    "ayrton": {
-        "username": "ayrton",
-        "name": "Ayrton",
-        "email": "ayrtonbourn@outlook.com",
-        "picture": None,
-        "hashed_password": "$2b$12$0NepEh/6tXYuc3uCYEuI3.BedxGqWecPrUoFV8SKOYvZ9NWTBCHeK",
-        "scopes": None,
-    }
-}
-
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 CredentialsException = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -43,196 +22,127 @@ CredentialsException = HTTPException(
 )
 
 
-# Auth functions
-
-
-def verify_password(plain_password, hashed_password):
+def verify_password(plain_password: str, hashed_password: str | None) -> bool:
+    """Verify that the provided password matches the hashed password."""
     return pwd_context.verify(plain_password, hashed_password)
 
 
-def get_password_hash(password):
+def get_password_hash(password: str) -> str:
+    """Hash the provided password."""
     return pwd_context.hash(password)
 
 
-def get_api_user(db, username: str) -> SecureAPIUser | None:
-    if username in db:
-        user_dict = db[username]
-        return SecureAPIUser(**user_dict)
-    else:
-        return None
+def get_user(user_name: str, read_session: Session) -> User | None:
+    """Retrieve a User from the database matching the provided name.
+
+    Args:
+        user_name (str): The name of the User to retrieve.
+        read_session (Session): The database session to read from.
+
+    Returns:
+        user: The User object matching the provided name.
+
+    """
+    return read_session.exec(select(User).where(User.name == user_name)).first()
 
 
-def authenticate_api_user(fake_db, username: str, password: str):
-    user = get_api_user(fake_db, username)
+def authenticate_user(user_name: str, password: str, read_session: Session) -> User:
+    """Authenticate a user by verifying their password.
 
-    if not user:
-        return False
+    Args:
+        user_name (str): The name of the User to authenticate.
+        password (str): The password to verify.
+        read_session (Session): The database session to read from.
 
+    Returns:
+        user: The User object matching the provided name.
+
+    Raises:
+        HTTPException: If the user does not exist or the password is incorrect, return a 404 or 401 respectively.
+
+    """
+    user = get_user(user_name, read_session)
+    if user is None:
+        raise HTTPException(status_code=404, detail=f"User '{user_name}' not found.")
     if not verify_password(password, user.hashed_password):
-        return False
-
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Password for '{user_name}' is incorrect.",
+        )
     return user
 
 
-def create_access_token(data: dict, expires_delta: datetime.timedelta | None = None):
+def create_access_token(
+    data: dict, expires_delta: datetime.timedelta | None = None
+) -> str:
+    """Create an access token with the provided data and expiration.
+
+    Args:
+        data (dict): The data to encode in the token.
+        expires_delta (datetime.timedelta): The time delta in seconds until the token expires.
+
+    Returns:
+        encoded_jwt: The encoded JWT token.
+
+    """
     to_encode = data.copy()
-
     if expires_delta:
-        expire = datetime.datetime.now(tz=datetime.timezone.utc) + expires_delta
+        expire = datetime.datetime.now() + expires_delta
     else:
-        expire = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(
-            minutes=15
-        )
-
+        expire = datetime.datetime.now() + datetime.timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(
-        to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
-    )
-
+    encoded_jwt = jwt.encode(to_encode, st.JWT_SECRET_KEY, algorithm=st.JWT_ALGORITHM)
     return encoded_jwt
 
 
-def is_token_blacklisted(oauth_token):
-    with next(db.db_name_to_client["db_read"].yield_session()) as session:
-        statement = select(TokenBlacklist).where(TokenBlacklist.token == oauth_token)
-        results = session.exec(statement).all()
+async def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    read_session: Session = Depends(db.get_read_session),
+) -> User:
+    """Retrieve the current user from the provided token.
 
-        if len(results) > 0:
-            raise CredentialsException
+    Args:
+        token (str): The token to decode.
+        read_session (Session): The database session to read from.
 
-    return
+    Returns:
+        user: The User object matching the provided token.
 
+    Raises:
+        CredentialsException: If the token is invalid or the user does not exist, return a 401.
 
-def validate_user_and_get_headers(oauth_token: str = Depends(oauth2_scheme)):
-    headers = {}
-    is_token_blacklisted(oauth_token)
-
+    """
     try:
-        # extracting params in the JWT
-        payload = jwt.decode(
-            oauth_token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
-        )
-        username: str = payload.get("sub", "default")
-        expire: str = payload.get("exp", "60")
-
-        # checking the expiry date
-        current_ts = datetime.datetime.now(tz=datetime.timezone.utc).timestamp()
-
-        if (float(expire) - current_ts) < 0:
-            with next(db.db_name_to_client["db_read"].yield_session()) as session:
-                session.add(TokenBlacklist(token=oauth_token))
-                session.commit()
-
-        # checking username exists
-        if username is None:
+        payload = jwt.decode(token, st.JWT_SECRET_KEY, algorithms=[st.JWT_ALGORITHM])
+        user_name = payload.get("sub")
+        if user_name is None:
             raise CredentialsException
-
-        get_api_user(fake_users_db, username=username)
-
     except JWTError:
         raise CredentialsException
-
-    # providing refresh token if near expiry
-    if (float(expire) - current_ts) < (settings.REFRESH_WARNING_MINS * 60):
-        headers["refresh"] = "true"
-    else:
-        headers["refresh"] = "false"
-
-    return headers
+    user = get_user(user_name, read_session)
+    if user is None:
+        raise CredentialsException
+    return user
 
 
-# Routes
-
-
-@router.get("/user", response_model=APIUser)
-def read_api_user(
-    headers: dict = Depends(validate_user_and_get_headers),
-    oauth_token: str = Depends(oauth2_scheme),
+async def get_current_active_admin(
+    current_user: User = Depends(get_current_user),
 ):
-    payload = jwt.decode(
-        oauth_token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
-    )
-    username: str = payload.get("sub", "default")
+    """Ensure that the current user is an Admin.
 
-    api_user = get_api_user(fake_users_db, username=username)
+    Args:
+        current_user (User): The current user to validate.
 
-    return utils.format_json_response(api_user, headers, response_model=APIUser)
+    Returns:
+        current_user: The validated User object.
 
+    Raises:
+        HTTPException: If the user is not an Admin, return a 401.
 
-@router.get("/refresh", response_model=Token)
-def refresh(oauth_token: str = Depends(oauth2_scheme)):
-    payload = jwt.decode(
-        oauth_token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
-    )
-    username: str = payload.get("sub", "default")
-
-    oauth_token = create_access_token(
-        data={"sub": username},
-        expires_delta=datetime.timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
-    )
-
-    return {"access_token": oauth_token, "token_type": "bearer"}
-
-
-@router.get("/logout", response_model=Token)
-def logout(
-    request: Request,
-    oauth_token: str = Depends(oauth2_scheme),
-    session: Session = Depends(db.get_write_session),
-):
-    is_token_blacklisted(oauth_token)
-
-    session.add(TokenBlacklist(token=oauth_token))
-    session.commit()
-
-    if "user" in request.session.keys():
-        request.session.pop("user", None)
-
-    return {"access_token": oauth_token, "token_type": "revoked"}
-
-
-@router.post("/token", response_model=Token)
-def token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_api_user(fake_users_db, form_data.username, form_data.password)
-
-    if not user:
+    """
+    if current_user.role != UserRoles.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
+            detail="User must be an Admin to perform this action.",
         )
-
-    access_token_expires = datetime.timedelta(
-        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-    )
-
-    access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
-    )
-
-    return {"access_token": access_token, "token_type": "bearer"}
-
-
-@router.post("/token-params", response_model=Token)
-def token_params(
-    username: str | None = None,
-    password: str | None = None,
-):
-    if username is not None and password is not None:
-        user = authenticate_api_user(fake_users_db, username, password)
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="You must specify a username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    access_token_expires = datetime.timedelta(
-        minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-    )
-
-    access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
-    )
-
-    return {"access_token": access_token, "token_type": "bearer"}
+    return current_user
