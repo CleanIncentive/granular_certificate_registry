@@ -149,3 +149,11 @@ The CI workflow installs the same versions of Python/Poetry as the project and i
 if you have an active pull request associated with a branch on GitHub, a failure in any part of the workflow will notify you and prevent you from merging the pull request.
 
 The CI workflow runs [`gitleaks`](https://github.com/gitleaks/gitleaks-action?tab=readme-ov-file) to make sure that no secrets are accidently leaked.
+
+## Deployment
+
+The application is deployed to GCP using the `app.yml` file using gcloud cli. Once installed you can follow these commands:
+
+1. 
+
+2. `gcloud app deploy app.yml`

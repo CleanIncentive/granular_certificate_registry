@@ -12,9 +12,6 @@ network:
   instance_tag: your-app-tag
   name: default
 
-entrypoint: /bin/sh -c "docker compose up"
-
-
 env_variables:
   APP_ENV: "production"
   DATABASE_URL: "your_database_url"

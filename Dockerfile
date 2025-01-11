@@ -13,15 +13,14 @@ RUN apt update && apt install -y \
     python3-pip \
     build-essential \
     libpq-dev \
-    gcc \ 
-    musl-dev
+    gcc \
+    musl-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install Poetry
-# RUN curl -sSL https://install.python-poetry.org | python3 -
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/opt/poetry python3 && \
-cd /usr/local/bin && \
-ln -s /opt/poetry/bin/poetry && \
-poetry config virtualenvs.create false
+    ln -s /opt/poetry/bin/poetry /usr/local/bin/poetry && \
+    poetry config virtualenvs.create false
 
 # Set the working directory
 WORKDIR /code
@@ -44,4 +43,5 @@ COPY ./README.md ./README.md
 COPY ./Makefile ./Makefile
 COPY ./alembic.ini ./alembic.ini
 
-CMD ["uvicorn", "gc_registry.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Start the application (use port 8080 for App Engine compatibility)
+CMD ["uvicorn", "gc_registry.main:app", "--host", "0.0.0.0", "--port", "8080"]
