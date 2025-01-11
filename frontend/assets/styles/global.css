@@ -1,0 +1,18 @@
+/* global.css */
+
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  * {
+    box-sizing: inherit;
+  }
+  
+  .ant-btn, .ant-input, .ant-select, .ant-typography {
+    font-family: 'Inter', sans-serif;
+  }
+
+  
