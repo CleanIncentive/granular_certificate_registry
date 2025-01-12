@@ -43,6 +43,11 @@ db.update:
 	docker compose run --rm gc_registry alembic upgrade head && \
 	docker compose down
 
+.PHONY: db.downgrade
+db.downgrade:
+	docker compose run --rm gc_registry alembic downgrade -1 && \
+	docker compose down
+
 .PHONY: db.fix
 db.fix:
 	docker compose run --rm gc_registry sh -c 'echo "Checking for multiple heads..." && \
