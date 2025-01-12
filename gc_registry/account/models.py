@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, List
 
 from sqlmodel import Field, Relationship
 
+from gc_registry import utils
 from gc_registry.account.schemas import AccountBase
 from gc_registry.user.models import UserAccountLink
 
@@ -25,3 +26,13 @@ class Account(AccountBase, table=True):
 
 class AccountRead(AccountBase):
     id: int
+
+
+class AccountWhitelistLink(utils.ActiveRecord, table=True):
+    source_account_id: int | None = Field(
+        default=None, foreign_key="account.id", primary_key=True
+    )
+    target_account_id: int | None = Field(
+        default=None, foreign_key="account.id", primary_key=True
+    )
+    is_deleted: bool = Field(default=False)
