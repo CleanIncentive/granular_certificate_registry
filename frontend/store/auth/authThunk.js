@@ -2,8 +2,10 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { loginAPI, logoutAPI } from "../../api/authAPI";
 
 // Save token to cookie
-const saveTokenToCookie = (token) => {
-  document.cookie = `access_token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; secure; samesite=strict`;
+const saveTokenToCookie = (access_token) => {
+  document.cookie = `access_token=${access_token}; path=/; max-age=${
+    7 * 24 * 60 * 60
+  }; secure; samesite=strict`;
 };
 
 // Remove token from cookie
@@ -17,10 +19,9 @@ export const login = createAsyncThunk(
   async (credentials, { rejectWithValue }) => {
     try {
       const response = await loginAPI(credentials);
-      const { token, user } = response.data;
+      const { access_token } = response.data;
+      saveTokenToCookie(access_token);
 
-      saveTokenToCookie(token);
-      
       return user;
     } catch (error) {
       return rejectWithValue(error.response.data.message);
@@ -29,6 +30,6 @@ export const login = createAsyncThunk(
 );
 
 // Logout thunk
-export const logoutUser = createAsyncThunk("auth/logoutUser", async () => {
+export const logout = createAsyncThunk("auth/logout", async () => {
   removeTokenFromCookie();
 });

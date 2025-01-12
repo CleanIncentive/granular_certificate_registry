@@ -6,6 +6,7 @@ const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
 
 const isDevelopment = process.env.NODE_ENV === "development";
+const webpack = require("webpack");
 
 module.exports = {
   mode: isDevelopment ? "development" : "production",
@@ -92,6 +93,9 @@ module.exports = {
         analyzerMode: "static",
         openAnalyzer: false,
       }),
+      new webpack.DefinePlugin({
+      "process.env.REACT_APP_API_URL": JSON.stringify(process.env.REACT_APP_API_URL),
+    }),
   ].filter(Boolean),
 
   devServer: {

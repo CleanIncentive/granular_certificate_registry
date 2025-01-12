@@ -1,5 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { fetchCertificatesAPI } from "../../api/certificateAPIAPI";
+import { fetchCertificatesAPI } from "../../api/certificateAPI";
 
 export const fetchCertificates = createAsyncThunk("certificates/fetchCertificates", async (_, { rejectWithValue }) => {
   try {

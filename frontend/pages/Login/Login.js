@@ -9,10 +9,21 @@ const { Content } = Layout;
 const { Title, Text, Link } = Typography;
 const { Option } = Select;
 
+import { useDispatch, useSelector } from "react-redux";
+import { login } from "../../store/auth/authThunk";
+
 const Login = () => {
-  const [email, setEmail] = useState("admin");
-  const [role, setRole] = useState("admin");
-  const [password, setPassword] = useState("admin");
+  const [username, setUsername] = useState("");
+  const [role, setRole] = useState("");
+  const [password, setPassword] = useState("");
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.auth);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    dispatch(login({ username, password }));
+  };
+
   return (
     <Layout>
       <Content className={styles["login-container"]}>
@@ -45,8 +56,8 @@ const Login = () => {
                 </div>
                 <Input
                   placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   style={{ height: "40px" }}
                 />
               </div>
@@ -99,7 +110,7 @@ const Login = () => {
               {/* Login Button */}
               <Button
                 type="primary"
-                //  onClick={handleSubmit}
+                 onClick={handleSubmit}
                 style={{
                   backgroundColor: "#1D53F7",
                   fontWeight: "500",

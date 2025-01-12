@@ -1,8 +1,10 @@
 import { configureStore } from "@reduxjs/toolkit";
-import certificateReducer from "../features/certificates/certificateSlice";
+import authReducer from "./auth/authSlice";
+import certificateReducer from "./certificates/certificateSlice";
 
 export const store = configureStore({
   reducer: {
-    products: certificateReducer // Certificate state
+    auth: authReducer, // auth state
+    certificates: certificateReducer // Certificate state
   },
 });
