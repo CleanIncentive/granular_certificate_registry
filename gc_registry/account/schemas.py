@@ -34,3 +34,9 @@ class AccountSummary(BaseModel):
     num_granular_certificate_bundles: int
     total_certificate_energy: int
     energy_by_fuel_type: dict[str, int] | None = None
+
+
+class AccountWhitelistLinkBase(utils.ActiveRecord):
+    target_account_id: int
+    source_account_id: int
+    is_deleted: bool = Field(default=False)
