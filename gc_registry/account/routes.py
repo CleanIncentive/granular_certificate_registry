@@ -1,13 +1,18 @@
 from esdbclient import EventStoreDBClient
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 import gc_registry.device.services as device_services
-from gc_registry.account.models import Account, AccountBase, AccountRead
+from gc_registry.account.models import (
+    Account,
+    AccountBase,
+    AccountRead,
+    AccountWhitelistLink,
+)
 from gc_registry.account.schemas import AccountSummary, AccountUpdate, AccountWhitelist
 from gc_registry.account.validation import (
     validate_account,
-    validate_account_whitelist_update,
+    validate_and_apply_account_whitelist_update,
 )
 from gc_registry.authentication.services import get_current_user
 from gc_registry.core.database import db, events
@@ -103,20 +108,47 @@ def update_whitelist(
             status_code=404, detail=f"Account ID not found: {account_id}"
         )
 
-    modified_whitelist = validate_account_whitelist_update(
-        account, account_whitelist_update, read_session
+    validate_and_apply_account_whitelist_update(
+        account, account_whitelist_update, write_session, read_session, esdb_client
     )
 
-    account_update = AccountUpdate(account_whitelist=modified_whitelist)
+    return account.model_dump()
 
-    updated_account = account.update(
-        account_update, write_session, read_session, esdb_client
-    )
-    if not updated_account:
-        raise HTTPException(
-            status_code=400, detail=f"Error during account update: {account_id}"
+
+@router.get("/{account_id}/whitelist", response_model=list[int])
+def get_whitelist(
+    account_id: int,
+    current_user: User = Depends(get_current_user),
+    read_session: Session = Depends(db.get_read_session),
+) -> list[int] | None:
+    """Return the list of account IDs that the given account has whitelisted to receive certificates from."""
+    validate_user_role(current_user, required_role=UserRoles.TRADING_USER)
+    validate_user_access(current_user, account_id, read_session)
+    account_whitelist = read_session.exec(
+        select(AccountWhitelistLink.source_account_id).where(
+            AccountWhitelistLink.target_account_id == account_id,
+            AccountWhitelistLink.is_deleted == False,  # noqa: E712
         )
-    return updated_account.model_dump()
+    ).all()
+    return list(account_whitelist)
+
+
+@router.get("/{account_id}/whitelist_inverse", response_model=list[int])
+def get_whitelist_inverse(
+    account_id: int,
+    current_user: User = Depends(get_current_user),
+    read_session: Session = Depends(db.get_read_session),
+):
+    """Return the list of account IDs that have whitelisted the given account to receive certificates from."""
+    validate_user_role(current_user, required_role=UserRoles.TRADING_USER)
+    validate_user_access(current_user, account_id, read_session)
+    account_whitelist_inverse = read_session.exec(
+        select(AccountWhitelistLink.target_account_id).where(
+            AccountWhitelistLink.source_account_id == account_id,
+            AccountWhitelistLink.is_deleted == False,  # noqa: E712
+        )
+    ).all()
+    return list(account_whitelist_inverse)
 
 
 @router.delete("/delete/{account_id}", status_code=200, response_model=AccountRead)
