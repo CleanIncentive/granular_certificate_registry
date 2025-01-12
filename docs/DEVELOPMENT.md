@@ -154,6 +154,19 @@ The CI workflow runs [`gitleaks`](https://github.com/gitleaks/gitleaks-action?ta
 
 The application is deployed to GCP using the `app.yml` file using gcloud cli. Once installed you can follow these commands:
 
-1. 
+1. Install gcloud cli tool 
 
-2. `gcloud app deploy app.yml`
+```
+(New-Object Net.WebClient).DownloadFile("https://dl.google.com/dl/cloudsdk/channels/rapid/GoogleCloudSDKInstaller.exe", "$env:Temp\GoogleCloudSDKInstaller.exe")
+
+& $env:Temp\GoogleCloudSDKInstaller.exe
+```
+Or download the Google Cloud CLI installer at https://dl.google.com/dl/cloudsdk/channels/rapid/GoogleCloudSDKInstaller.exe
+
+2. Login to GCP by running `gcloud init` from the root of the repo.
+
+3. Follow the setup process in the terminal and select the `demo-registry` project when prompted.
+
+4. Deploy app `gcloud app deploy app.yml`. Make sure to check the docker install runs successfully and the API is accessible, by testing locally before running this command.
+
+5. To connect to the service via SSH you can run `gcloud app instances ssh <Instance-ID> --service=default --version=<latest-version>` you'll then need to run `docker exec -it <CONTAINER_ID_OR_NAME> sh` to access the docker container. Use `gcloud app instances list` to list instances.
