@@ -87,7 +87,7 @@ def update_account(
         raise HTTPException(
             status_code=400, detail=f"Error during account update: {account_id}"
         )
-    return updated_account.model_dump()
+    return updated_account
 
 
 @router.patch("/update_whitelist/{account_id}", response_model=AccountRead)
@@ -102,7 +102,7 @@ def update_whitelist(
     validate_user_role(current_user, required_role=UserRoles.TRADING_USER)
     validate_user_access(current_user, account_id, read_session)
 
-    account = Account.by_id(account_id, write_session)
+    account = Account.by_id(account_id, read_session)
     if not account:
         raise HTTPException(
             status_code=404, detail=f"Account ID not found: {account_id}"
@@ -112,16 +112,16 @@ def update_whitelist(
         account, account_whitelist_update, write_session, read_session, esdb_client
     )
 
-    return account.model_dump()
+    return account
 
 
-@router.get("/{account_id}/whitelist", response_model=list[int])
+@router.get("/{account_id}/whitelist", response_model=list[Account])
 def get_whitelist(
     account_id: int,
     current_user: User = Depends(get_current_user),
     read_session: Session = Depends(db.get_read_session),
-) -> list[int] | None:
-    """Return the list of account IDs that the given account has whitelisted to receive certificates from."""
+) -> list[Account] | None:
+    """Return the list of accounts that the given account has whitelisted to receive certificates from."""
     validate_user_role(current_user, required_role=UserRoles.TRADING_USER)
     validate_user_access(current_user, account_id, read_session)
     account_whitelist = read_session.exec(
@@ -130,16 +130,19 @@ def get_whitelist(
             AccountWhitelistLink.is_deleted == False,  # noqa: E712
         )
     ).all()
-    return list(account_whitelist)
+    return [
+        Account.by_id(id_=account_id, session=read_session)
+        for account_id in account_whitelist
+    ]
 
 
-@router.get("/{account_id}/whitelist_inverse", response_model=list[int])
+@router.get("/{account_id}/whitelist_inverse", response_model=list[Account])
 def get_whitelist_inverse(
     account_id: int,
     current_user: User = Depends(get_current_user),
     read_session: Session = Depends(db.get_read_session),
-):
-    """Return the list of account IDs that have whitelisted the given account to receive certificates from."""
+) -> list[Account] | None:
+    """Return the list of accounts that have whitelisted the given account to receive certificates from."""
     validate_user_role(current_user, required_role=UserRoles.TRADING_USER)
     validate_user_access(current_user, account_id, read_session)
     account_whitelist_inverse = read_session.exec(
@@ -148,7 +151,10 @@ def get_whitelist_inverse(
             AccountWhitelistLink.is_deleted == False,  # noqa: E712
         )
     ).all()
-    return list(account_whitelist_inverse)
+    return [
+        Account.by_id(id_=account_id, session=read_session)
+        for account_id in account_whitelist_inverse
+    ]
 
 
 @router.delete("/delete/{account_id}", status_code=200, response_model=AccountRead)
@@ -166,7 +172,7 @@ def delete_account(
         accounts = account.delete(write_session, read_session, esdb_client)
         if not accounts:
             raise ValueError(f"Account id {account_id} not found")
-        return accounts[0].model_dump()
+        return accounts[0]
     except Exception:
         raise HTTPException(
             status_code=404, detail="Could not delete Account not found"

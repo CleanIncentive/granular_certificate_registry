@@ -4,7 +4,10 @@ from sqlalchemy import func
 from sqlmodel import Session, select
 
 from gc_registry.account.models import Account, AccountWhitelistLink
-from gc_registry.account.schemas import AccountBase, AccountWhitelist
+from gc_registry.account.schemas import (
+    AccountBase,
+    AccountWhitelist,
+)
 from gc_registry.user.models import User
 
 
@@ -78,18 +81,15 @@ def validate_and_apply_account_whitelist_update(
                     status_code=400,
                     detail=f"Account ID {account_id_to_add} is already in the whitelist.",
                 )
-        AccountWhitelistLink.create(
-            [
+            AccountWhitelistLink.create(
                 {
                     "target_account_id": account.id,
                     "source_account_id": account_id_to_add,
-                }
-                for account_id_to_add in account_whitelist_update.add_to_whitelist
-            ],
-            write_session=write_session,
-            read_session=read_session,
-            esdb_client=esdb_client,
-        )
+                },
+                write_session=write_session,
+                read_session=read_session,
+                esdb_client=esdb_client,
+            )
 
     if account_whitelist_update.remove_from_whitelist is not None:
         for account_id_to_remove in account_whitelist_update.remove_from_whitelist:
@@ -105,11 +105,9 @@ def validate_and_apply_account_whitelist_update(
                     AccountWhitelistLink.is_deleted == False,  # noqa: E712
                 )
             ).first()
-            account_whitelist_link_to_remove = AccountWhitelistLink(
-                **account_whitelist_link_to_remove
-            )
-            account_whitelist_link_to_remove.delete(
-                write_session=write_session,
-                read_session=read_session,
-                esdb_client=esdb_client,
-            )
+            if account_whitelist_link_to_remove is not None:
+                account_whitelist_link_to_remove.delete(
+                    write_session=write_session,
+                    read_session=read_session,
+                    esdb_client=esdb_client,
+                )

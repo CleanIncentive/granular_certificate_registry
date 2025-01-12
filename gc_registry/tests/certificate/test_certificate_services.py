@@ -6,8 +6,7 @@ import pytest
 from esdbclient import EventStoreDBClient
 from sqlmodel import Session
 
-from gc_registry.account.models import Account
-from gc_registry.account.schemas import AccountUpdate
+from gc_registry.account.models import Account, AccountWhitelistLink
 from gc_registry.certificate.models import (
     GranularCertificateBundle,
     IssuanceMetaData,
@@ -305,8 +304,11 @@ class TestCertificateServices:
 
         # Whitelist the source account for the target account
         fake_db_account_2 = write_session.merge(fake_db_account_2)
-        fake_db_account_2.update(
-            AccountUpdate(account_whitelist=[fake_db_account.id]),  # type: ignore
+        whitelist_link_list = AccountWhitelistLink.create(
+            {
+                "target_account_id": fake_db_account_2.id,
+                "source_account_id": fake_db_account.id,
+            },
             write_session,
             read_session,
             esdb_client,
@@ -342,9 +344,12 @@ class TestCertificateServices:
         assert certificate_transfered is not None
         assert certificate_transfered[0].bundle_quantity == 500
 
-        # De-whitelist the account and verfiy the transfer is rejected
-        fake_db_account_2.update(
-            AccountUpdate(account_whitelist=[]),  # type: ignore
+        # De-whitelist the account and verify the transfer is rejected
+        if whitelist_link_list is None:
+            raise ValueError("Expected whitelist_link_list to be created")
+
+        whitelist_link = write_session.merge(whitelist_link_list[0])
+        whitelist_link.delete(
             write_session,
             read_session,
             esdb_client,
@@ -408,8 +413,11 @@ class TestCertificateServices:
 
         # Whitelist the source account for the target account
         fake_db_account_2 = write_session.merge(fake_db_account_2)
-        fake_db_account_2.update(
-            AccountUpdate(account_whitelist=[fake_db_account.id]),
+        _whitelist_link_list = AccountWhitelistLink.create(
+            {
+                "target_account_id": fake_db_account_2.id,
+                "source_account_id": fake_db_account.id,
+            },
             write_session,
             read_session,
             esdb_client,
