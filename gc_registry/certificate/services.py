@@ -6,7 +6,7 @@ from sqlalchemy import func
 from sqlmodel import Session, SQLModel, or_, select
 from sqlmodel.sql.expression import SelectOfScalar
 
-from gc_registry.account.models import Account
+from gc_registry.account.models import Account, AccountWhitelistLink
 from gc_registry.certificate.models import (
     GranularCertificateAction,
     GranularCertificateBundle,
@@ -669,10 +669,13 @@ def transfer_certificates(
         raise ValueError(err_msg)
 
     # Check that the target account has whitelisted the source account
-    account = Account.by_id(certificate_bundle_action.target_id, read_session)
-    account_whitelist = (
-        [] if account.account_whitelist is None else account.account_whitelist
-    )
+    account_whitelist = read_session.exec(
+        select(AccountWhitelistLink.source_account_id).where(
+            AccountWhitelistLink.target_account_id
+            == certificate_bundle_action.target_id,
+            AccountWhitelistLink.is_deleted == False,  # noqa: E712
+        )
+    ).all()
     if certificate_bundle_action.source_id not in account_whitelist:
         err_msg = f"Target account ({certificate_bundle_action.target_id}) has not whitelisted the source account ({certificate_bundle_action.source_id}) for transfer."
         logger.error(err_msg)
