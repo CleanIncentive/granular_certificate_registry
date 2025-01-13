@@ -185,6 +185,7 @@ class TestAccountRoutes:
         assert response.status_code == 200
         assert response.json()[0]["id"] == fake_db_account.id
 
+
 def test_list_all_account_bundles(
     api_client: TestClient,
     token: str,
