@@ -481,3 +481,23 @@ def test_query_certificate_bundles(
         response.json()["detail"][0]["msg"]
         == "Input should be 'solar_pv', 'wind', 'hydro', 'biomass', 'nuclear', 'electrolysis', 'geothermal', 'battery_storage', 'chp' or 'other'"
     )
+
+
+def test_read_certificate_bundle(
+    api_client: TestClient,
+    token: str,
+    fake_db_granular_certificate_bundle: GranularCertificateBundle,
+    fake_db_granular_certificate_bundle_2: GranularCertificateBundle,
+    fake_db_user: User,
+    fake_db_account: Account,
+):
+    response = api_client.get(
+        f"/certificate/{fake_db_granular_certificate_bundle.id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+    assert (
+        response.json()["issuance_id"]
+        == fake_db_granular_certificate_bundle.issuance_id
+    )

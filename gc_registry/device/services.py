@@ -35,3 +35,24 @@ def device_mw_capacity_to_wh_max(
     the device can produce in a given number of hours"""
     W_IN_MW = 1e6
     return device_capacity_mw * W_IN_MW * hours
+
+
+def map_device_to_certificate_read(device: Device) -> dict:
+    mapped_columns = ["id", "technology_type", "capacity", "location"]
+
+    device_dict = device.model_dump().copy()
+    device_dict_original = device_dict.copy()
+
+    device_dict = {f"device_{k}": device_dict[k] for k in mapped_columns}
+
+    not_mapped_columns = [
+        k for k in device_dict_original.keys() if k not in mapped_columns
+    ]
+    for k in not_mapped_columns:
+        device_dict[k] = device_dict_original[k]
+
+    device_dict["device_production_start_date"] = device_dict_original[
+        "operational_date"
+    ]
+
+    return device_dict
