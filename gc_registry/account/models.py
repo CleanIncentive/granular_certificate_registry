@@ -1,8 +1,9 @@
 from typing import TYPE_CHECKING, List
 
 from sqlmodel import Field, Relationship
+from gc_registry import utils
 
-from gc_registry.account.schemas import AccountBase, AccountWhitelistLinkBase
+from gc_registry.account.schemas import AccountBase
 from gc_registry.user.models import UserAccountLink
 
 if TYPE_CHECKING:
@@ -27,7 +28,10 @@ class AccountRead(AccountBase):
     id: int
 
 
-class AccountWhitelistLink(AccountWhitelistLinkBase, table=True):
+class AccountWhitelistLink(utils.ActiveRecord, table=True):
     id: int | None = Field(
         default=None, primary_key=True, description="A unique ID assigned to this link."
     )
+    target_account_id: int
+    source_account_id: int
+    is_deleted: bool = Field(default=False)
