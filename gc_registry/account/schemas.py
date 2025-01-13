@@ -14,18 +14,12 @@ class AccountBase(utils.ActiveRecord):
         description="The users registered to the account.",
         sa_column=Column(ARRAY(Integer())),
     )
-    account_whitelist: List[int | None] | None = Field(
-        default=None,
-        description="The list of accounts that are allowed to transfer certificates to this account.",
-        sa_column=Column(ARRAY(Integer())),
-    )
     is_deleted: bool = Field(default=False)
 
 
 class AccountUpdate(BaseModel):
     account_name: str | None = None
     user_ids: List[int | None] = []
-    account_whitelist: List[int] | None = None
 
 
 class AccountWhitelist(BaseModel):
