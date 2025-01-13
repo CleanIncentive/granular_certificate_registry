@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Hashable
+from typing import Any, Hashable, cast
 
 import pandas as pd
 import pytest
@@ -348,7 +348,9 @@ class TestCertificateServices:
         if whitelist_link_list is None:
             raise ValueError("Expected whitelist_link_list to be created")
 
-        whitelist_link = write_session.merge(whitelist_link_list[0])
+        whitelist_link = cast(
+            AccountWhitelistLink, write_session.merge(whitelist_link_list[0])
+        )
         whitelist_link.delete(
             write_session,
             read_session,
