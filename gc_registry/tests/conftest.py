@@ -31,7 +31,7 @@ from gc_registry.device.models import Device
 from gc_registry.logging_config import logger
 from gc_registry.main import app
 from gc_registry.settings import settings
-from gc_registry.user.models import User
+from gc_registry.user.models import User, UserAccountLink
 from gc_registry.utils import ActiveRecord
 
 load_dotenv()
@@ -216,7 +216,9 @@ def add_entity_to_write_and_read(
     # assert entity.id is not None  # type: ignore
 
     read_entity = read_session.merge(entity)
-    assert read_entity.id == entity.id  # type: ignore
+
+    if hasattr(entity, "id"):
+        assert read_entity.id == entity.id  # type: ignore
 
     # read_entity = read_session.merge(read_entity)
     read_session.add(read_entity)
@@ -269,6 +271,12 @@ def fake_db_account(
         account_write, write_session, read_session
     )
 
+    user_account_link = UserAccountLink.model_validate(
+        {"user_id": fake_db_user.id, "account_id": account_read.id}
+    )
+
+    _ = add_entity_to_write_and_read(user_account_link, write_session, read_session)
+
     return account_read
 
 
@@ -301,7 +309,6 @@ def fake_db_wind_device(
         "technology_type": DeviceTechnologyType.wind_turbine,
         "capacity": 3000,
         "account_id": fake_db_account.id,
-        "fuel_source": "wind",
         "location": "USA",
         "commissioning_date": "2020-01-01",
         "operational_date": "2020-01-01",
@@ -329,7 +336,6 @@ def fake_db_solar_device(
         "local_device_identifier": "BMU-ABC",
         "capacity": 1000,
         "account_id": fake_db_account.id,
-        "fuel_source": "solar",
         "location": "USA",
         "commissioning_date": "2020-01-01",
         "operational_date": "2020-01-01",

@@ -2,17 +2,26 @@ from esdbclient import EventStoreDBClient
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 
+import gc_registry.device.services as device_services
 from gc_registry.account.models import Account, AccountBase, AccountRead
-from gc_registry.account.schemas import AccountUpdate, AccountWhitelist
+from gc_registry.account.schemas import AccountSummary, AccountUpdate, AccountWhitelist
 from gc_registry.account.validation import (
     validate_account,
     validate_account_whitelist_update,
 )
 from gc_registry.authentication.services import get_current_user
+from gc_registry.certificate.schemas import (
+    GranularCertificateBundleRead,
+    GranularCertificateQueryRead,
+)
+from gc_registry.certificate.services import get_certificate_bundles_by_account_id
 from gc_registry.core.database import db, events
 from gc_registry.core.models.base import UserRoles
+from gc_registry.device.models import DeviceRead
 from gc_registry.user.models import User
 from gc_registry.user.validation import validate_user_access, validate_user_role
+
+from . import services
 
 # Router initialisation
 router = APIRouter(tags=["Accounts"])
@@ -135,3 +144,131 @@ def delete_account(
         raise HTTPException(
             status_code=404, detail="Could not delete Account not found"
         )
+
+
+@router.get("/list", response_model=list[AccountRead])
+def list_all_accounts(
+    current_user: User = Depends(get_current_user),
+    read_session: Session = Depends(db.get_read_session),
+):
+    """List all active accounts on the registry."""
+    validate_user_role(current_user, required_role=UserRoles.TRADING_USER)
+    accounts = Account.all(read_session)
+    return accounts
+
+
+@router.get("/{account_id}/users", response_model=list[User])
+def get_users_by_account_id(
+    account_id: int,
+    current_user: User = Depends(get_current_user),
+    read_session: Session = Depends(db.get_read_session),
+):
+    """Get all users associated with an account."""
+    validate_user_role(current_user, required_role=UserRoles.ADMIN)
+    account = Account.by_id(account_id, read_session)
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    if account.is_deleted:
+        raise HTTPException(
+            status_code=400, detail="Cannot get users for deleted accounts."
+        )
+
+    users = services.get_users_by_account_id(account_id, read_session)
+
+    if not users:
+        raise HTTPException(status_code=404, detail="No users found for account")
+
+    print(users)
+
+    return [user.model_dump() for user in users]
+
+
+@router.get("/{account_id}/summary", response_model=AccountSummary)
+def get_account_summary(
+    account_id: int,
+    current_user: User = Depends(get_current_user),
+    read_session: Session = Depends(db.get_read_session),
+):
+    """Get a summary of an account."""
+    validate_user_role(current_user, required_role=UserRoles.AUDIT_USER)
+    account = Account.by_id(account_id, read_session)
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    if account.is_deleted:
+        raise HTTPException(
+            status_code=400, detail="Cannot get summary for deleted accounts."
+        )
+
+    if not account.id:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    account_summary = services.get_account_summary(account, read_session)
+
+    return AccountSummary.model_validate(account_summary)
+
+
+@router.get("/{account_id}/devices", response_model=list[DeviceRead])
+def get_all_devices_by_account_id(
+    account_id: int,
+    current_user: User = Depends(get_current_user),
+    read_session: Session = Depends(db.get_read_session),
+):
+    validate_user_role(current_user, required_role=UserRoles.AUDIT_USER)
+
+    devices = device_services.get_devices_by_account_id(account_id, read_session)
+
+    if not devices:
+        raise HTTPException(status_code=404, detail="No devices found for account")
+
+    for device in devices:
+        validate_user_access(current_user, device.account_id, read_session)
+
+    return [device.model_dump() for device in devices]
+
+
+@router.get("/{account_id}/certificates", response_model=GranularCertificateQueryRead)
+def list_all_account_bundles(
+    account_id: int,
+    limit: int | None = None,
+    current_user: User = Depends(get_current_user),
+    read_session: Session = Depends(db.get_read_session),
+):
+    """Return all certificate bundles from the specified Account.
+
+    Args:
+        account_id (int): The account ID to list certificate bundles from
+        limit (int | None): The maximum number of certificate bundles to return
+
+    Returns:
+        GranularCertificateQueryRead: The certificate query response
+    """
+
+    if not current_user or not current_user.id:
+        raise HTTPException(status_code=401, detail="User not authenticated")
+
+    validate_user_role(current_user, required_role=UserRoles.AUDIT_USER)
+    validate_user_access(current_user, account_id, read_session)
+
+    certificate_bundles = get_certificate_bundles_by_account_id(
+        account_id, read_session, limit
+    )
+
+    if not certificate_bundles:
+        raise HTTPException(
+            status_code=422, detail="No certificates found for this account"
+        )
+
+    certificate_bundles_read = [
+        GranularCertificateBundleRead.model_validate(certificate.model_dump())
+        for certificate in certificate_bundles
+    ]
+
+    certificate_query = GranularCertificateQueryRead(
+        granular_certificate_bundles=list(certificate_bundles_read),
+        source_id=account_id,
+        user_id=current_user.id,
+    )
+
+    return certificate_query.model_dump()
