@@ -2,6 +2,15 @@
 
 Tracks changes between releases following the semantic versioning outlined in the development documentation.
 
+### v. 0.2.1
+
+**New Features**
+- Refactor account whitelisting to use a link table between source and target accounts to facilitate easier 
+retrieval of inverse whitelists - necessary for the frontend to display to a user which accounts they may transfer to
+
+**Fixes**
+- Adds `make eventstore.reset` to reset the eventstore
+
 ### v. 0.2.0
 
 **New Features**
