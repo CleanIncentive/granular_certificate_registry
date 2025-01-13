@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING, List
 
 from sqlmodel import Field, Relationship
-from gc_registry import utils
 
+from gc_registry import utils
 from gc_registry.account.schemas import AccountBase
 from gc_registry.user.models import UserAccountLink
 
