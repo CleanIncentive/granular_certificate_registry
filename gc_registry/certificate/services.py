@@ -3,7 +3,7 @@ from typing import Any, Callable
 
 from esdbclient import EventStoreDBClient
 from sqlalchemy import func
-from sqlmodel import Session, SQLModel, or_, select
+from sqlmodel import Session, SQLModel, desc, or_, select
 from sqlmodel.sql.expression import SelectOfScalar
 
 from gc_registry.account.models import Account
@@ -643,6 +643,28 @@ def query_certificate_bundles(
     granular_certificate_bundles = session.exec(stmt).all()
 
     return granular_certificate_bundles
+
+
+def get_certificate_bundles_by_account_id(
+    account_id: int,
+    read_session: Session,
+    limit: int | None = None,
+) -> list[GranularCertificateBundle] | None:
+    certificate_bundle_query: SelectOfScalar = (
+        select(GranularCertificateBundle)
+        .filter(
+            GranularCertificateBundle.account_id == account_id,
+            ~GranularCertificateBundle.is_deleted,
+        )
+        .order_by(desc(GranularCertificateBundle.production_starting_interval))
+    )
+
+    if limit:
+        certificate_bundle_query = certificate_bundle_query.limit(limit)
+
+    certificate_bundles = read_session.exec(certificate_bundle_query).all()
+
+    return list(certificate_bundles)
 
 
 def transfer_certificates(
