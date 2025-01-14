@@ -96,3 +96,10 @@ def batch_create_events(
         current_version=StreamState.ANY,
         events=esdb_events,
     )
+
+
+def reset_eventstore():
+    with EventStoreDBClient(
+        uri=f"esdb://{settings.ESDB_CONNECTION_STRING}:2113?tls=false"
+    ) as esdb_client:
+        esdb_client.delete_stream(stream_name="events", current_version=StreamState.ANY)

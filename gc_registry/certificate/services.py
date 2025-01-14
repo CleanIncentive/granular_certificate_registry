@@ -3,10 +3,10 @@ from typing import Any, Callable
 
 from esdbclient import EventStoreDBClient
 from sqlalchemy import func
-from sqlmodel import Session, SQLModel, or_, select
+from sqlmodel import Session, SQLModel, desc, or_, select
 from sqlmodel.sql.expression import SelectOfScalar
 
-from gc_registry.account.models import Account
+from gc_registry.account.models import Account, AccountWhitelistLink
 from gc_registry.certificate.models import (
     GranularCertificateAction,
     GranularCertificateBundle,
@@ -645,6 +645,28 @@ def query_certificate_bundles(
     return granular_certificate_bundles
 
 
+def get_certificate_bundles_by_account_id(
+    account_id: int,
+    read_session: Session,
+    limit: int | None = None,
+) -> list[GranularCertificateBundle] | None:
+    certificate_bundle_query: SelectOfScalar = (
+        select(GranularCertificateBundle)
+        .filter(
+            GranularCertificateBundle.account_id == account_id,
+            ~GranularCertificateBundle.is_deleted,
+        )
+        .order_by(desc(GranularCertificateBundle.production_starting_interval))
+    )
+
+    if limit:
+        certificate_bundle_query = certificate_bundle_query.limit(limit)
+
+    certificate_bundles = read_session.exec(certificate_bundle_query).all()
+
+    return list(certificate_bundles)
+
+
 def transfer_certificates(
     certificate_bundle_action: GranularCertificateTransfer,
     write_session: Session,
@@ -669,10 +691,13 @@ def transfer_certificates(
         raise ValueError(err_msg)
 
     # Check that the target account has whitelisted the source account
-    account = Account.by_id(certificate_bundle_action.target_id, read_session)
-    account_whitelist = (
-        [] if account.account_whitelist is None else account.account_whitelist
-    )
+    account_whitelist = read_session.exec(
+        select(AccountWhitelistLink.source_account_id).where(
+            AccountWhitelistLink.target_account_id
+            == certificate_bundle_action.target_id,
+            AccountWhitelistLink.is_deleted == False,  # noqa: E712
+        )
+    ).all()
     if certificate_bundle_action.source_id not in account_whitelist:
         err_msg = f"Target account ({certificate_bundle_action.target_id}) has not whitelisted the source account ({certificate_bundle_action.source_id}) for transfer."
         logger.error(err_msg)

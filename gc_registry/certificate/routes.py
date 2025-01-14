@@ -12,22 +12,22 @@ from gc_registry.certificate.schemas import (
     GranularCertificateActionRead,
     GranularCertificateBundleBase,
     GranularCertificateBundleRead,
+    GranularCertificateBundleReadFull,
     GranularCertificateCancel,
     GranularCertificateQuery,
     GranularCertificateQueryRead,
     GranularCertificateTransfer,
     IssuanceMetaDataBase,
 )
-from gc_registry.certificate.services import (
-    create_issuance_id,
-    process_certificate_bundle_action,
-    query_certificate_bundles,
-)
 from gc_registry.core.database import db, events
 from gc_registry.core.models.base import CertificateActionType, UserRoles
 from gc_registry.core.services import create_bundle_hash
+from gc_registry.device.models import Device
+from gc_registry.device.services import map_device_to_certificate_read
 from gc_registry.user.models import User
 from gc_registry.user.validation import validate_user_access, validate_user_role
+
+from . import services
 
 # Router initialisation
 router = APIRouter(tags=["Certificates"])
@@ -49,7 +49,7 @@ def create_certificate_bundle(
     """Create a GC Bundle with the specified properties."""
     validate_user_role(current_user, required_role=UserRoles.ADMIN)
     try:
-        certificate_bundle.issuance_id = create_issuance_id(certificate_bundle)
+        certificate_bundle.issuance_id = services.create_issuance_id(certificate_bundle)
         certificate_bundle.hash = create_bundle_hash(certificate_bundle, nonce)
 
         db_certificate_bundles = GranularCertificateBundle.create(
@@ -114,7 +114,7 @@ def certificate_bundle_transfer(
     validate_user_access(current_user, certificate_transfer.source_id, read_session)
 
     try:
-        db_certificate_action = process_certificate_bundle_action(
+        db_certificate_action = services.process_certificate_bundle_action(
             certificate_transfer, write_session, read_session, esdb_client
         )
 
@@ -138,7 +138,7 @@ def query_certificate_bundles_route(
     validate_user_access(current_user, certificate_bundle_query.source_id, read_session)
 
     try:
-        certificate_bundles_from_query = query_certificate_bundles(
+        certificate_bundles_from_query = services.query_certificate_bundles(
             certificate_bundle_query, read_session
         )
 
@@ -159,6 +159,47 @@ def query_certificate_bundles_route(
         return certificate_query
     except Exception as e:
         raise HTTPException(status_code=422, detail=str(e))
+
+
+@router.get("/{id}", response_model=GranularCertificateBundleReadFull)
+def read_certificate_bundle(
+    id: int,
+    current_user: User = Depends(get_current_user),
+    read_session: Session = Depends(db.get_read_session),
+):
+    """Return the full view of a given granular certificate bundle by ID."""
+
+    validate_user_role(current_user, required_role=UserRoles.AUDIT_USER)
+
+    certificate_bundle = GranularCertificateBundle.by_id(id, read_session)
+
+    if not certificate_bundle:
+        raise HTTPException(status_code=404, detail="Certificate bundle not found")
+    validate_user_access(current_user, certificate_bundle.account_id, read_session)
+
+    # Merge the issuance metadata into the certificate bundle
+    issuance_metadata = IssuanceMetaData.by_id(
+        certificate_bundle.metadata_id, read_session
+    )
+
+    if not issuance_metadata:
+        raise HTTPException(
+            status_code=404, detail="Issuance metadata not found for certificate bundle"
+        )
+
+    device = Device.by_id(certificate_bundle.device_id, read_session)
+    device_dict = map_device_to_certificate_read(device)
+
+    if not device:
+        raise HTTPException(
+            status_code=404, detail="Device not found for certificate bundle"
+        )
+
+    certificate_bundle_full = (
+        certificate_bundle.model_dump() | issuance_metadata.model_dump() | device_dict
+    )
+
+    return certificate_bundle_full
 
 
 @router.post(
@@ -183,7 +224,7 @@ def certificate_bundle_cancellation(
             user_name = User.by_id(certificate_cancel.user_id, read_session).name
             certificate_cancel.beneficiary = f"{user_name}"
 
-        db_certificate_action = process_certificate_bundle_action(
+        db_certificate_action = services.process_certificate_bundle_action(
             certificate_cancel, write_session, read_session, esdb_client
         )
 
@@ -270,7 +311,7 @@ def certificate_bundle_claim(
 
     try:
         certificate_bundle_action.action_type = CertificateActionType.CLAIM
-        db_certificate_action = process_certificate_bundle_action(
+        db_certificate_action = services.process_certificate_bundle_action(
             certificate_bundle_action, write_session, read_session, esdb_client
         )
 
@@ -295,7 +336,7 @@ def certificate_bundle_withdraw(
     validate_user_role(current_user, required_role=UserRoles.ADMIN)
 
     certificate_bundle_action.action_type = CertificateActionType.WITHDRAW
-    db_certificate_action = process_certificate_bundle_action(
+    db_certificate_action = services.process_certificate_bundle_action(
         certificate_bundle_action, write_session, read_session, esdb_client
     )
 
@@ -303,7 +344,7 @@ def certificate_bundle_withdraw(
 
 
 @router.post(
-    "/reseve",
+    "/reserve",
     response_model=GranularCertificateActionRead,
     status_code=202,
 )
@@ -320,7 +361,7 @@ def certificate_bundle_reserve(
         current_user, certificate_bundle_action.source_id, read_session
     )
     certificate_bundle_action.action_type = CertificateActionType.RESERVE
-    db_certificate_action = process_certificate_bundle_action(
+    db_certificate_action = services.process_certificate_bundle_action(
         certificate_bundle_action, write_session, read_session, esdb_client
     )
 

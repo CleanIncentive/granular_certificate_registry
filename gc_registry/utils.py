@@ -5,7 +5,6 @@ from typing import Any, Hashable, Type, TypeVar
 
 from esdbclient import EventStoreDBClient
 from fastapi import HTTPException
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from sqlmodel import Field, Session, SQLModel, select
 
@@ -110,76 +109,3 @@ class ActiveRecord(SQLModel):
         )
 
         return deleted_entities
-
-
-def parse_nans_to_null(json_str: str, replace_nan: bool = True):
-    if replace_nan:
-        json_str = json_str.replace("nan", "null")
-        json_str = json_str.replace("NaN", "null")
-        json_str = json_str.replace("None", "null")
-    else:
-        pass
-
-    return json_str
-
-
-def sqlmodel_obj_to_json(sqlmodel_obj, response_model=None, replace_nan=True):
-    if sqlmodel_obj is None:
-        return None
-    elif isinstance(sqlmodel_obj, list):
-        json_content = [
-            (
-                json.loads(parse_nans_to_null(elem.json(), replace_nan))
-                if response_model is None
-                else json.loads(
-                    parse_nans_to_null(
-                        response_model.from_orm(elem).json(), replace_nan
-                    )
-                )
-            )
-            for elem in sqlmodel_obj
-        ]
-    elif response_model is not None:
-        json_content = json.loads(
-            parse_nans_to_null(
-                response_model.from_orm(sqlmodel_obj).json(), replace_nan
-            )
-        )
-    else:
-        json_content = json.loads(parse_nans_to_null(sqlmodel_obj.json(), replace_nan))
-
-    return json_content
-
-
-def format_json_response(
-    sqlmodel_obj,
-    headers: dict | None = None,
-    response_model=None,
-    send_raw=False,
-    pagination_metadata=None,
-):
-    if headers is None:
-        headers = {}
-    if send_raw:
-        if pagination_metadata is not None:
-            json_content = {
-                "content": sqlmodel_obj,
-                "pagination_metadata": pagination_metadata,
-            }
-        else:
-            json_content = sqlmodel_obj
-
-        return JSONResponse(content=json_content, headers=headers)
-
-    if sqlmodel_obj is None:
-        raise HTTPException(status_code=404, detail="Item not found")
-
-    json_content = sqlmodel_obj_to_json(sqlmodel_obj, response_model=response_model)
-
-    if pagination_metadata is not None:
-        json_content = {
-            "content": json_content,
-            "pagination_metadata": pagination_metadata,
-        }
-
-    return JSONResponse(content=json_content, headers=headers)

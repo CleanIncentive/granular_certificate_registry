@@ -109,6 +109,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 seed-db = "gc_registry.seed:seed_data"
 seed-db-elexon = "gc_registry.seed:seed_all_generators_and_certificates_from_elexon"
+reset-eventstore = "gc_registry.core.database.events:reset_eventstore"
 
 [tool.mypy]
 exclude = ["gc_registry/core/alembic/versions"]

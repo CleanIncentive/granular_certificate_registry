@@ -34,7 +34,6 @@ class TestCQRS:
             "account_id": fake_db_account.id,
             "device_type": "wind",
             "is_renewable": True,
-            "fuel_source": "wind",
             "location": "USA",
             "capacity_mw": 100,
             "commissioning_date": "2020-01-01",
