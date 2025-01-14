@@ -4,7 +4,7 @@ import { fetchCertificates } from "./certificateThunk";
 const certificateSlice = createSlice({
   name: "certificates",
   initialState: {
-    products: [],
+    certificates: [],
     loading: false,
     error: null,
   },
@@ -16,7 +16,7 @@ const certificateSlice = createSlice({
       })
       .addCase(fetchCertificates.fulfilled, (state, action) => {
         state.loading = false;
-        state.products = action.payload;
+        state.certificates = action.payload;
       })
       .addCase(fetchCertificates.rejected, (state, action) => {
         state.loading = false;

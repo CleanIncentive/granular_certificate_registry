@@ -1,5 +1,13 @@
-import React, {useState} from "react";
-import { Layout, Input, Button, Select, Typography, Divider } from "antd";
+import React, { useState } from "react";
+import {
+  Layout,
+  Input,
+  Button,
+  Select,
+  Typography,
+  Divider,
+  message,
+} from "antd";
 import * as styles from "./Login.module.css";
 import pepLogo from "../../assets/images/pep-logo.png";
 import googleLogo from "../../assets/images/google-logo.png";
@@ -9,7 +17,7 @@ const { Content } = Layout;
 const { Title, Text, Link } = Typography;
 const { Option } = Select;
 
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { login } from "../../store/auth/authThunk";
 
 const Login = () => {
@@ -17,11 +25,17 @@ const Login = () => {
   const [role, setRole] = useState("");
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
-  const { loading, error } = useSelector((state) => state.auth);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    dispatch(login({ username, password }));
+    try {
+      
+      await dispatch(login({ username, password })).unwrap();
+
+      message.success("Login successful 🎉", 2);
+    } catch (error) {
+      message.error(`Login failed: ${error}`, 3);
+    }
   };
 
   return (
@@ -95,7 +109,10 @@ const Login = () => {
                 >
                   <Text>Password</Text>
 
-                  <Link href="#" style={{ color: "#202224" }}>
+                  <Link
+                    href="https://docs.google.com/forms/d/e/1FAIpQLSdSkHMAYSu43VJFevngfVT5hvnWRZvwkelIf9QaPtpLVrIlxA/viewform?usp=sf_link"
+                    style={{ color: "#202224" }}
+                  >
                     Forgot password
                   </Link>
                 </div>
@@ -110,7 +127,7 @@ const Login = () => {
               {/* Login Button */}
               <Button
                 type="primary"
-                 onClick={handleSubmit}
+                onClick={handleSubmit}
                 style={{
                   backgroundColor: "#1D53F7",
                   fontWeight: "500",

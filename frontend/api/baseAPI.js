@@ -10,15 +10,14 @@ const baseAPI = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true, // Include HttpOnly cookies
 });
 
 // Add a request interceptor (e.g., attach token)
 baseAPI.interceptors.request.use(
   (config) => {
     // Check if the request URL is in the whitelist
-    const isAuthRoute = AUTH_LIST.some((route) =>
-      config.url.includes(route)
-    );
+    const isAuthRoute = AUTH_LIST.some((route) => config.url.includes(route));
     if (!isAuthRoute) {
       const token = document
         .cookie("access_token")
@@ -39,11 +38,15 @@ baseAPI.interceptors.request.use(
 baseAPI.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      console.error("Unauthorized! Redirecting to login...");
-      // Optional: Redirect to login page or handle logout
+    const status = error.response?.status || 500;
+    const message = error.response?.data?.detail || "An unexpected error occurred.";
+
+    if (status === 401) {
+      console.warn("Unauthorized! Redirecting to login...");
+      window.location.href = "/login"; 
     }
-    return Promise.reject(error);
+
+    return Promise.reject({ status, message }); // Standardized error
   }
 );
 
