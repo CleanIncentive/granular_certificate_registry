@@ -150,9 +150,14 @@ def create_device_account_and_user(
     }
     account = Account.create(account_dict, write_session, read_session, esdb_client)[0]
 
-    # Update user with account id
-    user.account_id = account.id
-    user = User.update(user, write_session, read_session, esdb_client)[0]
+    user_account_link_dict: dict[Hashable, int] = {
+        "user_id": user.id,
+        "account_id": account.id,
+    }
+
+    _ = UserAccountLink.create(
+        user_account_link_dict, write_session, read_session, esdb_client
+    )
 
     return account, user
 
