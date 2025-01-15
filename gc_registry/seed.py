@@ -12,7 +12,7 @@ from gc_registry.core.models.base import UserRoles
 from gc_registry.device.meter_data.elexon.elexon import ElexonClient
 from gc_registry.device.models import Device
 from gc_registry.logging_config import logger
-from gc_registry.user.models import User
+from gc_registry.user.models import User, UserAccountLink
 
 
 def seed_data():
@@ -54,6 +54,12 @@ def seed_data():
         "user_ids": [user.id],
     }
     account = Account.create(account_dict, write_session, read_session, esdb_client)[0]
+
+    user_account_link_dict = {"user_id": user.id, "account_id": account.id}
+
+    _ = UserAccountLink.create(
+        user_account_link_dict, write_session, read_session, esdb_client
+    )
 
     # Create issuance metadata for the certificates
     issuance_metadata_dict = {
@@ -143,6 +149,10 @@ def create_device_account_and_user(
         "user_ids": [user.id],
     }
     account = Account.create(account_dict, write_session, read_session, esdb_client)[0]
+
+    # Update user with account id
+    user.account_id = account.id
+    user = User.update(user, write_session, read_session, esdb_client)[0]
 
     return account, user
 
