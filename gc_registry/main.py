@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from markdown import markdown
@@ -62,6 +63,19 @@ app = FastAPI(
     },
     docs_url="/docs",
     dependencies=[Depends(get_db_name_to_client)],
+)
+
+origins = [
+    "http://localhost:9000", 
+    "http://127.0.0.1:9000", 
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins, 
+    allow_credentials=True,
+    allow_methods=["*"], 
+    allow_headers=["*"], 
 )
 
 app.add_middleware(SessionMiddleware, secret_key=settings.MIDDLEWARE_SECRET_KEY)
