@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import {
   Layout,
   Menu,
@@ -8,41 +8,41 @@ import {
   Card,
   Row,
   Col,
-  Avatar,
-  message,
   Space,
   Divider,
   Typography,
-  Select,
+  message,
   Flex,
+  Pagination,
 } from "antd";
 import {
-  DashboardOutlined,
-  FileTextOutlined,
-  UserOutlined,
   AppstoreOutlined,
-  DownloadOutlined,
   SwapOutlined,
   CloseOutlined,
   CloseCircleOutlined,
+  DownloadOutlined,
+  LeftOutlined,
+  RightOutlined,
 } from "@ant-design/icons";
+import StatusTag from "./StatusTag";
+
+import "../assets/styles/pagination.css"; // Import the CSS file
 
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { fetchCertificates } from "../store/certificates/certificateThunk";
 
 const { Header, Sider, Content } = Layout;
-const { Title, Text, Link } = Typography;
-const { Option } = Select;
+const { Title, Text } = Typography;
 
 const statusColors = {
-  Claimed: "blue",
-  Retired: "gray",
-  Active: "green",
-  Expired: "red",
-  Locked: "orange",
-  Withdraw: "gold",
-  Reserved: "purple",
+  claimed: "blue",
+  retired: "gray",
+  active: "green",
+  expired: "red",
+  locked: "orange",
+  withdraw: "gold",
+  reserved: "purple",
 };
 
 const data = [
@@ -66,25 +66,227 @@ const data = [
     production: "31.223",
     status: "Retired",
   },
-  // Add more data as needed
-];
-
-const columns = [
-  { title: "Issuance ID", dataIndex: "issuanceId", key: "issuanceId" },
-  { title: "Device Name", dataIndex: "deviceName", key: "deviceName" },
-  { title: "Energy Source", dataIndex: "energySource", key: "energySource" },
-  { title: "Certificate Period Start", dataIndex: "start", key: "start" },
-  { title: "Certificate Period End", dataIndex: "end", key: "end" },
-  { title: "Production (MWh)", dataIndex: "production", key: "production" },
   {
-    title: "Status",
-    dataIndex: "status",
-    key: "status",
-    render: (status) => <Tag color={statusColors[status]}>{status}</Tag>,
+    key: "3",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 00:00",
+    end: "2024-12-10 02:00",
+    production: "31.223",
+    status: "Claimed",
   },
   {
-    title: "Action",
-    render: () => <Button type="link">Detail</Button>,
+    key: "4",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 01:00",
+    end: "2024-12-10 03:00",
+    production: "31.223",
+    status: "Retired",
+  },
+  {
+    key: "5",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 00:00",
+    end: "2024-12-10 02:00",
+    production: "31.223",
+    status: "Claimed",
+  },
+  {
+    key: "6",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 01:00",
+    end: "2024-12-10 03:00",
+    production: "31.223",
+    status: "Retired",
+  },
+  {
+    key: "7",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 00:00",
+    end: "2024-12-10 02:00",
+    production: "31.223",
+    status: "Claimed",
+  },
+  {
+    key: "8",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 01:00",
+    end: "2024-12-10 03:00",
+    production: "31.223",
+    status: "Retired",
+  },
+  {
+    key: "9",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 00:00",
+    end: "2024-12-10 02:00",
+    production: "31.223",
+    status: "Claimed",
+  },
+  {
+    key: "10",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 01:00",
+    end: "2024-12-10 03:00",
+    production: "31.223",
+    status: "Retired",
+  },
+  {
+    key: "11",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 00:00",
+    end: "2024-12-10 02:00",
+    production: "31.223",
+    status: "Claimed",
+  },
+  {
+    key: "12",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 01:00",
+    end: "2024-12-10 03:00",
+    production: "31.223",
+    status: "Retired",
+  },
+  {
+    key: "13",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 00:00",
+    end: "2024-12-10 02:00",
+    production: "31.223",
+    status: "Claimed",
+  },
+  {
+    key: "14",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 01:00",
+    end: "2024-12-10 03:00",
+    production: "31.223",
+    status: "Retired",
+  },
+  {
+    key: "15",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 00:00",
+    end: "2024-12-10 02:00",
+    production: "31.223",
+    status: "Claimed",
+  },
+  {
+    key: "16",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 01:00",
+    end: "2024-12-10 03:00",
+    production: "31.223",
+    status: "Retired",
+  },
+  {
+    key: "17",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 00:00",
+    end: "2024-12-10 02:00",
+    production: "31.223",
+    status: "Claimed",
+  },
+  {
+    key: "18",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 01:00",
+    end: "2024-12-10 03:00",
+    production: "31.223",
+    status: "Retired",
+  },
+
+  {
+    key: "19",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 00:00",
+    end: "2024-12-10 02:00",
+    production: "31.223",
+    status: "Claimed",
+  },
+  {
+    key: "20",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 01:00",
+    end: "2024-12-10 03:00",
+    production: "31.223",
+    status: "Retired",
+  },
+  {
+    key: "21",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 00:00",
+    end: "2024-12-10 02:00",
+    production: "31.223",
+    status: "Claimed",
+  },
+  {
+    key: "22",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 01:00",
+    end: "2024-12-10 03:00",
+    production: "31.223",
+    status: "Retired",
+  },
+
+  {
+    key: "23",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 00:00",
+    end: "2024-12-10 02:00",
+    production: "31.223",
+    status: "Claimed",
+  },
+  {
+    key: "24",
+    issuanceId: "JNKD193",
+    deviceName: "Wind Farm",
+    energySource: "Wind",
+    start: "2024-12-10 01:00",
+    end: "2024-12-10 03:00",
+    production: "31.223",
+    status: "Retired",
   },
 ];
 
@@ -92,20 +294,88 @@ const Dashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // useEffect( async () => {
-  //   try {
-  //     await dispatch(fetchCertificates()).unwrap();
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
-  //   } catch (error) {
-  //     console.log(error)
-  //     message.error(`Load failed: ${error}`, 3);
-  //   }
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+  const totalPages = Math.ceil(data.length / pageSize);
 
-  // }, []);
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  // Go to Previous Page
+  const handlePrev = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  // Go to Next Page
+  const handleNext = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const onSelectChange = (newSelectedRowKeys) => {
+    setSelectedRowKeys(newSelectedRowKeys);
+  };
+
+  const isCertificatesSelected = selectedRowKeys.length > 0;
+
+  const columns = [
+    {
+      title: <span style={{ color: "#80868B" }}>Issuance ID</span>,
+      dataIndex: "issuanceId",
+      key: "issuanceId",
+    },
+    {
+      title: <span style={{ color: "#80868B" }}>Device Name</span>,
+      dataIndex: "deviceName",
+      key: "deviceName",
+    },
+    {
+      title: <span style={{ color: "#80868B" }}>Certificate Period Start</span>,
+      dataIndex: "start",
+      key: "start",
+      render: (text) => <span style={{ color: "#5F6368" }}>{text}</span>,
+    },
+    {
+      title: <span style={{ color: "#80868B" }}>Certificate Period End</span>,
+      dataIndex: "end",
+      key: "end",
+      render: (text) => <span style={{ color: "#5F6368" }}>{text}</span>,
+    },
+    {
+      title: <span style={{ color: "#80868B" }}>Production (MWh)</span>,
+      dataIndex: "production",
+      key: "production",
+    },
+    {
+      title: <span style={{ color: "#80868B" }}>Status</span>,
+      dataIndex: "status",
+      key: "status",
+      render: (status) => StatusTag(status),
+    },
+    {
+      title: "",
+      render: () => (
+        <Button style={{ color: "#043DDC", fontWeight: "600" }} type="link">
+          Detail
+        </Button>
+      ),
+    },
+  ];
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: onSelectChange,
+  };
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      <Sider width={224} style={{ minHeight: "100vh", background: "#fff" }}>
+      <Sider width={224} style={{ background: "#fff" }}>
         <div
           style={{
             padding: "16px",
@@ -116,11 +386,7 @@ const Dashboard = () => {
         >
           Granular <span style={{ color: "#0057FF" }}>CertOS</span>
         </div>
-        <Menu
-          mode="vertical"
-          selectedKeys={[location.pathname]}
-          style={{ borderRight: 0 }}
-        >
+        <Menu mode="vertical" selectedKeys={[location.pathname]}>
           <Menu.Item
             key="/certificates"
             icon={<AppstoreOutlined />}
@@ -139,61 +405,44 @@ const Dashboard = () => {
             key="/transfer-history"
             icon={<SwapOutlined />}
             onClick={() => navigate("/transfer-history")}
-            style={{
-              margin: "10px",
-            }}
+            style={{ margin: "10px" }}
           >
-            Transfer history
+            Transfer History
           </Menu.Item>
         </Menu>
       </Sider>
+
       <Layout>
         <Header
           style={{
             backgroundColor: "#fff",
-            borderColor: "#E8EAED",
-            borderWidth: "thick",
-            padding: "0px 0px 16px 24px",
+            padding: "0 24px",
+            borderBottom: "1px solid #E8EAED",
           }}
         >
-          <Title level={2} style={{ color: "#202124" }}>
-            Certificates
-          </Title>
+          <Title level={2}>Certificates</Title>
         </Header>
 
         <Content style={{ margin: "24px" }}>
-          {/* Summary Cards */}
           <Row gutter={16}>
             <Col span={8}>
-              <Row align="middle">
-                <Col span={4}>
+              <Card>
+                <Space align="middle">
                   <AppstoreOutlined
                     style={{ fontSize: "32px", color: "#0057FF" }}
                   />
-                </Col>
-                <Col span={20}>
-                  <h3>10293</h3>
-                  <p>Total Certificates</p>
-                  <Divider type="vertical" />
-                  <span>
-                    <strong>584</strong> Wind
-                  </span>
-                  <Divider type="vertical" />
-                  <span>
-                    <strong>231</strong> Solar
-                  </span>
-                  <Divider type="vertical" />
-                  <span>
-                    <strong>4124</strong> Hydropower
-                  </span>
-                </Col>
-              </Row>
+                  <div>
+                    <h3>10293</h3>
+                    <p>Total Certificates</p>
+                  </div>
+                </Space>
+              </Card>
             </Col>
             <Col span={8}>
               <Card>
-                <Space align="center">
+                <Space align="middle">
                   <SwapOutlined
-                    style={{ fontSize: "24px", color: "#1890ff" }}
+                    style={{ fontSize: "32px", color: "#1890ff" }}
                   />
                   <div>
                     <h3>89</h3>
@@ -204,9 +453,9 @@ const Dashboard = () => {
             </Col>
             <Col span={8}>
               <Card>
-                <Space align="center">
+                <Space align="middle">
                   <CloseCircleOutlined
-                    style={{ fontSize: "24px", color: "#1890ff" }}
+                    style={{ fontSize: "32px", color: "#1890ff" }}
                   />
                   <div>
                     <h3>204</h3>
@@ -217,33 +466,27 @@ const Dashboard = () => {
             </Col>
           </Row>
 
-          {/* Action Buttons */}
           <Flex
             style={{
               justifyContent: "space-between",
+              alignItems: "center",
               backgroundColor: "#fff",
               padding: "12px",
-              height: "64px",
-              alignItems: "center",
               border: "1px solid #f0f0f0",
               borderRadius: "8px 8px 0 0",
-              marginTop: "12px"
+              marginTop: "12px",
             }}
           >
             <Text
               style={{ color: "#344054", fontWeight: "500", fontSize: "20px" }}
             >
-              Certificate list
+              Certificate List
             </Text>
-            <Space
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-              }}
-            >
+            <Space>
               <Button
                 icon={<CloseOutlined />}
                 type="primary"
+                disabled={!isCertificatesSelected}
                 style={{ height: "40px" }}
               >
                 Cancel
@@ -251,6 +494,7 @@ const Dashboard = () => {
               <Button
                 icon={<DownloadOutlined />}
                 type="primary"
+                disabled={!isCertificatesSelected}
                 style={{ height: "40px" }}
               >
                 Reserve
@@ -258,22 +502,82 @@ const Dashboard = () => {
               <Button
                 icon={<SwapOutlined />}
                 type="primary"
+                disabled={!isCertificatesSelected}
                 style={{ height: "40px" }}
               >
                 Transfer
               </Button>
             </Space>
           </Flex>
-
-          {/* Certificates Table */}
           <Table
-            style={{ borderRadius: '0 0 8px 8px' }}
+            style={{
+              borderRadius: "0 0 8px 8px",
+              fontWeight: "500",
+              color: "#202124",
+            }}
+            rowSelection={rowSelection}
             columns={columns}
-            dataSource={data}
-            // loading={loading}
-            pagination={{ pageSize: 8 }}
-            rowKey="issuanceId"
+            dataSource={data.slice(
+              (currentPage - 1) * pageSize,
+              currentPage * pageSize
+            )}
+            rowKey="key"
+            pagination={false}
           />
+          <Flex className="pagination-container">
+            {/* Previous Button */}
+            <Button
+              icon={<LeftOutlined />}
+              onClick={handlePrev}
+              disabled={currentPage === 1}
+              className={`pagination-btn ${
+                currentPage === 1 ? "disabled" : ""
+              }`}
+            >
+              Previous
+            </Button>
+
+            {/* Custom Pagination */}
+            <Pagination
+              className="custom-paging"
+              current={currentPage}
+              total={data.length}
+              pageSize={pageSize}
+              onChange={handlePageChange}
+              showSizeChanger={false}
+              itemRender={(page, type, originalElement) => {
+                if (type === "prev" || type === "next") {
+                  return null; // Remove default arrows
+                }
+
+                if (type === "page") {
+                  return (
+                    <div
+                      onClick={() => handlePageChange(page)}
+                      className={`pagination-number ${
+                        page === currentPage ? "active" : ""
+                      }`}
+                    >
+                      {page}
+                    </div>
+                  );
+                }
+                return originalElement;
+              }}
+            />
+
+            {/* Next Button */}
+            <Button
+              icon={<RightOutlined />}
+              onClick={handleNext}
+              disabled={currentPage === totalPages}
+              className={`pagination-btn ${
+                currentPage === totalPages ? "disabled" : ""
+              }`}
+            >
+              Next
+            </Button>
+          </Flex>
         </Content>
       </Layout>
     </Layout>
