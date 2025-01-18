@@ -566,8 +566,7 @@ const Dashboard = () => {
               width: "100%",
               padding: "8px 16px",
               backgroundColor: "#fff",
-              borderRadius: "8px",
-              border: "1px solid #d9d9d9",
+              borderBottom: "1px solid #EAECF0"
             }}
             split={<Divider type="vertical" />}
           >
@@ -660,7 +659,7 @@ const Dashboard = () => {
             style={{
               borderRadius: "0 0 8px 8px",
               fontWeight: "500",
-              color: "#202124",
+              color: "#F9FAFB",
             }}
             rowSelection={rowSelection}
             columns={columns}
