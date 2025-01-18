@@ -418,7 +418,10 @@ const Dashboard = () => {
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      <Sider width={224} style={{ background: "#fff" }}>
+      <Sider
+        width={224}
+        style={{ background: "#fff", padding: "0 20px 0 10px" }}
+      >
         <div
           style={{
             padding: "16px",
@@ -429,7 +432,11 @@ const Dashboard = () => {
         >
           Granular <span style={{ color: "#0057FF" }}>CertOS</span>
         </div>
-        <Menu mode="vertical" selectedKeys={[location.pathname]}>
+        <Menu
+          mode="vertical"
+          selectedKeys={[location.pathname]}
+          style={{ border: "none" }}
+        >
           <Menu.Item
             key="/certificates"
             icon={<AppstoreOutlined />}
@@ -566,7 +573,7 @@ const Dashboard = () => {
               width: "100%",
               padding: "8px 16px",
               backgroundColor: "#fff",
-              borderBottom: "1px solid #EAECF0"
+              borderBottom: "1px solid #EAECF0",
             }}
             split={<Divider type="vertical" />}
           >
