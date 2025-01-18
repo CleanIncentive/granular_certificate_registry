@@ -19,20 +19,22 @@ const { Option } = Select;
 
 import { useDispatch } from "react-redux";
 import { login } from "../../store/auth/authThunk";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [role, setRole] = useState("");
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      
       await dispatch(login({ username, password })).unwrap();
 
       message.success("Login successful 🎉", 2);
+      navigate("/certificates");
     } catch (error) {
       message.error(`Login failed: ${error}`, 3);
     }
