@@ -313,6 +313,7 @@ const Dashboard = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState(defaultFilters);
+  const [isOpen, setIsOpen] = useState(false);
   const pageSize = 10;
 
   const handleFilterChange = (key, value) => {
@@ -355,10 +356,9 @@ const Dashboard = () => {
     }
   };
 
-  // Handle date selection
   const handleDateChange = (dates) => {
-    setDateRange(dates);
-    setIsOpen(false); // Close after selecting a date
+    setFilters((prev) => ({ ...prev, dateRange: dates }));
+    setIsOpen(false);
   };
 
   const onSelectChange = (newSelectedRowKeys) => {
