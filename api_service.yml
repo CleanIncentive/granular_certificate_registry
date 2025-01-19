@@ -1,28 +1,22 @@
 runtime: custom
 env: flex
 
-
 resources:
   cpu: 1
   memory_gb: 4
   disk_size_gb: 10
-
 
 network:
   instance_tag: your-app-tag
   name: default
 
 env_variables:
-  APP_ENV: "production"
-  DATABASE_URL: "your_database_url"
-  OTHER_ENV_VAR: "value"
-
+  EVIRONMENT: "PROD"
 
 automatic_scaling:
   min_num_instances: 1
   max_num_instances: 5
   cpu_utilization:
     target_utilization: 0.6
-
 
 service: default

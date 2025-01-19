@@ -27,17 +27,6 @@ __all__ = [
     "measurement_models",
 ]
 
-
-# Defining utility functions and classes
-def schema_path_to_class(schema_path):
-    *module_path, schema_class_name = schema_path.split(".")
-    schema_class = getattr(
-        importlib.import_module(".".join(module_path)), schema_class_name
-    )
-
-    return schema_class
-
-
 class DButils:
     def __init__(
         self,
@@ -98,8 +87,6 @@ def get_db_name_to_client():
                 db_username=settings.POSTGRES_USER,
                 db_password=settings.POSTGRES_PASSWORD,
                 db_port=settings.DATABASE_PORT,
-                db_test_fp=settings.DB_TEST_FP,
-                test=False,
             )
             db_name_to_client[db_name] = db_client
 
