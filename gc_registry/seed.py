@@ -46,7 +46,9 @@ def seed_data():
         "hashed_password": get_password_hash("admin"),
         "role": UserRoles.ADMIN,
     }
-    admin_user = User.create(user_dict, write_session, read_session, esdb_client)[0]
+    admin_user = User.create(admin_user_dict, write_session, read_session, esdb_client)[
+        0
+    ]
 
     production_user_dict = {
         "primary_contact": "production_user@usermail.com",
@@ -54,7 +56,9 @@ def seed_data():
         "hashed_password": get_password_hash("production"),
         "role": UserRoles.PRODUCTION_USER,
     }
-    production_user = User.create(production_user_dict, write_session, read_session, esdb_client)[0]
+    production_user = User.create(
+        production_user_dict, write_session, read_session, esdb_client
+    )[0]
 
     trading_user_dict = {
         "primary_contact": "trading_user@usermail.conm",
@@ -62,7 +66,9 @@ def seed_data():
         "hashed_password": get_password_hash("trading"),
         "role": UserRoles.TRADING_USER,
     }
-    trading_user = User.create(trading_user_dict, write_session, read_session, esdb_client)[0]
+    trading_user = User.create(
+        trading_user_dict, write_session, read_session, esdb_client
+    )[0]
 
     # Create an Account to add the certificates to
     account_dict = {
