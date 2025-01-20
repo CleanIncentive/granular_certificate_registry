@@ -313,7 +313,6 @@ const Dashboard = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState(defaultFilters);
-  const [isOpen, setIsOpen] = useState(false);
   const pageSize = 10;
 
   const handleFilterChange = (key, value) => {
@@ -358,7 +357,6 @@ const Dashboard = () => {
 
   const handleDateChange = (dates) => {
     setFilters((prev) => ({ ...prev, dateRange: dates }));
-    setIsOpen(false);
   };
 
   const onSelectChange = (newSelectedRowKeys) => {
@@ -619,7 +617,6 @@ const Dashboard = () => {
               // open={isOpen} // Control visibility
               // onOpenChange={(open) => setIsOpen(open)} // Sync open state
               onChange={handleDateChange} // Handle date selection
-              onBlur={() => setIsOpen(false)} // Close when clicking outside
               dropdownClassName="custom-range-picker" // Custom styling
             />
             {/* </div> */}
