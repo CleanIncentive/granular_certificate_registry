@@ -12,7 +12,7 @@ from gc_registry.core.models.base import UserRoles
 from gc_registry.device.meter_data.elexon.elexon import ElexonClient
 from gc_registry.device.models import Device
 from gc_registry.logging_config import logger
-from gc_registry.user.models import User
+from gc_registry.user.models import User, UserAccountLink
 
 
 def seed_data():
@@ -40,20 +40,49 @@ def seed_data():
     device_capacities = client.get_device_capacities(bmu_ids)
 
     # Create an inital Admin user
-    user_dict = {
-        "primary_contact": "a_user@usermail.com",
+    admin_user_dict = {
+        "primary_contact": "admin_user@usermail.com",
         "name": "Admin",
         "hashed_password": get_password_hash("admin"),
         "role": UserRoles.ADMIN,
     }
-    user = User.create(user_dict, write_session, read_session, esdb_client)[0]
+    admin_user = User.create(admin_user_dict, write_session, read_session, esdb_client)[
+        0
+    ]
+
+    production_user_dict = {
+        "primary_contact": "production_user@usermail.com",
+        "name": "Production",
+        "hashed_password": get_password_hash("production"),
+        "role": UserRoles.PRODUCTION_USER,
+    }
+    production_user = User.create(
+        production_user_dict, write_session, read_session, esdb_client
+    )[0]
+
+    trading_user_dict = {
+        "primary_contact": "trading_user@usermail.conm",
+        "name": "Trading",
+        "hashed_password": get_password_hash("trading"),
+        "role": UserRoles.TRADING_USER,
+    }
+    trading_user = User.create(
+        trading_user_dict, write_session, read_session, esdb_client
+    )[0]
 
     # Create an Account to add the certificates to
     account_dict = {
         "account_name": "Test Account",
-        "user_ids": [user.id],
+        "user_ids": [admin_user.id, production_user.id, trading_user.id],
     }
     account = Account.create(account_dict, write_session, read_session, esdb_client)[0]
+
+    for user in [admin_user, production_user, trading_user]:
+        user_account_link_dict = {"user_id": user.id, "account_id": account.id}
+
+        _ = UserAccountLink.create(
+            user_account_link_dict, write_session, read_session, esdb_client
+        )
 
     # Create issuance metadata for the certificates
     issuance_metadata_dict = {
@@ -143,6 +172,15 @@ def create_device_account_and_user(
         "user_ids": [user.id],
     }
     account = Account.create(account_dict, write_session, read_session, esdb_client)[0]
+
+    user_account_link_dict: dict[Hashable, int] = {
+        "user_id": user.id,
+        "account_id": account.id,
+    }
+
+    _ = UserAccountLink.create(
+        user_account_link_dict, write_session, read_session, esdb_client
+    )
 
     return account, user
 

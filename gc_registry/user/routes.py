@@ -2,10 +2,12 @@ from esdbclient import EventStoreDBClient
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
 
+from gc_registry.account.services import get_accounts_by_user_id
 from gc_registry.authentication.services import get_current_user
 from gc_registry.core.database import db, events
 from gc_registry.core.models.base import UserRoles
-from gc_registry.user.models import User, UserBase, UserRead, UserUpdate
+from gc_registry.user.models import User
+from gc_registry.user.schemas import UserBase, UserRead, UserUpdate
 from gc_registry.user.validation import validate_user_role
 
 # Router initialisation
@@ -37,7 +39,23 @@ def read_user(
     validate_user_role(current_user, required_role=UserRoles.AUDIT_USER)
     user = User.by_id(user_id, read_session)
 
-    return user
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with id {user_id} not found.",
+        )
+    user_read = UserRead.model_validate(user.model_dump())
+    user_accounts = get_accounts_by_user_id(user_id, read_session)
+
+    if not user_accounts:
+        HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No accounts found for this user.",
+        )
+
+    user_read.accounts = user_accounts
+
+    return user_read
 
 
 @router.patch("/update/{user_id}", response_model=UserRead)

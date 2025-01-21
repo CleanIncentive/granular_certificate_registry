@@ -3,13 +3,18 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
 import gc_registry.device.services as device_services
+import gc_registry.user.services as user_services
 from gc_registry.account.models import (
     Account,
-    AccountBase,
-    AccountRead,
     AccountWhitelistLink,
 )
-from gc_registry.account.schemas import AccountSummary, AccountUpdate, AccountWhitelist
+from gc_registry.account.schemas import (
+    AccountBase,
+    AccountRead,
+    AccountSummary,
+    AccountUpdate,
+    AccountWhitelist,
+)
 from gc_registry.account.validation import (
     validate_account,
     validate_and_apply_account_whitelist_update,
@@ -212,7 +217,7 @@ def get_users_by_account_id(
             status_code=400, detail="Cannot get users for deleted accounts."
         )
 
-    users = services.get_users_by_account_id(account_id, read_session)
+    users = user_services.get_users_by_account_id(account_id, read_session)
 
     if not users:
         raise HTTPException(status_code=404, detail="No users found for account")
