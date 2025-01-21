@@ -6,7 +6,7 @@ const AUTH_LIST = ["/auth/login"];
 
 // Create a reusable Axios instance
 const baseAPI = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8080",
+  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8000",
   // timeout: 10000, // 10 seconds timeout
   headers: {
     "Content-Type": "application/json",
