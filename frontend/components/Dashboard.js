@@ -87,7 +87,7 @@ const Dashboard = () => {
   const one_week_ago = dayjs().subtract(7, "days");
 
   const defaultFilters = {
-    device: null,
+    device: [],
     energySource: null,
     status: [STATUS_ENUM.active],
     dateRange: [one_week_ago, today],
@@ -442,6 +442,7 @@ const Dashboard = () => {
             {/* Device Filter */}
             <Select
               placeholder="Device"
+              mode="multiple"
               options={deviceOptions}
               value={filters.device}
               onChange={(value) => handleFilterChange("device", value)}
