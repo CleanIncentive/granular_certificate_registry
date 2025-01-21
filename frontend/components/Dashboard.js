@@ -57,6 +57,10 @@ const STATUS_ENUM = Object.freeze({
 const Dashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { certificates, loading, error } = useSelector(
+    (state) => state.certificates
+  );
+
   const defaultFilters = {
     device: null,
     energySource: null,
@@ -68,11 +72,21 @@ const Dashboard = () => {
   const [filters, setFilters] = useState(defaultFilters);
   const pageSize = 10;
 
-  // Access state from the Redux store
-  const { certificates, loading, error } =
-    useSelector((state) => {
-      state.certificates;
-    }) || [];
+  useEffect(() => {
+    const fetchData = async () => {
+      const fetchBody = {
+        user_id: 1,
+        source_id: 1,
+        device_id: 1,
+      };
+
+      await dispatch(fetchCertificates(fetchBody)).unwrap();
+    };
+
+    fetchData();
+  }, [dispatch]);
+
+  console.log({ certificates, loading, error });
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -179,20 +193,6 @@ const Dashboard = () => {
     selectedRowKeys,
     onChange: onSelectChange,
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const fetchBody = {
-        user_id: 1,
-        source_id: 1,
-        device_id: 1,
-      };
-
-      await dispatch(fetchCertificates(fetchBody)).unwrap();
-    };
-
-    fetchData();
-  }, [dispatch]);
 
   if (loading) return;
 
@@ -386,24 +386,10 @@ const Dashboard = () => {
               <Option value="hydro">Hydropower</Option>
             </Select>
 
-            {/* <div style={{ position: "relative", display: "inline-block" }}> */}
-            {/* Custom Button to Open RangePicker */}
-            {/* <Button
-                className="period-time-button"
-                icon={<CalendarOutlined style={{ marginRight: 8 }} />}
-                onClick={() => setIsOpen(true)} // Open on click
-              >
-                Period Time <DownOutlined />
-              </Button> */}
-
-            {/* Visible RangePicker */}
             <RangePicker
-              // open={isOpen} // Control visibility
-              // onOpenChange={(open) => setIsOpen(open)} // Sync open state
               onChange={handleDateChange} // Handle date selection
               dropdownClassName="custom-range-picker" // Custom styling
             />
-            {/* </div> */}
 
             {/* Status Filter */}
             <Select
