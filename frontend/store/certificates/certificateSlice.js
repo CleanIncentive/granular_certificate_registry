@@ -15,8 +15,8 @@ const certificateSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchCertificates.fulfilled, (state, action) => {
+        state.certificates = action.payload.granular_certificate_bundles;
         state.loading = false;
-        state.certificates = action.payload;
       })
       .addCase(fetchCertificates.rejected, (state, action) => {
         state.loading = false;

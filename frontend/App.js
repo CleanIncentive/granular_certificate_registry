@@ -24,15 +24,6 @@ const PrivateRoute = ({ element: Element, ...rest }) => {
 };
 
 const App = () => {
-
-  const getCookie = (name) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-  };
-  
-  const isAuthenticated = getCookie('access_token');
-
   return (
     <Provider store={store}>
       <Router>

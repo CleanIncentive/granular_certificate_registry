@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Layout,
   Menu,
@@ -29,15 +29,13 @@ import {
   LaptopOutlined,
   ThunderboltOutlined,
   ClockCircleOutlined,
-  CalendarOutlined,
-  DownOutlined,
 } from "@ant-design/icons";
 import StatusTag from "./StatusTag";
 
 import "../assets/styles/pagination.css";
 import "../assets/styles/filter.css";
 
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { fetchCertificates } from "../store/certificates/certificateThunk";
 
@@ -45,251 +43,6 @@ const { Header, Sider, Content } = Layout;
 const { Title, Text } = Typography;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
-
-const data = [
-  {
-    key: "1",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 00:00",
-    end: "2024-12-10 02:00",
-    production: "31.223",
-    status: "Claimed",
-  },
-  {
-    key: "2",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 01:00",
-    end: "2024-12-10 03:00",
-    production: "31.223",
-    status: "Retired",
-  },
-  {
-    key: "3",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 00:00",
-    end: "2024-12-10 02:00",
-    production: "31.223",
-    status: "Claimed",
-  },
-  {
-    key: "4",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 01:00",
-    end: "2024-12-10 03:00",
-    production: "31.223",
-    status: "Retired",
-  },
-  {
-    key: "5",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 00:00",
-    end: "2024-12-10 02:00",
-    production: "31.223",
-    status: "Claimed",
-  },
-  {
-    key: "6",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 01:00",
-    end: "2024-12-10 03:00",
-    production: "31.223",
-    status: "Retired",
-  },
-  {
-    key: "7",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 00:00",
-    end: "2024-12-10 02:00",
-    production: "31.223",
-    status: "Claimed",
-  },
-  {
-    key: "8",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 01:00",
-    end: "2024-12-10 03:00",
-    production: "31.223",
-    status: "Retired",
-  },
-  {
-    key: "9",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 00:00",
-    end: "2024-12-10 02:00",
-    production: "31.223",
-    status: "Claimed",
-  },
-  {
-    key: "10",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 01:00",
-    end: "2024-12-10 03:00",
-    production: "31.223",
-    status: "Retired",
-  },
-  {
-    key: "11",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 00:00",
-    end: "2024-12-10 02:00",
-    production: "31.223",
-    status: "Claimed",
-  },
-  {
-    key: "12",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 01:00",
-    end: "2024-12-10 03:00",
-    production: "31.223",
-    status: "Retired",
-  },
-  {
-    key: "13",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 00:00",
-    end: "2024-12-10 02:00",
-    production: "31.223",
-    status: "Claimed",
-  },
-  {
-    key: "14",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 01:00",
-    end: "2024-12-10 03:00",
-    production: "31.223",
-    status: "Retired",
-  },
-  {
-    key: "15",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 00:00",
-    end: "2024-12-10 02:00",
-    production: "31.223",
-    status: "Claimed",
-  },
-  {
-    key: "16",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 01:00",
-    end: "2024-12-10 03:00",
-    production: "31.223",
-    status: "Retired",
-  },
-  {
-    key: "17",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 00:00",
-    end: "2024-12-10 02:00",
-    production: "31.223",
-    status: "Claimed",
-  },
-  {
-    key: "18",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 01:00",
-    end: "2024-12-10 03:00",
-    production: "31.223",
-    status: "Retired",
-  },
-
-  {
-    key: "19",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 00:00",
-    end: "2024-12-10 02:00",
-    production: "31.223",
-    status: "Claimed",
-  },
-  {
-    key: "20",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 01:00",
-    end: "2024-12-10 03:00",
-    production: "31.223",
-    status: "Retired",
-  },
-  {
-    key: "21",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 00:00",
-    end: "2024-12-10 02:00",
-    production: "31.223",
-    status: "Claimed",
-  },
-  {
-    key: "22",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 01:00",
-    end: "2024-12-10 03:00",
-    production: "31.223",
-    status: "Retired",
-  },
-
-  {
-    key: "23",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 00:00",
-    end: "2024-12-10 02:00",
-    production: "31.223",
-    status: "Claimed",
-  },
-  {
-    key: "24",
-    issuanceId: "JNKD193",
-    deviceName: "Wind Farm",
-    energySource: "Wind",
-    start: "2024-12-10 01:00",
-    end: "2024-12-10 03:00",
-    production: "31.223",
-    status: "Retired",
-  },
-];
 
 const STATUS_ENUM = Object.freeze({
   claimed: "Claimed",
@@ -315,23 +68,31 @@ const Dashboard = () => {
   const [filters, setFilters] = useState(defaultFilters);
   const pageSize = 10;
 
+  // Access state from the Redux store
+  const { certificates, loading, error } =
+    useSelector((state) => {
+      state.certificates;
+    }) || [];
+
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
+
   const handleApplyFilter = () => console.log("Applying Filters:", filters);
+
   const handleClearFilter = () => {
     setFilters({ device: null, energySource: null, status: [], dateRange: [] });
   };
 
-  const totalPages = Math.ceil(data.length / pageSize);
+  const totalPages = Math.ceil(certificates?.length / pageSize);
 
-  const filteredData = useMemo(() => {
-    return data.filter((item) =>
-      filters.status.length
-        ? filters.status.includes(item.status.toLowerCase())
-        : true
-    );
-  }, [filters.status, data]);
+  // const filteredData = useMemo(() => {
+  //   return data.filter((item) =>
+  //     filters.status.length
+  //       ? filters.status.includes(item.status.toLowerCase())
+  //       : true
+  //   );
+  // }, [filters.status, data]);
 
   const isEqual = (obj1, obj2) => {
     return JSON.stringify(obj1) === JSON.stringify(obj2);
@@ -368,35 +129,40 @@ const Dashboard = () => {
   const columns = [
     {
       title: <span style={{ color: "#80868B" }}>Issuance ID</span>,
-      dataIndex: "issuanceId",
-      key: "issuanceId",
+      dataIndex: "issuance_id",
+      key: "issuance_id",
     },
     {
       title: <span style={{ color: "#80868B" }}>Device Name</span>,
-      dataIndex: "deviceName",
-      key: "deviceName",
+      dataIndex: "device_id",
+      key: "device_id",
+    },
+    {
+      title: <span style={{ color: "#80868B" }}>Energy Source</span>,
+      dataIndex: "energy_source",
+      key: "energy_source",
     },
     {
       title: <span style={{ color: "#80868B" }}>Certificate Period Start</span>,
-      dataIndex: "start",
-      key: "start",
+      dataIndex: "certificate_bundle_id_range_start",
+      key: "certificate_bundle_id_range_start",
       render: (text) => <span style={{ color: "#5F6368" }}>{text}</span>,
     },
     {
       title: <span style={{ color: "#80868B" }}>Certificate Period End</span>,
-      dataIndex: "end",
-      key: "end",
+      dataIndex: "certificate_bundle_id_range_end",
+      key: "certificate_bundle_id_range_end",
       render: (text) => <span style={{ color: "#5F6368" }}>{text}</span>,
     },
     {
       title: <span style={{ color: "#80868B" }}>Production (MWh)</span>,
-      dataIndex: "production",
-      key: "production",
+      dataIndex: "bundle_quantity",
+      key: "bundle_quantity",
     },
     {
       title: <span style={{ color: "#80868B" }}>Status</span>,
-      dataIndex: "status",
-      key: "status",
+      dataIndex: "certificate_bundle_status",
+      key: "certificate_bundle_status",
       render: (status) => StatusTag(status),
     },
     {
@@ -413,6 +179,24 @@ const Dashboard = () => {
     selectedRowKeys,
     onChange: onSelectChange,
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const fetchBody = {
+        user_id: 1,
+        source_id: 1,
+        device_id: 1,
+      };
+
+      await dispatch(fetchCertificates(fetchBody)).unwrap();
+    };
+
+    fetchData();
+  }, [dispatch]);
+
+  if (loading) return;
+
+  if (error) return <div>Error loading data</div>;
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -667,11 +451,11 @@ const Dashboard = () => {
             }}
             rowSelection={rowSelection}
             columns={columns}
-            dataSource={data.slice(
+            dataSource={certificates?.slice(
               (currentPage - 1) * pageSize,
               currentPage * pageSize
             )}
-            rowKey="key"
+            rowKey="insurance_id"
             pagination={false}
           />
           <Flex className="pagination-container">
@@ -691,7 +475,7 @@ const Dashboard = () => {
             <Pagination
               className="custom-paging"
               current={currentPage}
-              total={data.length}
+              total={certificates?.length}
               pageSize={pageSize}
               onChange={handlePageChange}
               showSizeChanger={false}

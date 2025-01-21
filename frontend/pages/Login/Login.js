@@ -19,6 +19,8 @@ const { Option } = Select;
 
 import { useDispatch } from "react-redux";
 import { login } from "../../store/auth/authThunk";
+import { readUser } from "../../store/user/userThunk";
+
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
@@ -32,7 +34,6 @@ const Login = () => {
     e.preventDefault();
     try {
       await dispatch(login({ username, password })).unwrap();
-
       message.success("Login successful 🎉", 2);
       navigate("/certificates");
     } catch (error) {

@@ -1,17 +1,16 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { loginAPI } from "../../api/authAPI";
 import { setError, clearError } from "../error/errorSlice";
+import Cookies from 'js-cookie';
 
 // Save token to cookie
 const saveTokenToCookie = (access_token) => {
-  document.cookie = `access_token=${access_token}; path=/; max-age=${
-    7 * 24 * 60 * 60
-  }; secure; samesite=strict`;
+  Cookies.set('access_token', access_token, { expires: 7, path: '', secure: true });
 };
 
 // Remove token from cookie
 const removeTokenFromCookie = () => {
-  document.cookie = "access_token=; path=/; max-age=0";
+  Cookies.remove('access_token');
 };
 
 // Login thunk
