@@ -1,7 +1,5 @@
-import baseAPI from "./baseAPI"
+import baseAPI from "./baseAPI";
 
-export const readUserAPI = (userID) => baseAPI.get("/user", {
-    params: {
-      user_id: userID
-    }
-  });
+export const readUserAPI = (userID) => {
+  return baseAPI.get(`/user/${userID}`);
+};
