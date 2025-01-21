@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
+
 import {
   Layout,
   Menu,
@@ -18,6 +19,7 @@ import {
   DatePicker,
   Dropdown,
 } from "antd";
+
 import {
   AppstoreOutlined,
   SwapOutlined,
@@ -30,6 +32,7 @@ import {
   ThunderboltOutlined,
   ClockCircleOutlined,
 } from "@ant-design/icons";
+
 import StatusTag from "./StatusTag";
 
 import "../assets/styles/pagination.css";
@@ -38,6 +41,8 @@ import "../assets/styles/filter.css";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { fetchCertificates } from "../store/certificates/certificateThunk";
+
+import ActionDialog from './ActionDialog';
 
 const { Header, Sider, Content } = Layout;
 const { Title, Text } = Typography;
@@ -72,6 +77,8 @@ const Dashboard = () => {
   const [filters, setFilters] = useState(defaultFilters);
   const pageSize = 10;
 
+  const dialogRef = useRef();
+
   useEffect(() => {
     const fetchData = async () => {
       const fetchBody = {
@@ -86,8 +93,6 @@ const Dashboard = () => {
     fetchData();
   }, [dispatch]);
 
-  console.log({ certificates, loading, error });
-
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
@@ -99,14 +104,6 @@ const Dashboard = () => {
   };
 
   const totalPages = Math.ceil(certificates?.length / pageSize);
-
-  // const filteredData = useMemo(() => {
-  //   return data.filter((item) =>
-  //     filters.status.length
-  //       ? filters.status.includes(item.status.toLowerCase())
-  //       : true
-  //   );
-  // }, [filters.status, data]);
 
   const isEqual = (obj1, obj2) => {
     return JSON.stringify(obj1) === JSON.stringify(obj2);
@@ -134,8 +131,61 @@ const Dashboard = () => {
     setFilters((prev) => ({ ...prev, dateRange: dates }));
   };
 
+  const renderCertificateActionComponent = (selectedCertificateAction) => {
+    console.log(selectedCertificateAction)
+    switch (selectedCertificateAction) {
+      case "transfer":
+        return (
+          <TransferForm
+            onTransfer={handleTransfer}
+            // accounts={
+            //   registries.find((r) => r.id.toString() === selectedRegistry)
+            //     ?.accounts
+            // }
+            // selectedAccount={selectedAccount}
+          />
+        );
+      case "cancel":
+        return (
+          <CancelForm
+            onTransfer={handleCancel}
+            // selectedAccount={selectedAccount}
+          />
+        );
+      case "reserve":
+        return (
+          <ReserveForm
+            onReserve={handleReserve}
+            selectedAccount={selectedAccount}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   const onSelectChange = (newSelectedRowKeys) => {
     setSelectedRowKeys(newSelectedRowKeys);
+  };
+
+  const handleTransfer = (fromAccount, toAccount, certificateId) => {
+    // Perform the transfer logic here
+    console.log(
+      `Transferring certificate ${certificateId} from ${fromAccount} to ${toAccount}`
+    );
+  };
+
+  const handleCancel = (certificateId) => {
+    // Perform the cancel logic here
+    console.log(`Cancelling certificate ${certificateId}`);
+  };
+
+  const openDialog = () => {
+    dialogRef.current.openDialog(); // Open the dialog from the parent component
+  };
+
+  const closeDialog = () => {
+    dialogRef.current.closeDialog(); // Close the dialog from the parent component
   };
 
   const isCertificatesSelected = selectedRowKeys.length > 0;
@@ -329,6 +379,7 @@ const Dashboard = () => {
                 type="primary"
                 disabled={!isCertificatesSelected}
                 style={{ height: "40px" }}
+                onClick={() => openDialog()}
               >
                 Cancel
               </Button>
@@ -337,6 +388,7 @@ const Dashboard = () => {
                 type="primary"
                 disabled={!isCertificatesSelected}
                 style={{ height: "40px" }}
+                onClick={() => openDialog()}
               >
                 Reserve
               </Button>
@@ -345,6 +397,7 @@ const Dashboard = () => {
                 type="primary"
                 disabled={!isCertificatesSelected}
                 style={{ height: "40px" }}
+                onClick={() => openDialog()}
               >
                 Transfer
               </Button>
@@ -441,7 +494,7 @@ const Dashboard = () => {
               (currentPage - 1) * pageSize,
               currentPage * pageSize
             )}
-            rowKey="insurance_id"
+            rowKey="id"
             pagination={false}
           />
           <Flex className="pagination-container">
@@ -500,6 +553,9 @@ const Dashboard = () => {
           </Flex>
         </Content>
       </Layout>
+
+            {/* Dialog component with a ref to control it from outside */}
+            <ActionDialog ref={dialogRef} />
     </Layout>
   );
 };
