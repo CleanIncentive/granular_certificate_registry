@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
+import dayjs from "dayjs";
 
 import {
   Layout,
@@ -42,7 +43,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { fetchCertificates } from "../store/certificates/certificateThunk";
 
-import ActionDialog from './ActionDialog';
+import ActionDialog from "./ActionDialog";
 
 const { Header, Sider, Content } = Layout;
 const { Title, Text } = Typography;
@@ -66,15 +67,28 @@ const Dashboard = () => {
     (state) => state.certificates
   );
 
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const today = dayjs();
+  const one_week_ago = dayjs().subtract(7, "days");
+
   const defaultFilters = {
     device: null,
     energySource: null,
-    status: [],
-    dateRange: [],
+    status: [STATUS_ENUM.active],
+    dateRange: [one_week_ago, today],
   };
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
+
   const [filters, setFilters] = useState(defaultFilters);
+
+  useEffect(() => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      dateRange: [one_week_ago, today],
+    }));
+  }, []);
+
   const pageSize = 10;
 
   const dialogRef = useRef();
@@ -132,7 +146,7 @@ const Dashboard = () => {
   };
 
   const renderCertificateActionComponent = (selectedCertificateAction) => {
-    console.log(selectedCertificateAction)
+    console.log(selectedCertificateAction);
     switch (selectedCertificateAction) {
       case "transfer":
         return (
@@ -440,6 +454,7 @@ const Dashboard = () => {
             </Select>
 
             <RangePicker
+              value={filters.dateRange}
               onChange={handleDateChange} // Handle date selection
               dropdownClassName="custom-range-picker" // Custom styling
             />
@@ -554,8 +569,8 @@ const Dashboard = () => {
         </Content>
       </Layout>
 
-            {/* Dialog component with a ref to control it from outside */}
-            <ActionDialog ref={dialogRef} />
+      {/* Dialog component with a ref to control it from outside */}
+      <ActionDialog ref={dialogRef} />
     </Layout>
   );
 };
