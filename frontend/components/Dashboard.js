@@ -106,8 +106,6 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    console.log("isInitialRender.current: ", isInitialRender.current);
-
     if (!dialogAction) {
       return;
     }
