@@ -70,11 +70,24 @@ const Dashboard = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
+  const { currentAccount } = useSelector((state) => state.account);
+
+  console.log(currentAccount);
+
+  const deviceOptions = useMemo(
+    () =>
+      currentAccount.devices.map((device) => ({
+        value: device.id,
+        label: device.device_name || `Device ${device.id}`,
+      })),
+    [currentAccount.devices]
+  );
+
   const today = dayjs();
   const one_week_ago = dayjs().subtract(7, "days");
 
   const defaultFilters = {
-    device: null,
+    device: [],
     energySource: null,
     status: [STATUS_ENUM.active],
     dateRange: [one_week_ago, today],
@@ -429,15 +442,14 @@ const Dashboard = () => {
             {/* Device Filter */}
             <Select
               placeholder="Device"
+              mode="multiple"
+              options={deviceOptions}
               value={filters.device}
               onChange={(value) => handleFilterChange("device", value)}
               style={{ width: 120 }}
               suffixIcon={<LaptopOutlined />}
               allowClear
-            >
-              <Option value="device1">Device 1</Option>
-              <Option value="device2">Device 2</Option>
-            </Select>
+            ></Select>
 
             {/* Energy Source Filter */}
             <Select
