@@ -3,7 +3,7 @@ from typing import Any, Hashable
 
 import pandas as pd
 
-from gc_registry.account.models import Account
+from gc_registry.account.models import Account, AccountWhitelistLink
 from gc_registry.authentication.services import get_password_hash
 from gc_registry.certificate.models import GranularCertificateBundle, IssuanceMetaData
 from gc_registry.certificate.services import issue_certificates_in_date_range
@@ -83,6 +83,24 @@ def seed_data():
         _ = UserAccountLink.create(
             user_account_link_dict, write_session, read_session, esdb_client
         )
+
+    # create second Account
+    account_dict = {
+        "account_name": "Test Account 2",
+        "user_ids": [admin_user.id],
+    }
+    account_2 = Account.create(account_dict, write_session, read_session, esdb_client)[
+        0
+    ]
+
+    white_list_link_dict = {
+        "target_account_id": account_2.id,
+        "source_account_id": account.id,
+    }
+
+    _ = AccountWhitelistLink.create(
+        white_list_link_dict, write_session, read_session, esdb_client
+    )
 
     # Create issuance metadata for the certificates
     issuance_metadata_dict = {
