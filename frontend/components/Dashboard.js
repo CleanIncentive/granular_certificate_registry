@@ -69,6 +69,7 @@ const Dashboard = () => {
 
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [dialogAction, setDialogAction] = useState(null);
 
   const { currentAccount } = useSelector((state) => state.account);
 
@@ -103,6 +104,15 @@ const Dashboard = () => {
       certificate_period_end: today,
     }));
   }, []);
+
+  useEffect(() => {
+    console.log("isInitialRender.current: ", isInitialRender.current);
+
+    if (!dialogAction) {
+      return;
+    }
+    dialogRef.current.openDialog(); // Open the dialog from the parent component
+  }, [dialogAction]);
 
   const pageSize = 10;
 
@@ -194,8 +204,8 @@ const Dashboard = () => {
     console.log(`Cancelling certificate ${certificateId}`);
   };
 
-  const openDialog = () => {
-    dialogRef.current.openDialog(); // Open the dialog from the parent component
+  const openDialog = (action) => {
+    setDialogAction(action);
   };
 
   const closeDialog = () => {
@@ -389,7 +399,7 @@ const Dashboard = () => {
                 type="primary"
                 disabled={!isCertificatesSelected}
                 style={{ height: "40px" }}
-                onClick={() => openDialog()}
+                onClick={() => openDialog("cancel")}
               >
                 Cancel
               </Button>
@@ -398,7 +408,7 @@ const Dashboard = () => {
                 type="primary"
                 disabled={!isCertificatesSelected}
                 style={{ height: "40px" }}
-                onClick={() => openDialog()}
+                onClick={() => openDialog("reserve")}
               >
                 Reserve
               </Button>
@@ -407,7 +417,7 @@ const Dashboard = () => {
                 type="primary"
                 disabled={!isCertificatesSelected}
                 style={{ height: "40px" }}
-                onClick={() => openDialog()}
+                onClick={() => openDialog("transfer")}
               >
                 Transfer
               </Button>
@@ -567,7 +577,12 @@ const Dashboard = () => {
       </Layout>
 
       {/* Dialog component with a ref to control it from outside */}
-      <ActionDialog ref={dialogRef} />
+      <ActionDialog
+        dialogAction={dialogAction}
+        selectedRowKeys={selectedRowKeys}
+        ref={dialogRef}
+        updateActionDialog={setDialogAction}
+      />
     </Layout>
   );
 };
