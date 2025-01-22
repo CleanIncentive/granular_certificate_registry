@@ -15,12 +15,16 @@ const certificateSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchCertificates.fulfilled, (state, action) => {
-        state.certificates = action.payload.granular_certificate_bundles;
+        if (action.code === "ERR_BAD_REQUEST" && action.status === 422) {
+          state.certificates = [];
+          state.error = action.error.message;
+        } else {
+          state.certificates = action.payload.granular_certificate_bundles;
+        }
         state.loading = false;
       })
       .addCase(fetchCertificates.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
       });
   },
 });

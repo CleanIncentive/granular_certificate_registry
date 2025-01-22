@@ -87,10 +87,11 @@ const Dashboard = () => {
   const one_week_ago = dayjs().subtract(7, "days");
 
   const defaultFilters = {
-    device: [],
-    energySource: null,
-    status: [STATUS_ENUM.active],
-    dateRange: [one_week_ago, today],
+    device_id: null,
+    energy_source: null,
+    certificate_bundle_status: [STATUS_ENUM.active],
+    certificate_period_start: one_week_ago,
+    certificate_period_end: today,
   };
 
   const [filters, setFilters] = useState(defaultFilters);
@@ -98,7 +99,8 @@ const Dashboard = () => {
   useEffect(() => {
     setFilters((prevFilters) => ({
       ...prevFilters,
-      dateRange: [one_week_ago, today],
+      certificate_period_start: one_week_ago,
+      certificate_period_end: today,
     }));
   }, []);
 
@@ -107,27 +109,41 @@ const Dashboard = () => {
   const dialogRef = useRef();
 
   useEffect(() => {
-    const fetchData = async () => {
-      const fetchBody = {
-        user_id: 1,
-        source_id: 1,
-        device_id: 1,
-      };
+    fetchCertificatesData();
+  }, [dispatch]);
 
-      await dispatch(fetchCertificates(fetchBody)).unwrap();
+  useEffect(() => {
+    if (isEmpty(filters)) fetchCertificatesData();
+  }, [filters]);
+
+  const fetchCertificatesData = async () => {
+    console.log("filters: ", filters);
+
+    const fetchBody = {
+      ...filters,
+      user_id: 1,
+      source_id: 1,
+      device_id: 1,
     };
 
-    fetchData();
-  }, [dispatch]);
+    await dispatch(fetchCertificates(fetchBody)).unwrap();
+  };
+
+  function isEmpty(obj) {
+    return Object.keys(obj).length === 0;
+  }
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleApplyFilter = () => console.log("Applying Filters:", filters);
+  const handleApplyFilter = () => {
+    fetchCertificatesData();
+  };
 
-  const handleClearFilter = () => {
-    setFilters({ device: null, energySource: null, status: [], dateRange: [] });
+  const handleClearFilter = async () => {
+    setFilters({});
+    // fetchCertificatesData();
   };
 
   const totalPages = Math.ceil(certificates?.length / pageSize);
@@ -155,40 +171,11 @@ const Dashboard = () => {
   };
 
   const handleDateChange = (dates) => {
-    setFilters((prev) => ({ ...prev, dateRange: dates }));
-  };
-
-  const renderCertificateActionComponent = (selectedCertificateAction) => {
-    console.log(selectedCertificateAction);
-    switch (selectedCertificateAction) {
-      case "transfer":
-        return (
-          <TransferForm
-            onTransfer={handleTransfer}
-            // accounts={
-            //   registries.find((r) => r.id.toString() === selectedRegistry)
-            //     ?.accounts
-            // }
-            // selectedAccount={selectedAccount}
-          />
-        );
-      case "cancel":
-        return (
-          <CancelForm
-            onTransfer={handleCancel}
-            // selectedAccount={selectedAccount}
-          />
-        );
-      case "reserve":
-        return (
-          <ReserveForm
-            onReserve={handleReserve}
-            selectedAccount={selectedAccount}
-          />
-        );
-      default:
-        return null;
-    }
+    setFilters((prev) => ({
+      ...prev,
+      certificate_period_start: dates[0]["$d"],
+      certificate_period_end: dates[1]["$d"],
+    }));
   };
 
   const onSelectChange = (newSelectedRowKeys) => {
@@ -270,10 +257,6 @@ const Dashboard = () => {
     selectedRowKeys,
     onChange: onSelectChange,
   };
-
-  if (loading) return;
-
-  if (error) return <div>Error loading data</div>;
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -445,7 +428,7 @@ const Dashboard = () => {
               mode="multiple"
               options={deviceOptions}
               value={filters.device}
-              onChange={(value) => handleFilterChange("device", value)}
+              onChange={(value) => handleFilterChange("device_id", value)}
               style={{ width: 120 }}
               suffixIcon={<LaptopOutlined />}
               allowClear
@@ -455,7 +438,7 @@ const Dashboard = () => {
             <Select
               placeholder="Energy Source"
               value={filters.energySource}
-              onChange={(value) => handleFilterChange("energySource", value)}
+              onChange={(value) => handleFilterChange("energy_source", value)}
               style={{ width: 150 }}
               suffixIcon={<ThunderboltOutlined />}
               allowClear
@@ -467,16 +450,18 @@ const Dashboard = () => {
 
             <RangePicker
               value={filters.dateRange}
-              onChange={handleDateChange} // Handle date selection
+              onChange={(value) => handleDateChange(value)} // Handle date selection
               dropdownClassName="custom-range-picker" // Custom styling
             />
 
             {/* Status Filter */}
             <Select
-              mode="multiple"
+              // mode="multiple"
               placeholder="Status"
               value={filters.status}
-              onChange={(value) => handleFilterChange("status", value)}
+              onChange={(value) =>
+                handleFilterChange("certificate_bundle_status", value)
+              }
               style={{ width: 200 }}
               allowClear
               suffixIcon={<ClockCircleOutlined />}
@@ -490,7 +475,7 @@ const Dashboard = () => {
             {/* Apply Filter Button */}
             <Button
               type="link"
-              onClick={handleApplyFilter}
+              onClick={() => handleApplyFilter()}
               style={{ color: "#043DDC", fontWeight: "600" }}
             >
               Apply filter

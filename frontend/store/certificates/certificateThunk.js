@@ -9,7 +9,9 @@ export const fetchCertificates = createAsyncThunk(
 
       return response?.data;
     } catch (error) {
-      return rejectWithValue(error);
+      console.log(error)
+      return error;
+      // return rejectWithValue(error);
     }
   }
 );

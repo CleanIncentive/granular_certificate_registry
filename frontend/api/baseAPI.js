@@ -36,14 +36,14 @@ baseAPI.interceptors.response.use(
   (response) => response,
   (error) => {
     console.error(error);
+
+    if (error.response?.status === 422) {
+      return Promise.reject(error)
+    }
+
     const status = error.response?.status || 500;
     const message =
       error.response?.data?.detail || "An unexpected error occurred.";
-
-    if (status === 401) {
-      console.warn("Unauthorized! Redirecting to login...");
-      window.location.href = "/login";
-    }
 
     return Promise.reject({ status, message }); // Standardized error
   }
