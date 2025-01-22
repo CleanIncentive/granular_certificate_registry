@@ -1,16 +1,20 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { loginAPI } from "../../api/authAPI";
 import { setError, clearError } from "../error/errorSlice";
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
 
 // Save token to cookie
 const saveTokenToCookie = (access_token) => {
-  Cookies.set('access_token', access_token, { expires: 7, path: '', secure: true });
+  Cookies.set("access_token", access_token, {
+    expires: 7,
+    path: "",
+    secure: true,
+  });
 };
 
 // Remove token from cookie
 const removeTokenFromCookie = () => {
-  Cookies.remove('access_token');
+  Cookies.remove("access_token");
 };
 
 // Login thunk
@@ -18,9 +22,14 @@ export const login = createAsyncThunk(
   "auth/login",
   async (credentials, { dispatch, rejectWithValue }) => {
     try {
-      dispatch(clearError());  // Clear previous errors
+      dispatch(clearError()); // Clear previous errors
       const response = await loginAPI(credentials);
-      const { access_token, user } = response?.data;
+      console.log("Login API Response:", response);
+      const { access_token, token_type, user_id } = response?.data;
+
+      console.log("Access Token:", access_token);
+      console.log("Token Type:", token_type);
+      console.log("User ID:", user_id);
 
       if (!access_token) {
         throw new Error("No access token received.");
@@ -28,15 +37,14 @@ export const login = createAsyncThunk(
 
       saveTokenToCookie(access_token);
 
-      return user;
+      return user_id;
     } catch (error) {
       const status = error.status || 500;
       const message = error.message || "Login failed. Please try again.";
 
-      dispatch(setError({status: status, message: message}));  // Store error in state
+      dispatch(setError({ status: status, message: message })); // Store error in state
 
       return rejectWithValue(message); // Pass error to rejected state
-      
     }
   }
 );
