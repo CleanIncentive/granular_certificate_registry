@@ -34,100 +34,66 @@ import {
   ClockCircleOutlined,
 } from "@ant-design/icons";
 
-import StatusTag from "./StatusTag";
-
-import "../assets/styles/pagination.css";
-import "../assets/styles/filter.css";
+import "../../assets/styles/pagination.css";
+import "../../assets/styles/filter.css";
 
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { fetchCertificates } from "../store/certificates/certificateThunk";
 
-import ActionDialog from "./ActionDialog";
+import DeviceCreateDialog from "../device/DeviceRegisterForm";
+import SideMenu from "../SideMenu";
 
 const { Header, Sider, Content } = Layout;
 const { Title, Text } = Typography;
 const { Option } = Select;
-const { RangePicker } = DatePicker;
 
-const STATUS_ENUM = Object.freeze({
-  claimed: "Claimed",
-  retired: "Retired",
-  active: "Active",
-  expired: "Expired",
-  locked: "Locked",
-  withdraw: "Withdraw",
-  reserved: "Reserved",
+export const DEVICE_TECHNOLOGY_TYPE = Object.freeze({
+  SOLAR_PV: "Solar PV",
+  WIND_TURBINE: "Wind turbine",
+  HYDRO: "Hydro",
+  BATTERY_STORAGE: "Battery storage",
+  OTHER_STORAGE: "Other storage",
+  CHP: "CHP",
+  OTHER: "Other",
 });
 
-const Dashboard = () => {
+const DeviceDashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { certificates, loading, error } = useSelector(
-    (state) => state.certificates
-  );
 
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
   const { currentAccount } = useSelector((state) => state.account);
 
-  console.log(currentAccount);
+  console.log("CURRENT ACCOUNT", currentAccount);
+
+  const devices = currentAccount.devices;
+
+  console.log("DEVICES", devices);
 
   const deviceOptions = useMemo(
     () =>
       currentAccount.devices.map((device) => ({
         value: device.id,
-        label: device.device_name || `Device ${device.id}`,
+        label:
+          `${device.device_name} (${device.local_device_identifier})` ||
+          `Device (${device.local_device_identifier})`,
       })),
     [currentAccount.devices]
   );
 
-  const today = dayjs();
-  const one_week_ago = dayjs().subtract(7, "days");
-
   const defaultFilters = {
-    device_id: null,
-    energy_source: null,
-    certificate_bundle_status: [STATUS_ENUM.active],
-    certificate_period_start: one_week_ago,
-    certificate_period_end: today,
+    deviceName: null,
+    technologyType: null,
   };
 
   const [filters, setFilters] = useState(defaultFilters);
 
-  useEffect(() => {
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      certificate_period_start: one_week_ago,
-      certificate_period_end: today,
-    }));
-  }, []);
-
   const pageSize = 10;
+  const totalPages = Math.ceil(devices?.length / pageSize);
 
   const dialogRef = useRef();
-
-  useEffect(() => {
-    fetchCertificatesData();
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (isEmpty(filters)) fetchCertificatesData();
-  }, [filters]);
-
-  const fetchCertificatesData = async () => {
-    console.log("filters: ", filters);
-
-    const fetchBody = {
-      ...filters,
-      user_id: 1,
-      source_id: 1,
-      device_id: 1,
-    };
-
-    await dispatch(fetchCertificates(fetchBody)).unwrap();
-  };
 
   function isEmpty(obj) {
     return Object.keys(obj).length === 0;
@@ -137,16 +103,18 @@ const Dashboard = () => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
+  function isEmpty(obj) {
+    return Object.keys(obj).length === 0;
+  }
+
   const handleApplyFilter = () => {
-    fetchCertificatesData();
+    // Apply the filter logic here
+    console.log("Applying filters", filters);
   };
 
   const handleClearFilter = async () => {
     setFilters({});
-    // fetchCertificatesData();
   };
-
-  const totalPages = Math.ceil(certificates?.length / pageSize);
 
   const isEqual = (obj1, obj2) => {
     return JSON.stringify(obj1) === JSON.stringify(obj2);
@@ -202,61 +170,43 @@ const Dashboard = () => {
     dialogRef.current.closeDialog(); // Close the dialog from the parent component
   };
 
-  const isCertificatesSelected = selectedRowKeys.length > 0;
-
   const columns = [
     {
-      title: <span style={{ color: "#80868B" }}>Issuance ID</span>,
-      dataIndex: "issuance_id",
-      key: "issuance_id",
+      title: <span style={{ color: "#80868B" }}>Device name & ID</span>,
+      dataIndex: "device_name",
+      key: "device_name",
     },
     {
-      title: <span style={{ color: "#80868B" }}>Device Name</span>,
-      dataIndex: "device_id",
-      key: "device_id",
+      title: <span style={{ color: "#80868B" }}>Technology type</span>,
+      dataIndex: "technology_type",
+      key: "technology_type",
     },
     {
-      title: <span style={{ color: "#80868B" }}>Energy Source</span>,
-      dataIndex: "energy_source",
-      key: "energy_source",
+      title: <span style={{ color: "#80868B" }}>Production start date</span>,
+      dataIndex: "operational_date",
+      key: "operational_date",
     },
     {
-      title: <span style={{ color: "#80868B" }}>Certificate Period Start</span>,
-      dataIndex: "certificate_bundle_id_range_start",
-      key: "certificate_bundle_id_range_start",
+      title: <span style={{ color: "#80868B" }}>Device capacity</span>,
+      dataIndex: "capacity",
+      key: "capacity",
       render: (text) => <span style={{ color: "#5F6368" }}>{text}</span>,
     },
     {
-      title: <span style={{ color: "#80868B" }}>Certificate Period End</span>,
-      dataIndex: "certificate_bundle_id_range_end",
-      key: "certificate_bundle_id_range_end",
+      title: <span style={{ color: "#80868B" }}>Location</span>,
+      dataIndex: "location",
+      key: "location",
       render: (text) => <span style={{ color: "#5F6368" }}>{text}</span>,
-    },
-    {
-      title: <span style={{ color: "#80868B" }}>Production (MWh)</span>,
-      dataIndex: "bundle_quantity",
-      key: "bundle_quantity",
-    },
-    {
-      title: <span style={{ color: "#80868B" }}>Status</span>,
-      dataIndex: "certificate_bundle_status",
-      key: "certificate_bundle_status",
-      render: (status) => StatusTag(status),
     },
     {
       title: "",
       render: () => (
         <Button style={{ color: "#043DDC", fontWeight: "600" }} type="link">
-          Detail
+          Upload Data
         </Button>
       ),
     },
   ];
-
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-  };
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -264,44 +214,7 @@ const Dashboard = () => {
         width={224}
         style={{ background: "#fff", padding: "0 20px 0 10px" }}
       >
-        <div
-          style={{
-            padding: "16px",
-            textAlign: "center",
-            fontSize: "20px",
-            fontWeight: "bold",
-          }}
-        >
-          Granular <span style={{ color: "#0057FF" }}>CertOS</span>
-        </div>
-        <Menu
-          mode="vertical"
-          selectedKeys={[location.pathname]}
-          style={{ border: "none" }}
-        >
-          <Menu.Item
-            key="/certificates"
-            icon={<AppstoreOutlined />}
-            onClick={() => navigate("/certificates")}
-            style={{
-              backgroundColor:
-                location.pathname === "/certificates" ? "#0057FF" : "",
-              color: location.pathname === "/certificates" ? "#fff" : "",
-              borderRadius: "8px",
-              margin: "10px",
-            }}
-          >
-            Certificates
-          </Menu.Item>
-          <Menu.Item
-            key="/transfer-history"
-            icon={<SwapOutlined />}
-            onClick={() => navigate("/transfer-history")}
-            style={{ margin: "10px" }}
-          >
-            Transfer History
-          </Menu.Item>
-        </Menu>
+        <SideMenu />
       </Sider>
 
       <Layout>
@@ -312,7 +225,7 @@ const Dashboard = () => {
             borderBottom: "1px solid #E8EAED",
           }}
         >
-          <Title level={2}>Certificates</Title>
+          <Title level={2}>Production devices</Title>
         </Header>
 
         <Content style={{ margin: "24px" }}>
@@ -325,7 +238,7 @@ const Dashboard = () => {
                   />
                   <div>
                     <h3>10293</h3>
-                    <p>Total Certificates</p>
+                    <p>Total devices</p>
                   </div>
                 </Space>
               </Card>
@@ -338,7 +251,7 @@ const Dashboard = () => {
                   />
                   <div>
                     <h3>89</h3>
-                    <p>Certificates Transferred</p>
+                    <p>Devices by fuel</p>
                   </div>
                 </Space>
               </Card>
@@ -351,7 +264,7 @@ const Dashboard = () => {
                   />
                   <div>
                     <h3>204</h3>
-                    <p>Certificates Cancelled</p>
+                    <p>Device capacity</p>
                   </div>
                 </Space>
               </Card>
@@ -372,7 +285,7 @@ const Dashboard = () => {
             <Text
               style={{ color: "#344054", fontWeight: "500", fontSize: "20px" }}
             >
-              Certificate List
+              Production Device Management
             </Text>
             <Space>
               <Text
@@ -384,33 +297,6 @@ const Dashboard = () => {
               >
                 ({selectedRowKeys.length} selected)
               </Text>
-              <Button
-                icon={<CloseOutlined />}
-                type="primary"
-                disabled={!isCertificatesSelected}
-                style={{ height: "40px" }}
-                onClick={() => openDialog()}
-              >
-                Cancel
-              </Button>
-              <Button
-                icon={<DownloadOutlined />}
-                type="primary"
-                disabled={!isCertificatesSelected}
-                style={{ height: "40px" }}
-                onClick={() => openDialog()}
-              >
-                Reserve
-              </Button>
-              <Button
-                icon={<SwapOutlined />}
-                type="primary"
-                disabled={!isCertificatesSelected}
-                style={{ height: "40px" }}
-                onClick={() => openDialog()}
-              >
-                Transfer
-              </Button>
             </Space>
           </Flex>
           <Space
@@ -434,40 +320,17 @@ const Dashboard = () => {
               allowClear
             ></Select>
 
-            {/* Energy Source Filter */}
+            {/* Technology Type filter */}
             <Select
-              placeholder="Energy Source"
-              value={filters.energySource}
-              onChange={(value) => handleFilterChange("energy_source", value)}
+              placeholder="Technology Type"
+              value={filters.technologyType}
+              onChange={(value) => handleFilterChange("technologyType", value)}
               style={{ width: 150 }}
               suffixIcon={<ThunderboltOutlined />}
               allowClear
             >
-              <Option value="solar">Solar</Option>
-              <Option value="wind">Wind</Option>
-              <Option value="hydro">Hydropower</Option>
-            </Select>
-
-            <RangePicker
-              value={filters.dateRange}
-              onChange={(value) => handleDateChange(value)} // Handle date selection
-              dropdownClassName="custom-range-picker" // Custom styling
-            />
-
-            {/* Status Filter */}
-            <Select
-              // mode="multiple"
-              placeholder="Status"
-              value={filters.status}
-              onChange={(value) =>
-                handleFilterChange("certificate_bundle_status", value)
-              }
-              style={{ width: 200 }}
-              allowClear
-              suffixIcon={<ClockCircleOutlined />}
-            >
-              {Object.entries(STATUS_ENUM).map(([key, value]) => (
-                <Option key={key} value={key}>
+              {Object.entries(DEVICE_TECHNOLOGY_TYPE).map(([key, value]) => (
+                <Option key={key} value={value}>
                   {value}
                 </Option>
               ))}
@@ -500,12 +363,8 @@ const Dashboard = () => {
               fontWeight: "500",
               color: "#F9FAFB",
             }}
-            rowSelection={rowSelection}
             columns={columns}
-            dataSource={certificates?.slice(
-              (currentPage - 1) * pageSize,
-              currentPage * pageSize
-            )}
+            dataSource={[1, 2, 3, 4]}
             rowKey="id"
             pagination={false}
           />
@@ -526,7 +385,7 @@ const Dashboard = () => {
             <Pagination
               className="custom-paging"
               current={currentPage}
-              total={certificates?.length}
+              total={5}
               pageSize={pageSize}
               onChange={handlePageChange}
               showSizeChanger={false}
@@ -565,11 +424,8 @@ const Dashboard = () => {
           </Flex>
         </Content>
       </Layout>
-
-      {/* Dialog component with a ref to control it from outside */}
-      <ActionDialog ref={dialogRef} />
     </Layout>
   );
 };
 
-export default Dashboard;
+export default DeviceDashboard;

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Form, Select, Input, Button } from 'antd';
+import React from "react";
+import { Form, Select, Input, Button } from "antd";
 
 const TransferForm = ({ onTransfer, accounts, selectedAccount }) => {
   const [form] = Form.useForm();
@@ -10,21 +10,21 @@ const TransferForm = ({ onTransfer, accounts, selectedAccount }) => {
   };
 
   return (
-    <Form form={form} onFinish={onFinish} layout='vertical'>
+    <Form form={form} onFinish={onFinish} layout="vertical">
       <Form.Item label="From Account">
-        <Input value={selectedAccount.name} disabled />
+        <Input value={selectedaccount.account_name} disabled />
       </Form.Item>
       <Form.Item
         name="toAccount"
         label="To Account"
-        rules={[{ required: true, message: 'Please select the to account!' }]}
+        rules={[{ required: true, message: "Please select the to account!" }]}
       >
         <Select placeholder="Select the to account">
           {accounts
             .filter((account) => account.id !== selectedAccount.id)
             .map((account) => (
               <Select.Option key={account.id} value={account.id}>
-                {account.name}
+                {account.account_name}
               </Select.Option>
             ))}
         </Select>
@@ -32,21 +32,36 @@ const TransferForm = ({ onTransfer, accounts, selectedAccount }) => {
       <Form.Item
         name="issuance_id"
         label="GC Issuance ID"
-        rules={[{ required: true, message: 'Please input the certificate issuance ID.' }]}
+        rules={[
+          {
+            required: true,
+            message: "Please input the certificate issuance ID.",
+          },
+        ]}
       >
         <Input placeholder="GC Issuance ID" />
       </Form.Item>
       <Form.Item
         name="bundle_start_id"
         label="From Bundle ID"
-        rules={[{ required: true, message: 'Please input the first Bundle ID to select from.' }]}
+        rules={[
+          {
+            required: true,
+            message: "Please input the first Bundle ID to select from.",
+          },
+        ]}
       >
         <Input placeholder="Bunde Start ID" />
       </Form.Item>
       <Form.Item
         name="bundle_end_id"
         label="To Bundle ID"
-        rules={[{ required: true, message: 'Please input the last Bundle ID to select to.' }]}
+        rules={[
+          {
+            required: true,
+            message: "Please input the last Bundle ID to select to.",
+          },
+        ]}
       >
         <Input placeholder="Bundle End ID" />
       </Form.Item>
