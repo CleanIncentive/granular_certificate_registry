@@ -6,7 +6,7 @@ import Cookies from "js-cookie";
 // Import pages
 const Login = React.lazy(() => import("./pages/Login/Login"));
 const CertificateDashboard = React.lazy(() =>
-  import("./components/certificates/CertificateDashboard")
+  import("./components/certificate/CertificateDashboard")
 );
 const DeviceDashboard = React.lazy(() =>
   import("./components/device/DeviceDashboard")

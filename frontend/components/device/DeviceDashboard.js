@@ -24,14 +24,13 @@ import {
 import {
   AppstoreOutlined,
   SwapOutlined,
-  CloseOutlined,
   CloseCircleOutlined,
-  DownloadOutlined,
   LeftOutlined,
   RightOutlined,
   LaptopOutlined,
   ThunderboltOutlined,
-  ClockCircleOutlined,
+  PlusCircleOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 
 import "../../assets/styles/pagination.css";
@@ -40,7 +39,8 @@ import "../../assets/styles/filter.css";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-import DeviceCreateDialog from "../device/DeviceRegisterForm";
+import DeviceRegisterDialog from "../device/DeviceRegisterForm";
+import DeviceUploadDialog from "../device/DeviceUploadDataForm";
 import SideMenu from "../SideMenu";
 
 const { Header, Sider, Content } = Layout;
@@ -60,17 +60,25 @@ export const DEVICE_TECHNOLOGY_TYPE = Object.freeze({
 const DeviceDashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const deviceRegisterDialogRef = useRef();
+  const deviceUploadDialogRef = useRef();
 
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
   const { currentAccount } = useSelector((state) => state.account);
 
-  console.log("CURRENT ACCOUNT", currentAccount);
+  useEffect(() => {
+    if (!currentAccount?.id) {
+      navigate("/login");
+      return;
+    }
+  }, [currentAccount, navigate]);
+
+  if (!currentAccount?.id) {
+    return null;
+  }
 
   const devices = currentAccount.devices;
-
-  console.log("DEVICES", devices);
 
   const deviceOptions = useMemo(
     () =>
@@ -92,8 +100,6 @@ const DeviceDashboard = () => {
 
   const pageSize = 10;
   const totalPages = Math.ceil(devices?.length / pageSize);
-
-  const dialogRef = useRef();
 
   function isEmpty(obj) {
     return Object.keys(obj).length === 0;
@@ -124,50 +130,32 @@ const DeviceDashboard = () => {
     setCurrentPage(page);
   };
 
-  // Go to Previous Page
   const handlePrev = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
   };
 
-  // Go to Next Page
   const handleNext = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     }
   };
 
-  const handleDateChange = (dates) => {
-    setFilters((prev) => ({
-      ...prev,
-      certificate_period_start: dates[0]["$d"],
-      certificate_period_end: dates[1]["$d"],
-    }));
+  const handleNewDevice = (accountID) => {
+    console.log(`Creating new device for account ID ${accountID}`);
   };
 
-  const onSelectChange = (newSelectedRowKeys) => {
-    setSelectedRowKeys(newSelectedRowKeys);
-  };
-
-  const handleTransfer = (fromAccount, toAccount, certificateId) => {
-    // Perform the transfer logic here
-    console.log(
-      `Transferring certificate ${certificateId} from ${fromAccount} to ${toAccount}`
-    );
-  };
-
-  const handleCancel = (certificateId) => {
-    // Perform the cancel logic here
-    console.log(`Cancelling certificate ${certificateId}`);
+  const handleDeviceDataUpload = (deviceID) => {
+    console.log(`Uploading data for device ${deviceID}`);
   };
 
   const openDialog = () => {
-    dialogRef.current.openDialog(); // Open the dialog from the parent component
+    deviceRegisterDialogRef.current.openDialog(); // Open the dialog from the parent component
   };
 
   const closeDialog = () => {
-    dialogRef.current.closeDialog(); // Close the dialog from the parent component
+    deviceRegisterDialogRef.current.closeDialog(); // Close the dialog from the parent component
   };
 
   const columns = [
@@ -180,14 +168,19 @@ const DeviceDashboard = () => {
       title: <span style={{ color: "#80868B" }}>Technology type</span>,
       dataIndex: "technology_type",
       key: "technology_type",
+      render: (type) => {
+        const upperKey = type?.toUpperCase().replace(/ /g, "_");
+        return DEVICE_TECHNOLOGY_TYPE[upperKey] || type;
+      },
     },
     {
       title: <span style={{ color: "#80868B" }}>Production start date</span>,
       dataIndex: "operational_date",
       key: "operational_date",
+      render: (date) => (date ? dayjs(date).format("YYYY-MM-DD") : "-"),
     },
     {
-      title: <span style={{ color: "#80868B" }}>Device capacity</span>,
+      title: <span style={{ color: "#80868B" }}>Device capacity (MW)</span>,
       dataIndex: "capacity",
       key: "capacity",
       render: (text) => <span style={{ color: "#5F6368" }}>{text}</span>,
@@ -200,9 +193,18 @@ const DeviceDashboard = () => {
     },
     {
       title: "",
-      render: () => (
-        <Button style={{ color: "#043DDC", fontWeight: "600" }} type="link">
-          Upload Data
+      render: (_, row) => (
+        <Button
+          style={{ color: "#043DDC", fontWeight: "600" }}
+          type="link"
+          onClick={() =>
+            deviceUploadDialogRef.current.openDialog({
+              deviceName: row.device_name,
+              deviceId: row.local_device_identifier,
+            })
+          }
+        >
+          <UploadOutlined /> Upload Data
         </Button>
       ),
     },
@@ -264,7 +266,7 @@ const DeviceDashboard = () => {
                   />
                   <div>
                     <h3>204</h3>
-                    <p>Device capacity</p>
+                    <p>Device capacity (MW)</p>
                   </div>
                 </Space>
               </Card>
@@ -287,17 +289,14 @@ const DeviceDashboard = () => {
             >
               Production Device Management
             </Text>
-            <Space>
-              <Text
-                style={{
-                  color: "#202124",
-                  fontWeight: "500",
-                  display: selectedRowKeys.length < 1 ? "none" : "inline",
-                }}
-              >
-                ({selectedRowKeys.length} selected)
-              </Text>
-            </Space>
+            <Button
+              icon={<PlusCircleOutlined />}
+              type="primary"
+              style={{ height: "40px" }}
+              onClick={() => openDialog()}
+            >
+              Add Device
+            </Button>
           </Flex>
           <Space
             style={{
@@ -308,6 +307,17 @@ const DeviceDashboard = () => {
             }}
             split={<Divider type="vertical" />}
           >
+            {/* Device Filter */}
+            <Select
+              placeholder="Device"
+              mode="multiple"
+              options={deviceOptions}
+              value={filters.device}
+              onChange={(value) => handleFilterChange("device_id", value)}
+              style={{ width: 120 }}
+              suffixIcon={<LaptopOutlined />}
+              allowClear
+            ></Select>
             {/* Device Filter */}
             <Select
               placeholder="Device"
@@ -364,7 +374,7 @@ const DeviceDashboard = () => {
               color: "#F9FAFB",
             }}
             columns={columns}
-            dataSource={[1, 2, 3, 4]}
+            dataSource={devices}
             rowKey="id"
             pagination={false}
           />
@@ -385,7 +395,7 @@ const DeviceDashboard = () => {
             <Pagination
               className="custom-paging"
               current={currentPage}
-              total={5}
+              total={devices.length}
               pageSize={pageSize}
               onChange={handlePageChange}
               showSizeChanger={false}
@@ -424,6 +434,8 @@ const DeviceDashboard = () => {
           </Flex>
         </Content>
       </Layout>
+      <DeviceRegisterDialog ref={deviceRegisterDialogRef} />
+      <DeviceUploadDialog ref={deviceUploadDialogRef} />
     </Layout>
   );
 };
