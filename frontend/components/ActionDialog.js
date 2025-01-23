@@ -1,14 +1,21 @@
 import React, { useState, forwardRef, useImperativeHandle } from "react";
-import { Modal, Button, Input, Select, Radio } from "antd";
+import { Modal, Button, Input, Select, Radio, message } from "antd";
+import { useDispatch, useSelector } from "react-redux";
+import { transferCertificates } from "../store/certificates/certificateThunk"
 
 const { Option } = Select;
 
 const TransferCertificatesDialog = forwardRef((props, ref) => {
+  const dispatch = useDispatch();
+
   const [visible, setVisible] = useState(false);
   const [transferType, setTransferType] = useState("percentage");
   const [percentage, setPercentage] = useState("");
   const [quantity, setQuantity] = useState("");
-  const [destinationAccount, setDestinationAccount] = useState("");
+  const [selectedAccount, setSelectedAccount] = useState(null);
+
+  const { currentAccount } = useSelector((state) => state.account);
+  const { userInfo } = useSelector((state) => state.user);
 
   // Expose methods to the parent component
   useImperativeHandle(ref, () => ({
@@ -18,13 +25,27 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
 
   const handleCancel = () => {
     setVisible(false);
-    props.updateActionDialog(null)
+    props.updateActionDialog(null);
   };
 
-  const handleOk = () => {
-    console.log("Transfer initiated");
-    setVisible(false); // Close the dialog after confirming
-    props.updateActionDialog(null)
+  const handleOk = async () => {
+    try {
+      const apiBody = {
+        source_id: currentAccount.id,
+        user_id: userInfo.userID,
+        granular_certificate_bundle_ids: props.selectedRowKeys,
+        localise_time: true,
+        target_id: selectedAccount,
+      };
+
+      await dispatch(transferCertificates(apiBody)).unwrap();
+
+      setVisible(false); // Close the dialog after confirming
+      props.updateActionDialog(null);
+      message.success("Transfer successful 🎉", 2);
+    } catch (error) {
+      message.error(`Transfer failed: ${error}`, 3);
+    }
   };
 
   const handleTransferTypeChange = (e) => {
@@ -41,15 +62,32 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
       open={visible}
       onOk={handleOk}
       onCancel={handleCancel}
-      okText={props.dialogAction === "transfer" ? "Transfer Certificates" : "Cancel Certificates" }
+      okText={
+        props.dialogAction === "transfer"
+          ? "Transfer Certificates"
+          : "Cancel Certificates"
+      }
       cancelText="Cancel"
+      okButtonProps={{
+        style:
+          props.dialogAction === "cancel"
+            ? {
+                backgroundColor: "#F04438",
+              }
+            : {
+                backgroundColor: "#3F6CF7",
+              },
+      }}
     >
-      <p>You have selected 1234 MWh of certificates to transfer from:</p>
+      <p>
+        `You have selected {props.totalProduction} MWh of certificates to
+        transfer from:`
+      </p>
       <ul>
-        <li>A Solare device</li>
-        <li>B Wind farm</li>
+        {props.selectedDevices.map((device, index) => (
+          <li key={index}>{device}</li>
+        ))}
       </ul>
-
       <div>
         <span>Choose Certificates by:</span>
         <Radio.Group
@@ -86,19 +124,21 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
       )}
 
       <div style={{ marginTop: "10px" }}>
-        {props.action === "transfer" ? (
+        {props.dialogAction === "transfer" ? (
           <label>Destination account</label>
         ) : (
           <label>Beneficiary</label>
         )}{" "}
         <Select
-          value={destinationAccount}
-          onChange={(value) => setDestinationAccount(value)}
+          value={selectedAccount}
+          onChange={(value) => setSelectedAccount(value)}
           style={{ width: "100%" }}
         >
-          <Option value="account1">Account 1</Option>
-          <Option value="account2">Account 2</Option>
-          <Option value="account3">Account 3</Option>
+          {currentAccount.whiteList.map((account) => (
+            <Option value={account.id} key={account.id}>
+              {account.account_name}
+            </Option>
+          ))}{" "}
         </Select>
       </div>
 

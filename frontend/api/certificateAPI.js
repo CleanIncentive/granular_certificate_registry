@@ -6,3 +6,9 @@ export const fetchCertificatesAPI = (_) => {
 
 export const createCertificateAPI = (certificateData) =>
   baseAPI.post("/certificate", certificateData);
+
+export const transferCertificateAPI = (certificateData) =>
+  baseAPI.post("/certificate/transfer", certificateData);
+
+export const cancelCertificateAPI = (certificateData) =>
+  baseAPI.post("/certificate/cancel", certificateData);

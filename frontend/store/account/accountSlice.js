@@ -8,6 +8,7 @@ const accountSlice = createSlice({
       id: null,
       account_name: "",
       devices: [],
+      whiteList: []
     },
     loading: false,
     error: null,
@@ -34,6 +35,7 @@ const accountSlice = createSlice({
           id: action.payload.id,
           account_name: action.payload.account_name,
           devices: action.payload.devices,
+          whiteList: action.payload.whiteList
         };
       })
       .addCase(getAccountDetails.rejected, (state, action) => {
@@ -43,6 +45,7 @@ const accountSlice = createSlice({
           id: null,
           account_name: "",
           devices: [],
+          whiteList: []
         };
       });
   },

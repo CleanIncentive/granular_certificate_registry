@@ -68,12 +68,17 @@ const Dashboard = () => {
   );
 
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [selectedRecords, setSelectedRecords] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [dialogAction, setDialogAction] = useState(null);
+  const [totalProduction, setTotalProduction] = useState(null);
+  const [selectedDevices, setSelectedDevices] = useState([]);
+
+  const dialogRef = useRef();
 
   const { currentAccount } = useSelector((state) => state.account);
 
-  console.log(currentAccount);
+  console.log("currentAccount: ", currentAccount);
 
   const deviceOptions = useMemo(
     () =>
@@ -114,8 +119,6 @@ const Dashboard = () => {
 
   const pageSize = 10;
 
-  const dialogRef = useRef();
-
   useEffect(() => {
     fetchCertificatesData();
   }, [dispatch]);
@@ -123,6 +126,16 @@ const Dashboard = () => {
   useEffect(() => {
     if (isEmpty(filters)) fetchCertificatesData();
   }, [filters]);
+
+  useEffect(() => {
+    const totalProduction = selectedRecords.reduce(
+      (sum, record) => sum + record.bundle_quantity,
+      0
+    );
+    const devices = selectedRecords.map((record) => record.device_id);
+    setTotalProduction(totalProduction);
+    setSelectedDevices(devices);
+  }, [selectedRecords]);
 
   const fetchCertificatesData = async () => {
     console.log("filters: ", filters);
@@ -151,7 +164,6 @@ const Dashboard = () => {
 
   const handleClearFilter = async () => {
     setFilters({});
-    // fetchCertificatesData();
   };
 
   const totalPages = Math.ceil(certificates?.length / pageSize);
@@ -186,18 +198,21 @@ const Dashboard = () => {
     }));
   };
 
-  const onSelectChange = (newSelectedRowKeys) => {
+  const onSelectChange = (newSelectedRowKeys, newSelectedRows) => {
+    console.log("newSelectedRowKeys: ", newSelectedRowKeys);
+    console.log("newSelectedRows: ", newSelectedRows);
     setSelectedRowKeys(newSelectedRowKeys);
+    setSelectedRecords(newSelectedRows);
   };
 
-  const handleTransfer = (fromAccount, toAccount, certificateId) => {
+  const handleTransferCertificate = (fromAccount, toAccount, certificateId) => {
     // Perform the transfer logic here
     console.log(
       `Transferring certificate ${certificateId} from ${fromAccount} to ${toAccount}`
     );
   };
 
-  const handleCancel = (certificateId) => {
+  const handleCancelCertificate = (certificateId) => {
     // Perform the cancel logic here
     console.log(`Cancelling certificate ${certificateId}`);
   };
@@ -263,7 +278,8 @@ const Dashboard = () => {
 
   const rowSelection = {
     selectedRowKeys,
-    onChange: onSelectChange,
+    onChange: (selectedKeys, selectedRows) =>
+      onSelectChange(selectedKeys, selectedRows),
   };
 
   return (
@@ -579,6 +595,8 @@ const Dashboard = () => {
         dialogAction={dialogAction}
         selectedRowKeys={selectedRowKeys}
         ref={dialogRef}
+        totalProduction={totalProduction}
+        selectedDevices={selectedDevices}
         updateActionDialog={setDialogAction}
       />
     </Layout>
