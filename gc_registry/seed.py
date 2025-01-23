@@ -25,17 +25,15 @@ def seed_data():
 
     bmu_ids = [
         "E_MARK-1",
+        "T_ABRBO-1",
         "T_RATS-1",
-        "T_RATS-2",
-        "T_RATS-3",
-        "T_RATS-4",
-        "T_RATSGT-2",
-        "T_RATSGT-4",
+        "E_BLARW-1",
+        "C__PSMAR001",
     ]
 
     client = ElexonClient()
-    to_datetime = datetime.datetime.now()
-    from_datetime = to_datetime - datetime.timedelta(days=2)
+    to_datetime = datetime.datetime(2025, 1, 16, 0, 0, 0)
+    from_datetime = to_datetime - datetime.timedelta(days=4)
 
     device_capacities = client.get_device_capacities(bmu_ids)
 
@@ -127,7 +125,7 @@ def seed_data():
             "energy_source": "wind",
             "technology_type": "wind",
             "operational_date": str(datetime.datetime(2015, 1, 1, 0, 0, 0)),
-            "capacity": device_capacities[bmu_id],
+            "capacity": device_capacities.get(bmu_id, 99999),
             "peak_demand": 100,
             "location": "Some Location",
             "account_id": account.id,
@@ -141,6 +139,7 @@ def seed_data():
         )
         if len(data) == 0:
             logger.info(f"No data found for {bmu_id}")
+            print(f"No data found for {bmu_id}")
             continue
 
         certificate_bundles = client.map_metering_to_certificates(
@@ -153,6 +152,7 @@ def seed_data():
 
         if not certificate_bundles:
             logger.info(f"No certificate bundles found for {bmu_id}")
+            print(f"No certificate bundles found for {bmu_id}")
         else:
             _ = cqrs.write_to_database(
                 [
