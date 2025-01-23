@@ -96,9 +96,9 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
 
       setVisible(false); // Close the dialog after confirming
       props.updateActionDialog(null);
-      message.success("Transfer successful 🎉", 2);
+      message.success(`${props.dialogAction.charAt(0).toUpperCase() + props.dialogAction.slice(1)} successful 🎉`, 2);
     } catch (error) {
-      message.error(`Transfer failed: ${error}`, 3);
+      message.error(`${props.dialogAction.charAt(0).toUpperCase() + props.dialogAction.slice(1)} failed: ${error}`, 3);
     }
   };
 
