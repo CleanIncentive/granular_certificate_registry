@@ -34,8 +34,8 @@ def seed_data():
     ]
 
     client = ElexonClient()
-    from_datetime = datetime.datetime(2024, 1, 1, 0, 0, 0)
-    to_datetime = from_datetime + datetime.timedelta(days=1)
+    to_datetime = datetime.datetime.now()
+    from_datetime = to_datetime - datetime.timedelta(days=2)
 
     device_capacities = client.get_device_capacities(bmu_ids)
 
@@ -165,6 +165,7 @@ def seed_data():
             )
 
     logger.info("Seeding complete!")
+    print("Seeding complete!")
 
     write_session.close()
     read_session.close()
