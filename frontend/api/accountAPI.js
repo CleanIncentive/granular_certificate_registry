@@ -11,3 +11,7 @@ export const getAccountSummaryAPI = (account_id) => {
 export const getAccountDevicesAPI = (account_id) => {
   return baseAPI.get(`/account/${account_id}/devices`);
 };
+
+export const getAccountWhitelistInverseAPI = (account_id) => {
+  return baseAPI.get(`/account/${account_id}/whitelist_inverse `);
+};

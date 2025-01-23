@@ -53,7 +53,7 @@ const { RangePicker } = DatePicker;
 
 const STATUS_ENUM = Object.freeze({
   claimed: "Claimed",
-  retired: "Retired",
+  cancelled: "Cancelled",
   active: "Active",
   expired: "Expired",
   locked: "Locked",
@@ -69,11 +69,26 @@ const CertificateDashboard = () => {
   );
 
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [selectedRecords, setSelectedRecords] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [dialogAction, setDialogAction] = useState(null);
+  const [totalProduction, setTotalProduction] = useState(null);
+  const [selectedDevices, setSelectedDevices] = useState([]);
+
+  const dialogRef = useRef();
 
   const { currentAccount } = useSelector((state) => state.account);
 
-  console.log("currentAccount: ", currentAccount);
+  useEffect(() => {
+    if (!currentAccount?.id) {
+      navigate("/login");
+      return;
+    }
+  }, [currentAccount, navigate]);
+
+  if (!currentAccount?.id) {
+    return null;
+  }
 
   const deviceOptions = useMemo(
     () =>
@@ -85,14 +100,14 @@ const CertificateDashboard = () => {
   );
 
   const today = dayjs();
-  const one_week_ago = dayjs().subtract(7, "days");
+  const one_week_ago = dayjs().subtract(30, "days");
 
   const defaultFilters = {
     device_id: null,
     energy_source: null,
-    certificate_bundle_status: [STATUS_ENUM.active],
-    certificate_period_start: one_week_ago,
-    certificate_period_end: today,
+    certificate_bundle_status: STATUS_ENUM.active,
+    certificate_period_start: dayjs(one_week_ago),
+    certificate_period_end: dayjs(today),
   };
 
   const [filters, setFilters] = useState(defaultFilters);
@@ -105,9 +120,14 @@ const CertificateDashboard = () => {
     }));
   }, []);
 
-  const pageSize = 10;
+  useEffect(() => {
+    if (!dialogAction) {
+      return;
+    }
+    dialogRef.current.openDialog(); // Open the dialog from the parent component
+  }, [dialogAction]);
 
-  const dialogRef = useRef();
+  const pageSize = 10;
 
   useEffect(() => {
     // fetchCertificatesData();
@@ -117,17 +137,37 @@ const CertificateDashboard = () => {
     if (isEmpty(filters)) fetchCertificatesData();
   }, [filters]);
 
+  useEffect(() => {
+    const totalProduction = selectedRecords.reduce(
+      (sum, record) => sum + record.bundle_quantity,
+      0
+    );
+    const devices = selectedRecords.reduce((acc, newDevice) => {
+      const isDuplicate = acc.some((device) => device === newDevice.device_id);
+      return isDuplicate ? acc : [...acc, newDevice.device_id];
+    }, []);
+    setTotalProduction(totalProduction);
+    setSelectedDevices(devices);
+  }, [selectedRecords]);
+
   const fetchCertificatesData = async () => {
-    console.log("filters: ", filters);
-
     const fetchBody = {
-      ...filters,
       user_id: 1,
-      source_id: 1,
-      device_id: 1,
+      source_id: currentAccount.id,
+      device_id: filters.device_id,
+      certificate_bundle_status: STATUS_ENUM[filters.certificate_bundle_status], // Transform status to match API expectations
+      certificate_period_start:
+        filters.certificate_period_start?.format("YYYY-MM-DD"),
+      certificate_period_end:
+        filters.certificate_period_end?.format("YYYY-MM-DD"),
+      energy_source: filters.energy_source,
     };
-
-    await dispatch(fetchCertificates(fetchBody)).unwrap();
+    try {
+      await dispatch(fetchCertificates(fetchBody)).unwrap();
+    } catch (error) {
+      console.error("Failed to fetch certificates:", error);
+      message.error(error?.message || "Failed to fetch certificates");
+    }
   };
 
   function isEmpty(obj) {
@@ -144,13 +184,19 @@ const CertificateDashboard = () => {
 
   const handleClearFilter = async () => {
     setFilters({});
-    // fetchCertificatesData();
   };
 
   const totalPages = Math.ceil(certificates?.length / pageSize);
 
   const isEqual = (obj1, obj2) => {
     return JSON.stringify(obj1) === JSON.stringify(obj2);
+  };
+
+  const getDeviceName = (deviceID) => {
+    return (
+      currentAccount.devices.find((device) => deviceID === device.id)
+        ?.device_name || `Device ${deviceID}`
+    );
   };
 
   const handlePageChange = (page) => {
@@ -174,29 +220,30 @@ const CertificateDashboard = () => {
   const handleDateChange = (dates) => {
     setFilters((prev) => ({
       ...prev,
-      certificate_period_start: dates[0]["$d"],
-      certificate_period_end: dates[1]["$d"],
+      certificate_period_start: dates[0],
+      certificate_period_end: dates[1],
     }));
   };
 
-  const onSelectChange = (newSelectedRowKeys) => {
+  const onSelectChange = (newSelectedRowKeys, newSelectedRows) => {
     setSelectedRowKeys(newSelectedRowKeys);
+    setSelectedRecords(newSelectedRows);
   };
 
-  const handleTransfer = (fromAccount, toAccount, certificateId) => {
+  const handleTransferCertificate = (fromAccount, toAccount, certificateId) => {
     // Perform the transfer logic here
     console.log(
       `Transferring certificate ${certificateId} from ${fromAccount} to ${toAccount}`
     );
   };
 
-  const handleCancel = (certificateId) => {
+  const handleCancelCertificate = (certificateId) => {
     // Perform the cancel logic here
     console.log(`Cancelling certificate ${certificateId}`);
   };
 
-  const openDialog = () => {
-    dialogRef.current.openDialog(); // Open the dialog from the parent component
+  const openDialog = (action) => {
+    setDialogAction(action);
   };
 
   const closeDialog = () => {
@@ -215,6 +262,7 @@ const CertificateDashboard = () => {
       title: <span style={{ color: "#80868B" }}>Device Name</span>,
       dataIndex: "device_id",
       key: "device_id",
+      render: (id) => <span>{getDeviceName(id)}</span>,
     },
     {
       title: <span style={{ color: "#80868B" }}>Energy Source</span>,
@@ -237,6 +285,7 @@ const CertificateDashboard = () => {
       title: <span style={{ color: "#80868B" }}>Production (MWh)</span>,
       dataIndex: "bundle_quantity",
       key: "bundle_quantity",
+      render: (value) => (value / 1e6).toFixed(3), // Divides by 1,000,000 and shows 3 decimal places
     },
     {
       title: <span style={{ color: "#80868B" }}>Status</span>,
@@ -256,7 +305,8 @@ const CertificateDashboard = () => {
 
   const rowSelection = {
     selectedRowKeys,
-    onChange: onSelectChange,
+    onChange: (selectedKeys, selectedRows) =>
+      onSelectChange(selectedKeys, selectedRows),
   };
 
   return (
@@ -353,7 +403,7 @@ const CertificateDashboard = () => {
                 type="primary"
                 disabled={!isCertificatesSelected}
                 style={{ height: "40px" }}
-                onClick={() => openDialog()}
+                onClick={() => openDialog("cancel")}
               >
                 Cancel
               </Button>
@@ -362,7 +412,7 @@ const CertificateDashboard = () => {
                 type="primary"
                 disabled={!isCertificatesSelected}
                 style={{ height: "40px" }}
-                onClick={() => openDialog()}
+                onClick={() => openDialog("reserve")}
               >
                 Reserve
               </Button>
@@ -371,7 +421,7 @@ const CertificateDashboard = () => {
                 type="primary"
                 disabled={!isCertificatesSelected}
                 style={{ height: "40px" }}
-                onClick={() => openDialog()}
+                onClick={() => openDialog("transfer")}
               >
                 Transfer
               </Button>
@@ -389,7 +439,7 @@ const CertificateDashboard = () => {
             {/* Device Filter */}
             <Select
               placeholder="Device"
-              mode="multiple"
+              // mode="multiple"
               options={deviceOptions}
               value={filters.device}
               onChange={(value) => handleFilterChange("device_id", value)}
@@ -413,9 +463,12 @@ const CertificateDashboard = () => {
             </Select>
 
             <RangePicker
-              value={filters.dateRange}
-              onChange={(value) => handleDateChange(value)} // Handle date selection
-              dropdownClassName="custom-range-picker" // Custom styling
+              value={[
+                filters.certificate_period_start,
+                filters.certificate_period_end,
+              ]}
+              onChange={(dates) => handleDateChange(dates)}
+              allowClear={false}
             />
 
             {/* Status Filter */}
@@ -531,7 +584,15 @@ const CertificateDashboard = () => {
       </Layout>
 
       {/* Dialog component with a ref to control it from outside */}
-      <ActionDialog ref={dialogRef} />
+      <ActionDialog
+        dialogAction={dialogAction}
+        selectedRowKeys={selectedRowKeys}
+        ref={dialogRef}
+        totalProduction={totalProduction}
+        selectedDevices={selectedDevices}
+        updateActionDialog={setDialogAction}
+        getDeviceName={getDeviceName}
+      />
     </Layout>
   );
 };

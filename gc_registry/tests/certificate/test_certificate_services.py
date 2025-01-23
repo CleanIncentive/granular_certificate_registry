@@ -4,6 +4,7 @@ from typing import Any, Hashable, cast
 import pandas as pd
 import pytest
 from esdbclient import EventStoreDBClient
+from fastapi import HTTPException
 from sqlmodel import Session
 
 from gc_registry.account.models import Account, AccountWhitelistLink
@@ -529,14 +530,12 @@ class TestCertificateServices:
         )
 
         # Test with an issuance ID that doesn't exist
-
-        certificate_query = GranularCertificateQuery(
-            user_id=fake_db_user.id,
-            source_id=fake_db_granular_certificate_bundle.account_id,
-            issuance_ids=["invalid_id"],
-        )
-
-        with pytest.raises(ValueError) as exc_info:
+        with pytest.raises(HTTPException) as exc_info:
+            certificate_query = GranularCertificateQuery(
+                user_id=fake_db_user.id,
+                source_id=fake_db_granular_certificate_bundle.account_id,
+                issuance_ids=["invalid_id"],
+            )
             query_certificate_bundles(certificate_query, read_session)
         assert "Invalid issuance ID" in str(exc_info.value)
 
@@ -673,6 +672,6 @@ class TestCertificateServices:
         query = GranularCertificateQuery(
             source_id=1,
             user_id=1,
-            issuance_ids=["id1", "id2"],
+            issuance_ids=["1-2024-10-01 12:00:00", "2-2024-10-01 12:00:00"],
         )
-        assert query.issuance_ids == ["id1", "id2"]
+        assert query.issuance_ids == ["1-2024-10-01 12:00:00", "2-2024-10-01 12:00:00"]
