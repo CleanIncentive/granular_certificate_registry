@@ -1,10 +1,11 @@
+from pydantic import BaseModel
 from sqlmodel import Field
 
-from gc_registry import utils
+from gc_registry.account.schemas import AccountRead
 from gc_registry.core.models.base import UserRoles
 
 
-class UserBase(utils.ActiveRecord):
+class UserBase(BaseModel):
     name: str
     primary_contact: str
     role: UserRoles = Field(
@@ -16,3 +17,21 @@ class UserBase(utils.ActiveRecord):
     )
     hashed_password: str | None = None
     is_deleted: bool = Field(default=False)
+
+
+class UserUpdate(BaseModel):
+    name: str | None = None
+    primary_contact: str | None = None
+    account_ids: list[int] | None = None
+    organisation: str | None = None
+    hashed_password: str | None = None
+    role: UserRoles | None = None
+
+
+class UserRead(BaseModel):
+    id: int
+    name: str
+    primary_contact: str
+    role: UserRoles
+    accounts: list[AccountRead] | None = None
+    organisation: str | None = None

@@ -2,8 +2,9 @@ from sqlmodel import Session, func, select
 from sqlmodel.sql.expression import SelectOfScalar
 
 from gc_registry.account.models import Account
+from gc_registry.account.schemas import AccountRead
 from gc_registry.certificate.models import GranularCertificateBundle
-from gc_registry.user.models import User, UserAccountLink
+from gc_registry.user.models import UserAccountLink
 
 
 def get_account_by_id(account_id: int, read_session: Session):
@@ -49,13 +50,16 @@ def get_account_summary(account: Account, read_session: Session):
     return account_summary
 
 
-def get_users_by_account_id(
-    account_id: int, read_session: Session
-) -> list[User] | None:
+def get_accounts_by_user_id(
+    user_id: int, read_session: Session
+) -> list[AccountRead] | None:
     stmt: SelectOfScalar = (
-        select(User)
+        select(Account)
         .join(UserAccountLink)
-        .where(UserAccountLink.account_id == account_id)
+        .where(UserAccountLink.user_id == user_id, UserAccountLink.is_deleted == False)  # noqa: E712
     )
-    users = read_session.exec(stmt).all()
-    return list(users)
+    accounts = read_session.exec(stmt).all()
+
+    account_reads = [AccountRead.model_validate(a.model_dump()) for a in accounts]
+
+    return account_reads

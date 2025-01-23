@@ -19,6 +19,9 @@ const { Option } = Select;
 
 import { useDispatch } from "react-redux";
 import { login } from "../../store/auth/authThunk";
+import { readUser } from "../../store/user/userThunk";
+import { getAccountDetails } from "../../store/account/accountThunk";
+
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
@@ -31,7 +34,13 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await dispatch(login({ username, password })).unwrap();
+      const userID = await dispatch(login({ username, password })).unwrap();
+      const userData = await dispatch(readUser(userID)).unwrap();
+
+      if (userData.accounts && userData.accounts.length > 0) {
+        const defaultAccount = userData.accounts[0];
+        await dispatch(getAccountDetails(defaultAccount.id)).unwrap();
+      }
 
       message.success("Login successful 🎉", 2);
       navigate("/certificates");
@@ -39,7 +48,6 @@ const Login = () => {
       message.error(`Login failed: ${error}`, 3);
     }
   };
-
   return (
     <Layout>
       <Content className={styles["login-container"]}>
