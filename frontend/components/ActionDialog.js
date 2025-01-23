@@ -27,8 +27,6 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
   const { currentAccount } = useSelector((state) => state.account);
   const { userInfo } = useSelector((state) => state.user);
 
-  console.log("currentAccount", currentAccount);
-
   // Expose methods to the parent component
   useImperativeHandle(ref, () => ({
     openDialog: () => setVisible(true),
