@@ -146,8 +146,8 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
       }}
     >
       <p>
-        You have selected {props.totalProduction / 1e6} MWh of certificates to
-        transfer from:{" "}
+        You have selected {props.totalProduction / 1e6} MWh of certificates to{" "}
+        {props.dialogAction} from:{" "}
       </p>
       <ul>
         {props.selectedDevices.map((device, index) => (
