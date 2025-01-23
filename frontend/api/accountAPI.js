@@ -12,6 +12,6 @@ export const getAccountDevicesAPI = (account_id) => {
   return baseAPI.get(`/account/${account_id}/devices`);
 };
 
-export const getAccountWhitelistAPI = (account_id) => {
-  return baseAPI.get(`/account/${account_id}/whitelist `);
+export const getAccountWhitelistInverseAPI = (account_id) => {
+  return baseAPI.get(`/account/${account_id}/whitelist_inverse `);
 };

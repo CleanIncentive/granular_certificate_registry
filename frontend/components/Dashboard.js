@@ -93,9 +93,6 @@ const Dashboard = () => {
   const one_week_ago = dayjs().subtract(7, "days");
 
   const defaultFilters = {
-    device_id: null,
-    energy_source: null,
-    certificate_bundle_status: [STATUS_ENUM.active],
     certificate_period_start: one_week_ago,
     certificate_period_end: today,
   };
@@ -132,7 +129,10 @@ const Dashboard = () => {
       (sum, record) => sum + record.bundle_quantity,
       0
     );
-    const devices = selectedRecords.map((record) => record.device_id);
+    const devices = selectedRecords.reduce((acc, newDevice) => {
+      const isDuplicate = acc.some((device) => device === newDevice.device_id);
+      return isDuplicate ? acc : [...acc, newDevice.device_id];
+    }, []);
     setTotalProduction(totalProduction);
     setSelectedDevices(devices);
   }, [selectedRecords]);
@@ -171,6 +171,10 @@ const Dashboard = () => {
   const isEqual = (obj1, obj2) => {
     return JSON.stringify(obj1) === JSON.stringify(obj2);
   };
+
+  const getDeviceName = (deviceID) => {
+    return currentAccount.devices.find(device => deviceID === device.id)?.device_name || `Device ${deviceID}`
+  }
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -237,6 +241,7 @@ const Dashboard = () => {
       title: <span style={{ color: "#80868B" }}>Device Name</span>,
       dataIndex: "device_id",
       key: "device_id",
+      render: (id) => <span>{getDeviceName(id)}</span>
     },
     {
       title: <span style={{ color: "#80868B" }}>Energy Source</span>,
@@ -598,6 +603,7 @@ const Dashboard = () => {
         totalProduction={totalProduction}
         selectedDevices={selectedDevices}
         updateActionDialog={setDialogAction}
+        getDeviceName={getDeviceName}
       />
     </Layout>
   );
