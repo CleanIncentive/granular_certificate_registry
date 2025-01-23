@@ -24,12 +24,7 @@ export const login = createAsyncThunk(
     try {
       dispatch(clearError()); // Clear previous errors
       const response = await loginAPI(credentials);
-      console.log("Login API Response:", response);
       const { access_token, token_type, user_id } = response?.data;
-
-      console.log("Access Token:", access_token);
-      console.log("Token Type:", token_type);
-      console.log("User ID:", user_id);
 
       if (!access_token) {
         throw new Error("No access token received.");

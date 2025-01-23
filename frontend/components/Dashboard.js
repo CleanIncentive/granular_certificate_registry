@@ -78,7 +78,16 @@ const Dashboard = () => {
 
   const { currentAccount } = useSelector((state) => state.account);
 
-  console.log("currentAccount: ", currentAccount);
+  useEffect(() => {
+    if (!currentAccount?.id) {
+      navigate("/login");
+      return;
+    }
+  }, [currentAccount, navigate]);
+
+  if (!currentAccount?.id) {
+    return null;
+  }
 
   const deviceOptions = useMemo(
     () =>
@@ -138,8 +147,7 @@ const Dashboard = () => {
   }, [selectedRecords]);
 
   const fetchCertificatesData = async () => {
-    console.log("filters: ", filters);
-
+    console.log("FILTERS: ", filters);
     const fetchBody = {
       ...filters,
       user_id: 1,
@@ -173,8 +181,11 @@ const Dashboard = () => {
   };
 
   const getDeviceName = (deviceID) => {
-    return currentAccount.devices.find(device => deviceID === device.id)?.device_name || `Device ${deviceID}`
-  }
+    return (
+      currentAccount.devices.find((device) => deviceID === device.id)
+        ?.device_name || `Device ${deviceID}`
+    );
+  };
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -241,7 +252,7 @@ const Dashboard = () => {
       title: <span style={{ color: "#80868B" }}>Device Name</span>,
       dataIndex: "device_id",
       key: "device_id",
-      render: (id) => <span>{getDeviceName(id)}</span>
+      render: (id) => <span>{getDeviceName(id)}</span>,
     },
     {
       title: <span style={{ color: "#80868B" }}>Energy Source</span>,
@@ -264,6 +275,7 @@ const Dashboard = () => {
       title: <span style={{ color: "#80868B" }}>Production (MWh)</span>,
       dataIndex: "bundle_quantity",
       key: "bundle_quantity",
+      render: (value) => (value / 1e6).toFixed(3), // Divides by 1,000,000 and shows 3 decimal places
     },
     {
       title: <span style={{ color: "#80868B" }}>Status</span>,

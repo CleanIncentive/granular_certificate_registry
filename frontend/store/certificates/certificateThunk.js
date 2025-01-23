@@ -1,5 +1,9 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { fetchCertificatesAPI, transferCertificateAPI, cancelCertificateAPI } from "../../api/certificateAPI";
+import {
+  fetchCertificatesAPI,
+  transferCertificateAPI,
+  cancelCertificateAPI,
+} from "../../api/certificateAPI";
 
 export const fetchCertificates = createAsyncThunk(
   "certificates/fetchCertificates",
@@ -7,9 +11,12 @@ export const fetchCertificates = createAsyncThunk(
     try {
       const response = await fetchCertificatesAPI(_);
 
+      console.log("fetchCertificates thunk headers:", response?.headers);
+      console.log("fetchCertificates thunk data:", response?.data);
+
       return response?.data;
     } catch (error) {
-      console.log(error)
+      console.log("QUERY ERROR", error);
       return error;
       // return rejectWithValue(error);
     }
@@ -24,7 +31,7 @@ export const transferCertificates = createAsyncThunk(
 
       return response?.data;
     } catch (error) {
-      console.log(error)
+      console.log(error);
       return error;
       // return rejectWithValue(error);
     }
@@ -39,7 +46,7 @@ export const cancelCertificates = createAsyncThunk(
 
       return response?.data;
     } catch (error) {
-      console.log(error)
+      console.log(error);
       return error;
       // return rejectWithValue(error);
     }
