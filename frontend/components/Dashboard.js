@@ -99,7 +99,7 @@ const Dashboard = () => {
   );
 
   const today = dayjs();
-  const one_week_ago = dayjs().subtract(7, "days");
+  const one_week_ago = dayjs().subtract(30, "days");
 
   const defaultFilters = {
     device_id: null,
