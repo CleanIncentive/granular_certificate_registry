@@ -1,10 +1,10 @@
 import datetime
 from typing import Any, Hashable, cast
-from fastapi import HTTPException
 
 import pandas as pd
 import pytest
 from esdbclient import EventStoreDBClient
+from fastapi import HTTPException
 from sqlmodel import Session
 
 from gc_registry.account.models import Account, AccountWhitelistLink
