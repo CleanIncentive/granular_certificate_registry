@@ -96,9 +96,21 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
 
       setVisible(false); // Close the dialog after confirming
       props.updateActionDialog(null);
-      message.success(`${props.dialogAction.charAt(0).toUpperCase() + props.dialogAction.slice(1)} successful 🎉`, 2);
+      message.success(
+        `${
+          props.dialogAction.charAt(0).toUpperCase() +
+          props.dialogAction.slice(1)
+        } successful 🎉`,
+        2
+      );
     } catch (error) {
-      message.error(`${props.dialogAction.charAt(0).toUpperCase() + props.dialogAction.slice(1)} failed: ${error}`, 3);
+      message.error(
+        `${
+          props.dialogAction.charAt(0).toUpperCase() +
+          props.dialogAction.slice(1)
+        } failed: ${error}`,
+        3
+      );
     }
   };
 
@@ -134,8 +146,8 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
       }}
     >
       <p>
-        `You have selected {props.totalProduction} MWh of certificates to
-        transfer from:`
+        You have selected {props.totalProduction / 1e6} MWh of certificates to
+        transfer from:{" "}
       </p>
       <ul>
         {props.selectedDevices.map((device, index) => (

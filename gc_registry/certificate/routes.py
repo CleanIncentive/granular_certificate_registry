@@ -143,7 +143,7 @@ def query_certificate_bundles_route(
         )
 
         if not certificate_bundles_from_query:
-            raise HTTPException(status_code=422, detail="No certificates found")
+            raise HTTPException(status_code=404, detail="No certificates found")
 
         query_dict = certificate_bundle_query.model_dump()
 
