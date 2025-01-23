@@ -137,28 +137,25 @@ def query_certificate_bundles_route(
     validate_user_role(current_user, required_role=UserRoles.AUDIT_USER)
     validate_user_access(current_user, certificate_bundle_query.source_id, read_session)
 
-    try:
-        certificate_bundles_from_query = services.query_certificate_bundles(
-            certificate_bundle_query, read_session
-        )
+    certificate_bundles_from_query = services.query_certificate_bundles(
+        certificate_bundle_query, read_session
+    )
 
-        if not certificate_bundles_from_query:
-            raise HTTPException(status_code=404, detail="No certificates found")
+    if not certificate_bundles_from_query:
+        raise HTTPException(status_code=404, detail="No certificates found")
 
-        query_dict = certificate_bundle_query.model_dump()
+    query_dict = certificate_bundle_query.model_dump()
 
-        granular_certificate_bundles_read = [
-            GranularCertificateBundleRead.model_validate(certificate.model_dump())
-            for certificate in certificate_bundles_from_query
-        ]
+    granular_certificate_bundles_read = [
+        GranularCertificateBundleRead.model_validate(certificate.model_dump())
+        for certificate in certificate_bundles_from_query
+    ]
 
-        query_dict["granular_certificate_bundles"] = granular_certificate_bundles_read
+    query_dict["granular_certificate_bundles"] = granular_certificate_bundles_read
 
-        certificate_query = GranularCertificateQueryRead.model_validate(query_dict)
+    certificate_query = GranularCertificateQueryRead.model_validate(query_dict)
 
-        return certificate_query
-    except Exception as e:
-        raise HTTPException(status_code=422, detail=str(e))
+    return certificate_query
 
 
 @router.get("/{id}", response_model=GranularCertificateBundleReadFull)
