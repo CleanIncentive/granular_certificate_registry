@@ -8,7 +8,11 @@ from gc_registry.authentication.services import get_password_hash
 from gc_registry.certificate.models import GranularCertificateBundle, IssuanceMetaData
 from gc_registry.certificate.services import issue_certificates_in_date_range
 from gc_registry.core.database import cqrs, db, events
-from gc_registry.core.models.base import DeviceTechnologyType, EnergySourceType, UserRoles
+from gc_registry.core.models.base import (
+    DeviceTechnologyType,
+    EnergySourceType,
+    UserRoles,
+)
 from gc_registry.device.meter_data.elexon.elexon import ElexonClient
 from gc_registry.device.models import Device
 from gc_registry.logging_config import logger

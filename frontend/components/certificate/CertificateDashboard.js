@@ -41,10 +41,9 @@ import "../../assets/styles/filter.css";
 
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { fetchCertificates } from "../../store/certificates/certificateThunk";
+import { fetchCertificates } from "../../store/certificate/certificateThunk";
 
-import ActionDialog from "./ActionDialog";
-import SideMenu from "../SideMenu";
+import CertificateActionDialog from "./CertificateActionDialog";
 
 const { Header, Sider, Content } = Layout;
 const { Title, Text } = Typography;
@@ -61,7 +60,7 @@ const STATUS_ENUM = Object.freeze({
   reserved: "Reserved",
 });
 
-const CertificateDashboard = () => {
+const Dashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { certificates, loading, error } = useSelector(
@@ -130,7 +129,7 @@ const CertificateDashboard = () => {
   const pageSize = 10;
 
   useEffect(() => {
-    // fetchCertificatesData();
+    fetchCertificatesData();
   }, [dispatch]);
 
   useEffect(() => {
@@ -315,7 +314,44 @@ const CertificateDashboard = () => {
         width={224}
         style={{ background: "#fff", padding: "0 20px 0 10px" }}
       >
-        <SideMenu />
+        <div
+          style={{
+            padding: "16px",
+            textAlign: "center",
+            fontSize: "20px",
+            fontWeight: "bold",
+          }}
+        >
+          Granular <span style={{ color: "#0057FF" }}>CertOS</span>
+        </div>
+        <Menu
+          mode="vertical"
+          selectedKeys={[location.pathname]}
+          style={{ border: "none" }}
+        >
+          <Menu.Item
+            key="/certificates"
+            icon={<AppstoreOutlined />}
+            onClick={() => navigate("/certificates")}
+            style={{
+              backgroundColor:
+                location.pathname === "/certificates" ? "#0057FF" : "",
+              color: location.pathname === "/certificates" ? "#fff" : "",
+              borderRadius: "8px",
+              margin: "10px",
+            }}
+          >
+            Certificates
+          </Menu.Item>
+          <Menu.Item
+            key="/transfer-history"
+            icon={<SwapOutlined />}
+            onClick={() => navigate("/transfer-history")}
+            style={{ margin: "10px" }}
+          >
+            Transfer History
+          </Menu.Item>
+        </Menu>
       </Sider>
 
       <Layout>
@@ -584,17 +620,17 @@ const CertificateDashboard = () => {
       </Layout>
 
       {/* Dialog component with a ref to control it from outside */}
-      <ActionDialog
+      <CertificateActionDialog
         dialogAction={dialogAction}
         selectedRowKeys={selectedRowKeys}
         ref={dialogRef}
         totalProduction={totalProduction}
         selectedDevices={selectedDevices}
-        updateActionDialog={setDialogAction}
+        updateCertificateActionDialog={setDialogAction}
         getDeviceName={getDeviceName}
       />
     </Layout>
   );
 };
 
-export default CertificateDashboard;
+export default Dashboard;
