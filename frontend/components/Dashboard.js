@@ -52,7 +52,7 @@ const { RangePicker } = DatePicker;
 
 const STATUS_ENUM = Object.freeze({
   claimed: "Claimed",
-  retired: "Retired",
+  cancelled: "Cancelled",
   active: "Active",
   expired: "Expired",
   locked: "Locked",
@@ -102,8 +102,11 @@ const Dashboard = () => {
   const one_week_ago = dayjs().subtract(7, "days");
 
   const defaultFilters = {
-    certificate_period_start: one_week_ago,
-    certificate_period_end: today,
+    device_id: null,
+    energy_source: null,
+    certificate_bundle_status: STATUS_ENUM.active,
+    certificate_period_start: dayjs(one_week_ago),
+    certificate_period_end: dayjs(today),
   };
 
   const [filters, setFilters] = useState(defaultFilters);
@@ -147,15 +150,23 @@ const Dashboard = () => {
   }, [selectedRecords]);
 
   const fetchCertificatesData = async () => {
-    console.log("FILTERS: ", filters);
     const fetchBody = {
-      ...filters,
       user_id: 1,
-      source_id: 1,
-      device_id: 1,
+      source_id: currentAccount.id,
+      device_id: filters.device_id,
+      certificate_bundle_status: STATUS_ENUM[filters.certificate_bundle_status], // Transform status to match API expectations
+      certificate_period_start:
+        filters.certificate_period_start?.format("YYYY-MM-DD"),
+      certificate_period_end:
+        filters.certificate_period_end?.format("YYYY-MM-DD"),
+      energy_source: filters.energy_source,
     };
-
-    await dispatch(fetchCertificates(fetchBody)).unwrap();
+    try {
+      await dispatch(fetchCertificates(fetchBody)).unwrap();
+    } catch (error) {
+      console.error("Failed to fetch certificates:", error);
+      message.error(error?.message || "Failed to fetch certificates");
+    }
   };
 
   function isEmpty(obj) {
@@ -208,14 +219,12 @@ const Dashboard = () => {
   const handleDateChange = (dates) => {
     setFilters((prev) => ({
       ...prev,
-      certificate_period_start: dates[0]["$d"],
-      certificate_period_end: dates[1]["$d"],
+      certificate_period_start: dates[0],
+      certificate_period_end: dates[1],
     }));
   };
 
   const onSelectChange = (newSelectedRowKeys, newSelectedRows) => {
-    console.log("newSelectedRowKeys: ", newSelectedRowKeys);
-    console.log("newSelectedRows: ", newSelectedRows);
     setSelectedRowKeys(newSelectedRowKeys);
     setSelectedRecords(newSelectedRows);
   };
@@ -466,7 +475,7 @@ const Dashboard = () => {
             {/* Device Filter */}
             <Select
               placeholder="Device"
-              mode="multiple"
+              // mode="multiple"
               options={deviceOptions}
               value={filters.device}
               onChange={(value) => handleFilterChange("device_id", value)}
@@ -490,9 +499,12 @@ const Dashboard = () => {
             </Select>
 
             <RangePicker
-              value={filters.dateRange}
-              onChange={(value) => handleDateChange(value)} // Handle date selection
-              dropdownClassName="custom-range-picker" // Custom styling
+              value={[
+                filters.certificate_period_start,
+                filters.certificate_period_end,
+              ]}
+              onChange={(dates) => handleDateChange(dates)}
+              allowClear={false}
             />
 
             {/* Status Filter */}
