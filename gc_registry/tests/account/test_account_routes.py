@@ -135,6 +135,14 @@ class TestAccountRoutes:
         )
         assert response.status_code == 200
         assert response.json()["energy_by_fuel_type"] == {"wind": 1000}
+        assert response.json()["num_devices_by_type"] == {
+            "wind_turbine": 1,
+            "solar_pv": 1,
+        }
+        assert response.json()["device_capacity_by_type"] == {
+            "wind_turbine": 3000,
+            "solar_pv": 1000,
+        }
 
         # Test getting all devices by account ID that does not exist
         fake_id = 1234

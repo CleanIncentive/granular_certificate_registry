@@ -30,6 +30,10 @@ class DeviceTechnologyType(str, enum.Enum):
     chp = "chp"
     other = "other"
 
+    @classmethod
+    def values(cls):
+        return [e.value for e in cls]
+
 
 class EnergyCarrierType(str, enum.Enum):
     electricity = "electricity"
