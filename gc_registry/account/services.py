@@ -1,10 +1,11 @@
-from sqlmodel import Session, func, select
+from esdbclient import EventStoreDBClient
+from sqlalchemy.sql.expression import Delete
+from sqlmodel import Session, delete, func, select
 from sqlmodel.sql.expression import SelectOfScalar
 
 from gc_registry.account.models import Account
-from gc_registry.account.schemas import AccountRead
+from gc_registry.account.schemas import AccountRead, AccountUpdate
 from gc_registry.certificate.models import GranularCertificateBundle
-from gc_registry.core.models.base import DeviceTechnologyType
 from gc_registry.user.models import UserAccountLink
 
 
@@ -113,3 +114,42 @@ def get_accounts_by_user_id(
     account_reads = [AccountRead.model_validate(a.model_dump()) for a in accounts]
 
     return account_reads
+
+
+def update_account_user_links(
+    account: Account,
+    account_update: AccountUpdate,
+    write_session: Session,
+    read_session: Session,
+    esdb_client: EventStoreDBClient,
+) -> None:
+    """Update the user links for an account.
+
+    Args:
+        account (Account): The account to update.
+        account_update (AccountUpdate): The account update.
+        write_session (Session): The write session.
+        read_session (Session): The read session.
+        esdb_client (EventStoreDBClient): The EventStoreDB client.
+    """
+    if not account_update.user_ids:
+        return
+
+    users_to_add = set(account_update.user_ids).difference(set(account.user_ids))
+    users_to_remove = set(account.user_ids).difference(set(account_update.user_ids))
+
+    for user_id in users_to_add:
+        UserAccountLink.create(
+            [{"user_id": user_id, "account_id": account.id}],
+            write_session,
+            read_session,
+            esdb_client,
+        )
+
+    for user_id in users_to_remove:  # type: ignore
+        stmt: Delete = delete(UserAccountLink).where(
+            UserAccountLink.user_id == user_id,
+            UserAccountLink.account_id == account.id,
+        )
+        read_session.exec(stmt)  # type: ignore
+        write_session.exec(stmt)  # type: ignore

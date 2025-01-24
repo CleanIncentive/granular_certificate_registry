@@ -28,7 +28,7 @@ from gc_registry.certificate.services import get_certificate_bundles_by_account_
 from gc_registry.core.database import db, events
 from gc_registry.core.models.base import UserRoles
 from gc_registry.device.models import DeviceRead
-from gc_registry.user.models import User
+from gc_registry.user.models import User, UserAccountLink
 from gc_registry.user.validation import validate_user_access, validate_user_role
 
 from . import services
@@ -47,11 +47,26 @@ def create_account(
 ):
     validate_user_role(current_user, required_role=UserRoles.PRODUCTION_USER)
     validate_account(account_base, read_session)
+
+    # By default, create the account as linked to the current user
+    account_base.user_ids = account_base.user_ids + [current_user.id]
+
     accounts = Account.create(account_base, write_session, read_session, esdb_client)
     if not accounts:
         raise HTTPException(status_code=500, detail="Could not create Account")
 
-    account = accounts[0].model_dump()
+    account = AccountRead.model_validate(accounts[0].model_dump())
+
+    # Update link table to link the current user and list of associated users to the account
+    _user_account_link = UserAccountLink.create(
+        [
+            {"user_id": user_id, "account_id": account.id}
+            for user_id in account_base.user_ids
+        ],
+        write_session,
+        read_session,
+        esdb_client,
+    )
 
     return account
 
@@ -89,6 +104,11 @@ def update_account(
     if account.is_deleted:
         raise HTTPException(status_code=400, detail="Cannot update deleted accounts.")
 
+    if account_update.user_ids is not None:
+        services.update_account_user_links(
+            account, account_update, write_session, read_session, esdb_client
+        )
+
     updated_account = account.update(
         account_update, write_session, read_session, esdb_client
     )
@@ -97,6 +117,7 @@ def update_account(
         raise HTTPException(
             status_code=400, detail=f"Error during account update: {account_id}"
         )
+
     return updated_account
 
 
