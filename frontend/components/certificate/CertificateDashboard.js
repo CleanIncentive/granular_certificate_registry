@@ -77,6 +77,7 @@ const Dashboard = () => {
   const dialogRef = useRef();
 
   const { currentAccount } = useSelector((state) => state.account);
+  const { userInfo } = useSelector((state) => state.user);
 
   useEffect(() => {
     if (!currentAccount?.id) {
@@ -151,7 +152,7 @@ const Dashboard = () => {
 
   const fetchCertificatesData = async () => {
     const fetchBody = {
-      user_id: 1,
+      user_id: userInfo.userID,
       source_id: currentAccount.id,
       device_id: filters.device_id,
       certificate_bundle_status: STATUS_ENUM[filters.certificate_bundle_status], // Transform status to match API expectations
@@ -628,6 +629,8 @@ const Dashboard = () => {
         selectedDevices={selectedDevices}
         updateCertificateActionDialog={setDialogAction}
         getDeviceName={getDeviceName}
+        fetchCertificatesData={fetchCertificatesData}
+        setSelectedRowKeys={setSelectedRowKeys}
       />
     </Layout>
   );
