@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from esdbclient import EventStoreDBClient
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session
@@ -12,6 +14,8 @@ from gc_registry.user.validation import validate_user_role
 
 # Router initialisation
 router = APIRouter(tags=["Users"])
+
+LoggedInUser = Annotated[User, Depends(get_current_user)]
 
 ### User ###
 
@@ -28,6 +32,11 @@ def create_user(
     user = User.create(user_base, write_session, read_session, esdb_client)
 
     return user
+
+
+@router.get("/me", response_model=UserRead)
+def read_current_user(current_user: LoggedInUser) -> UserRead:
+    return current_user
 
 
 @router.get("/{user_id}", response_model=UserRead)
