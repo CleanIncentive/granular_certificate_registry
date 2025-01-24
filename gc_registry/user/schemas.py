@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+import re
+
+from pydantic import BaseModel, field_validator
 from sqlmodel import Field
 
 from gc_registry.account.schemas import AccountRead
@@ -20,6 +22,12 @@ class UserBase(BaseModel):
     )
     hashed_password: str | None = None
     is_deleted: bool = Field(default=False)
+
+    @field_validator("email")
+    def validate_email(cls, v):
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", v):
+            raise ValueError("Please enter a valid email address.")
+        return v
 
 
 class UserUpdate(BaseModel):
