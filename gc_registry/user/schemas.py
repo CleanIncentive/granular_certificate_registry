@@ -47,7 +47,6 @@ class UserRead(BaseModel):
     accounts: list[AccountRead] | None = None
     organisation: str | None = None
 
-    # return role as a string
     @model_serializer(mode="plain")
     def serializer(self, info, *, many=False):
         return {
