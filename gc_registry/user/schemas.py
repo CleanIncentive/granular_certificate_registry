@@ -33,7 +33,6 @@ class UserBase(BaseModel):
 class UserUpdate(BaseModel):
     name: str | None = None
     email: str | None = None
-    account_ids: list[int] | None = None
     organisation: str | None = None
     hashed_password: str | None = None
     role: UserRoles | None = None

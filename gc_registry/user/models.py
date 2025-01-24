@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ARRAY, Column, String
 from sqlmodel import Field, Relationship
 
 from gc_registry import utils
@@ -27,11 +26,6 @@ class User(UserBase, utils.ActiveRecord, table=True):
     __tablename__: str = "registry_user"  # type: ignore
 
     id: int | None = Field(default=None, primary_key=True)
-    account_ids: list[int] | None = Field(
-        default=None,
-        description="The accounts to which the user is registered.",
-        sa_column=Column(ARRAY(String())),
-    )
     accounts: list["Account"] | None = Relationship(
         back_populates="users", link_model=UserAccountLink
     )

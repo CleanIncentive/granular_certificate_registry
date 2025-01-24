@@ -7,6 +7,7 @@ from gc_registry.account.models import Account
 from gc_registry.account.schemas import AccountRead, AccountUpdate
 from gc_registry.certificate.models import GranularCertificateBundle
 from gc_registry.user.models import UserAccountLink
+from gc_registry.user.services import get_users_by_account_id
 
 
 def get_account_by_id(account_id: int, read_session: Session):
@@ -135,8 +136,15 @@ def update_account_user_links(
     if not account_update.user_ids:
         return
 
-    users_to_add = set(account_update.user_ids).difference(set(account.user_ids))
-    users_to_remove = set(account.user_ids).difference(set(account_update.user_ids))
+    # Get existing list of users associated with the account
+    existing_users = get_users_by_account_id(account.id, read_session)
+
+    users_to_add = set(account_update.user_ids).difference(
+        {user.id for user in existing_users}
+    )
+    users_to_remove = {user.id for user in existing_users}.difference(
+        set(account_update.user_ids)
+    )
 
     for user_id in users_to_add:
         UserAccountLink.create(
