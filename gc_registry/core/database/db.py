@@ -48,10 +48,7 @@ class DButils:
         if test:
             self.connection_str = f"sqlite:///{self._db_test_fp}"
         else:
-            self.connection_str = (
-                f"postgresql://{self._db_username}:{self._db_password}@{self._db_host}:"
-                f"{self._db_port}/{self._db_name}"
-            )
+            self.connection_str = f"postgresql://{self._db_username}:{self._db_password}@{self._db_host}:{self._db_port}/{self._db_name}"
 
         self.engine = create_engine(self.connection_str, pool_pre_ping=True)
 
