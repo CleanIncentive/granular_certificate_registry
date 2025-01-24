@@ -5,6 +5,11 @@ from sqlmodel import Field, SQLModel
 from gc_registry import utils
 
 
+class LoginRequest(SQLModel):
+    username: str
+    password: str
+
+
 class Token(SQLModel):
     access_token: str
     token_type: str
