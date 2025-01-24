@@ -8,7 +8,11 @@ from gc_registry.authentication.services import get_password_hash
 from gc_registry.certificate.models import GranularCertificateBundle, IssuanceMetaData
 from gc_registry.certificate.services import issue_certificates_in_date_range
 from gc_registry.core.database import cqrs, db, events
-from gc_registry.core.models.base import UserRoles
+from gc_registry.core.models.base import (
+    DeviceTechnologyType,
+    EnergySourceType,
+    UserRoles,
+)
 from gc_registry.device.meter_data.elexon.elexon import ElexonClient
 from gc_registry.device.models import Device
 from gc_registry.logging_config import logger
@@ -122,8 +126,8 @@ def seed_data():
             "device_name": bmu_id,
             "local_device_identifier": bmu_id,
             "grid": "National Grid",
-            "energy_source": "wind",
-            "technology_type": "wind",
+            "energy_source": EnergySourceType.wind,
+            "technology_type": DeviceTechnologyType.wind_turbine,
             "operational_date": str(datetime.datetime(2015, 1, 1, 0, 0, 0)),
             "capacity": device_capacities.get(bmu_id, 99999),
             "peak_demand": 100,

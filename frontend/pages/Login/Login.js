@@ -174,7 +174,7 @@ const Login = () => {
               </div>
 
               <div style={{ marginTop: 64, color: "#5F6368" }}>
-                <Text>Sponsor by:</Text>
+                <Text>Sponsored by:</Text>
               </div>
 
               <div className={styles["sponsors"]}>

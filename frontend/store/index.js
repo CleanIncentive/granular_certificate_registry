@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./auth/authSlice";
-import certificateReducer from "./certificates/certificateSlice";
+import certificateReducer from "./certificate/certificateSlice";
 import accountReducer from "./account/accountSlice";
 import userReducer from "./user/userSlice";
 import errorReducer from "./error/errorSlice";

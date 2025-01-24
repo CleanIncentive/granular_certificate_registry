@@ -56,7 +56,10 @@ def get_accounts_by_user_id(
     stmt: SelectOfScalar = (
         select(Account)
         .join(UserAccountLink)
-        .where(UserAccountLink.user_id == user_id, UserAccountLink.is_deleted == False)  # noqa: E712
+        .where(
+            UserAccountLink.user_id == user_id,
+            UserAccountLink.is_deleted == False,  # noqa: E712
+        )
     )
     accounts = read_session.exec(stmt).all()
 

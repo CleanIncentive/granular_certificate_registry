@@ -36,14 +36,14 @@ import {
 
 import StatusTag from "./StatusTag";
 
-import "../assets/styles/pagination.css";
-import "../assets/styles/filter.css";
+import "../../assets/styles/pagination.css";
+import "../../assets/styles/filter.css";
 
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { fetchCertificates } from "../store/certificates/certificateThunk";
+import { fetchCertificates } from "../../store/certificate/certificateThunk";
 
-import ActionDialog from "./ActionDialog";
+import CertificateActionDialog from "./CertificateActionDialog";
 
 const { Header, Sider, Content } = Layout;
 const { Title, Text } = Typography;
@@ -621,13 +621,13 @@ const Dashboard = () => {
       </Layout>
 
       {/* Dialog component with a ref to control it from outside */}
-      <ActionDialog
+      <CertificateActionDialog
         dialogAction={dialogAction}
         selectedRowKeys={selectedRowKeys}
         ref={dialogRef}
         totalProduction={totalProduction}
         selectedDevices={selectedDevices}
-        updateActionDialog={setDialogAction}
+        updateCertificateActionDialog={setDialogAction}
         getDeviceName={getDeviceName}
         fetchCertificatesData={fetchCertificatesData}
         setSelectedRowKeys={setSelectedRowKeys}
