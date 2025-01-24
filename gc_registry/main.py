@@ -1,11 +1,13 @@
 import datetime
 import logging
+import secrets
 from pathlib import Path
 from typing import Callable
 
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
+from fastapi.security import HTTPBearer
 from fastapi.templating import Jinja2Templates
 from markdown import markdown
 from pyinstrument import Profiler
@@ -26,6 +28,27 @@ from .storage.routes import router as storage_router
 from .user.routes import router as user_router
 
 STATIC_DIR_FP = Path(__file__).parent / "static"
+
+csrf_bearer = HTTPBearer()
+
+
+class CSRFMiddleware:
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, request: Request, call_next):
+        if request.method in ("POST", "PUT", "DELETE", "PATCH"):
+            csrf_token = request.headers.get("X-CSRF-Token")
+            session_token = request.session.get("csrf_token")
+
+            if not csrf_token or not session_token or csrf_token != session_token:
+                raise HTTPException(
+                    status_code=403, detail="CSRF token missing or invalid"
+                )
+
+        response = await call_next(request)
+        return response
+
 
 descriptions = {}
 for desc in ["api", "certificate", "storage"]:
@@ -80,10 +103,18 @@ app.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*", "X-CSRF-Token"],
 )
-
+app.add_middleware(CSRFMiddleware)
 app.add_middleware(SessionMiddleware, secret_key=settings.MIDDLEWARE_SECRET_KEY)
+
+
+@app.get("/csrf-token", tags=["Core"])
+async def get_csrf_token(request: Request):
+    token = secrets.token_urlsafe(32)
+    request.session["csrf_token"] = token
+    return {"csrf_token": token}
+
 
 app.include_router(
     certificate_router,
