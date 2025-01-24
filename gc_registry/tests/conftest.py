@@ -232,7 +232,7 @@ def add_entity_to_write_and_read(
 def fake_db_user(write_session: Session, read_session: Session) -> User:
     user_dict = {
         "name": "fake_user",
-        "primary_contact": "jake_fake@fakecorp.com",
+        "email": "jake_fake@fakecorp.com",
         "hashed_password": get_password_hash("password"),
         "role": UserRoles.ADMIN,
     }

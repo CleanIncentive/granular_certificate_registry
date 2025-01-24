@@ -159,7 +159,7 @@ class TestAccountRoutes:
         )
         print(response.json())
         assert response.status_code == 200
-        assert response.json()[0]["primary_contact"] == "jake_fake@fakecorp.com"
+        assert response.json()[0]["email"] == "jake_fake@fakecorp.com"
 
     def test_get_whitelist_inverse(
         self,
