@@ -249,7 +249,7 @@ def token(api_client, fake_db_user: User):
     token = api_client.post(
         "auth/login",
         data={
-            "username": "fake_user",
+            "username": "jake_fake@fakecorp.com",
             "password": "password",
         },
     )

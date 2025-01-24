@@ -51,7 +51,7 @@ class TestCQRS:
         user_dict = fake_db_user.model_dump()
         user_dict["name"] = "fake_user_2"
         user_dict["id"] = None
-        user_dict["email"] = "fake_contact_email"
+        user_dict["email"] = "fake_email@fea.com"
         user_dict["role"] = UserRoles.ADMIN
         user = User.model_validate(user_dict)
 
