@@ -18,7 +18,7 @@ router = APIRouter(tags=["Authentication"])
 
 @router.post("/login", response_model=Token)
 async def login_for_access_token(
-    form_data: OAuth2PasswordRequestForm | None = Depends(None),
+    form_data: OAuth2PasswordRequestForm = Depends(OAuth2PasswordRequestForm),
     json_data: LoginRequest | None = None,
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
@@ -40,16 +40,22 @@ async def login_for_access_token(
 
     Returns:
         Token: The access token.
+
+    Raises:
+        HTTPException: If invalid credentials are provided.
     """
-    if form_data is not None:
-        username = form_data.username
-        password = form_data.password
-    elif json_data is not None:
-        username = json_data.username
-        password = json_data.password
-    else:
+    # Try to get credentials from JSON first, fall back to form data
+    try:
+        if json_data is not None:
+            username = json_data.username
+            password = json_data.password
+        else:
+            username = form_data.username
+            password = form_data.password
+    except Exception:
         raise HTTPException(
-            status_code=422, detail="Either form data or JSON data must be provided."
+            status_code=422,
+            detail="Invalid request format. Provide either valid JSON or form data.",
         )
 
     user = services.authenticate_user(username, password, read_session)

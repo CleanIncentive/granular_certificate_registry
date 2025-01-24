@@ -4,9 +4,9 @@ import secrets
 from pathlib import Path
 from typing import Callable
 
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.security import HTTPBearer
 from fastapi.templating import Jinja2Templates
 from markdown import markdown
@@ -36,18 +36,26 @@ class CSRFMiddleware:
     def __init__(self, app):
         self.app = app
 
-    async def __call__(self, request: Request, call_next):
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            return await self.app(scope, receive, send)
+
+        async def get_request():
+            return Request(scope, receive=receive)
+
+        request = await get_request()
+
         if request.method in ("POST", "PUT", "DELETE", "PATCH"):
             csrf_token = request.headers.get("X-CSRF-Token")
             session_token = request.session.get("csrf_token")
 
             if not csrf_token or not session_token or csrf_token != session_token:
-                raise HTTPException(
-                    status_code=403, detail="CSRF token missing or invalid"
+                response = JSONResponse(
+                    status_code=403, content={"detail": "CSRF token missing or invalid"}
                 )
+                return await response(scope, receive, send)
 
-        response = await call_next(request)
-        return response
+        return await self.app(scope, receive, send)
 
 
 descriptions = {}
