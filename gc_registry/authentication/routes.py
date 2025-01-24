@@ -23,20 +23,33 @@ async def login_for_access_token(
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
 ):
+    """Login for access token.
+
+    OAuth2PasswordRequestForm requires the syntax "username" even though in practice
+    we are using the user's email address.
+
+    Args:
+        form_data (OAuth2PasswordRequestForm): The form data from the login request.
+        write_session (Session): The database session to write to.
+        read_session (Session): The database session to read from.
+        esdb_client (EventStoreDBClient): The EventStoreDB client.
+
+    Returns:
+        Token: The access token.
+    """
     user = services.authenticate_user(
         form_data.username, form_data.password, read_session
     )
     access_token_expires = timedelta(minutes=st.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = services.create_access_token(
-        data={"sub": user.name}, expires_delta=access_token_expires
+        data={"sub": user.email}, expires_delta=access_token_expires
     )
 
     if user.id is None:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # save username and token to database to match future requests
     token_record = TokenRecords(
-        username=user.name,
+        email=user.email,
         token=access_token,
         expires=datetime.now() + access_token_expires,
     )
