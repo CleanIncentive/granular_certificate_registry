@@ -1,0 +1,147 @@
+import React, { useState, forwardRef, useImperativeHandle } from "react";
+import { Modal, Input, Select, DatePicker, Checkbox, Form } from "antd";
+
+const { Option } = Select;
+
+const DeviceRegisterDialog = forwardRef((props, ref) => {
+  const [visible, setVisible] = useState(false);
+  const [form] = Form.useForm();
+
+  useImperativeHandle(ref, () => ({
+    openDialog: () => setVisible(true),
+    closeDialog: () => setVisible(false),
+  }));
+
+  const handleCancel = () => {
+    form.resetFields();
+    setVisible(false);
+  };
+
+  const handleOk = async () => {
+    try {
+      const values = await form.validateFields();
+      console.log("Device registration values:", values);
+      setVisible(false);
+    } catch (error) {
+      console.error("Validation failed:", error);
+    }
+  };
+
+  return (
+    <Modal
+      title="Add Device"
+      open={visible}
+      onOk={handleOk}
+      onCancel={handleCancel}
+      okText="Add Device"
+      cancelText="Cancel"
+      width={600}
+    >
+      <Form form={form} layout="vertical">
+        <Form.Item
+          label="Device Name"
+          name="device_name"
+          rules={[{ required: true, message: "Please input device name" }]}
+        >
+          <Input />
+        </Form.Item>
+
+        <Form.Item
+          label="Device ID"
+          name="local_device_identifier"
+          rules={[{ required: true, message: "Please input device ID" }]}
+          help="A unique identifier for the device, ideally used by the grid operator to identify the device and link it to available data sources. This could be a meter number, a serial number, or other appropriate identifier"
+        >
+          <Input />
+        </Form.Item>
+
+        <Form.Item
+          label="Grid"
+          name="grid"
+          rules={[{ required: true, message: "Please select grid" }]}
+        >
+          <Input />
+        </Form.Item>
+
+        <Form.Item
+          label="Technology type"
+          name="technology_type"
+          rules={[{ required: true, message: "Please select technology type" }]}
+        >
+          <Select placeholder="Select...">
+            <Option value="solar_pv">Solar PV</Option>
+            <Option value="wind_turbine">Wind turbine</Option>
+            <Option value="hydro">Hydro</Option>
+            <Option value="battery_storage">Battery storage</Option>
+            <Option value="other_storage">Other storage</Option>
+            <Option value="chp">CHP</Option>
+            <Option value="other">Other</Option>
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          label="Energy source"
+          name="energy_source"
+          rules={[{ required: true, message: "Please select energy source" }]}
+        >
+          <Select placeholder="Select...">
+            <Option value="solar">Solar</Option>
+            <Option value="wind">Wind</Option>
+            <Option value="hydro">Hydro</Option>
+          </Select>
+        </Form.Item>
+
+        <Form.Item
+          label="Operational date"
+          name="operational_date"
+          rules={[
+            { required: true, message: "Please select operational date" },
+          ]}
+        >
+          <DatePicker style={{ width: "100%" }} />
+        </Form.Item>
+
+        <Form.Item
+          label="Device Capacity"
+          name="capacity"
+          rules={[{ required: true, message: "Please input device capacity" }]}
+        >
+          <Input suffix="MW" placeholder="Ex: 80" />
+        </Form.Item>
+
+        <Form.Item
+          label="Peak Demand"
+          name="peak_demand"
+          rules={[{ required: true, message: "Please input peak demand" }]}
+        >
+          <Input suffix="MW" placeholder="Ex: 80" />
+        </Form.Item>
+
+        <Form.Item label="Location">
+          <Input.Group compact>
+            <Form.Item
+              name={["location", "latitude"]}
+              noStyle
+              rules={[{ required: true, message: "Latitude is required" }]}
+            >
+              <Input style={{ width: "50%" }} placeholder="Latitude" />
+            </Form.Item>
+            <Form.Item
+              name={["location", "longitude"]}
+              noStyle
+              rules={[{ required: true, message: "Longitude is required" }]}
+            >
+              <Input style={{ width: "50%" }} placeholder="Longitude" />
+            </Form.Item>
+          </Input.Group>
+        </Form.Item>
+
+        <Form.Item name="is_storage" valuePropName="checked">
+          <Checkbox>Is storage</Checkbox>
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+});
+
+export default DeviceRegisterDialog;

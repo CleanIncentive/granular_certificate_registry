@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   transferCertificates,
   cancelCertificates,
-} from "../store/certificates/certificateThunk";
+} from "../../store/certificate/certificateThunk.js";
 
 const { Option } = Select;
 
@@ -70,7 +70,7 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
 
   const handleCancel = () => {
     setVisible(false);
-    props.updateActionDialog(null);
+    props.updateCertificateActionDialog(null);
   };
 
   const handleOk = async () => {
@@ -95,7 +95,7 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
       }
 
       setVisible(false); // Close the dialog after confirming
-      props.updateActionDialog(null);
+      props.updateCertificateActionDialog(null);
       message.success(
         `${
           props.dialogAction.charAt(0).toUpperCase() +
