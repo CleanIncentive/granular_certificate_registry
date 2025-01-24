@@ -36,7 +36,8 @@ def create_user(
 
 @router.get("/me", response_model=UserRead)
 def read_current_user(current_user: LoggedInUser) -> UserRead:
-    return current_user
+    user_read = UserRead.model_validate(current_user.model_dump())
+    return user_read
 
 
 @router.get("/{user_id}", response_model=UserRead)
