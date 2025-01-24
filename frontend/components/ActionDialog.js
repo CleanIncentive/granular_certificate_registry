@@ -108,7 +108,7 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
         `${
           props.dialogAction.charAt(0).toUpperCase() +
           props.dialogAction.slice(1)
-        } failed: ${error}`,
+        } failed: ${error.message.split(",")[0]}`,
         3
       );
     }
