@@ -1,4 +1,5 @@
 from esdbclient import EventStoreDBClient
+from fastapi import HTTPException, status
 from sqlalchemy.sql.expression import Delete
 from sqlmodel import Session, delete, func, select
 from sqlmodel.sql.expression import SelectOfScalar
@@ -138,6 +139,13 @@ def update_account_user_links(
 
     # Get existing list of users associated with the account
     existing_users = get_users_by_account_id(account.id, read_session)
+
+    if not existing_users:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="""This account has no users associated with it.
+                      Please contact an administrator to add users to this account.""",
+        )
 
     users_to_add = set(account_update.user_ids).difference(
         {user.id for user in existing_users}

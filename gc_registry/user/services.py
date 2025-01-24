@@ -5,8 +5,11 @@ from gc_registry.user.models import User, UserAccountLink
 
 
 def get_users_by_account_id(
-    account_id: int, read_session: Session
+    account_id: int | None, read_session: Session
 ) -> list[User] | None:
+    if not account_id:
+        return None
+
     stmt: SelectOfScalar = (
         select(User)
         .join(UserAccountLink)
