@@ -27,7 +27,7 @@ class TestCertificateServices:
         assert account_summary["total_certificate_energy"] == 1000
         assert account_summary["energy_by_fuel_type"] == {"wind": 1000}
 
-    def test_get_accounts_by_user_id(
+    def test_get_users_by_account_id(
         self, read_session: Session, fake_db_account: Account, fake_db_user: User
     ):
         assert fake_db_account is not None
