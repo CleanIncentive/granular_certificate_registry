@@ -3,7 +3,7 @@ from typing import Any, Hashable
 
 import pandas as pd
 
-from gc_registry.account.models import Account
+from gc_registry.account.models import Account, AccountWhitelistLink
 from gc_registry.authentication.services import get_password_hash
 from gc_registry.certificate.models import GranularCertificateBundle, IssuanceMetaData
 from gc_registry.certificate.services import issue_certificates_in_date_range
@@ -25,17 +25,15 @@ def seed_data():
 
     bmu_ids = [
         "E_MARK-1",
+        "T_ABRBO-1",
         "T_RATS-1",
-        "T_RATS-2",
-        "T_RATS-3",
-        "T_RATS-4",
-        "T_RATSGT-2",
-        "T_RATSGT-4",
+        "E_BLARW-1",
+        "C__PSMAR001",
     ]
 
     client = ElexonClient()
-    from_datetime = datetime.datetime(2024, 1, 1, 0, 0, 0)
-    to_datetime = from_datetime + datetime.timedelta(days=1)
+    to_datetime = datetime.datetime(2025, 1, 16, 0, 0, 0)
+    from_datetime = to_datetime - datetime.timedelta(days=4)
 
     device_capacities = client.get_device_capacities(bmu_ids)
 
@@ -84,6 +82,24 @@ def seed_data():
             user_account_link_dict, write_session, read_session, esdb_client
         )
 
+    # create second Account
+    account_dict = {
+        "account_name": "Test Account 2",
+        "user_ids": [admin_user.id],
+    }
+    account_2 = Account.create(account_dict, write_session, read_session, esdb_client)[
+        0
+    ]
+
+    white_list_link_dict = {
+        "target_account_id": account_2.id,
+        "source_account_id": account.id,
+    }
+
+    _ = AccountWhitelistLink.create(
+        white_list_link_dict, write_session, read_session, esdb_client
+    )
+
     # Create issuance metadata for the certificates
     issuance_metadata_dict = {
         "country_of_issuance": "UK",
@@ -109,7 +125,7 @@ def seed_data():
             "energy_source": "wind",
             "technology_type": "wind",
             "operational_date": str(datetime.datetime(2015, 1, 1, 0, 0, 0)),
-            "capacity": device_capacities[bmu_id],
+            "capacity": device_capacities.get(bmu_id, 99999),
             "peak_demand": 100,
             "location": "Some Location",
             "account_id": account.id,
@@ -123,6 +139,7 @@ def seed_data():
         )
         if len(data) == 0:
             logger.info(f"No data found for {bmu_id}")
+            print(f"No data found for {bmu_id}")
             continue
 
         certificate_bundles = client.map_metering_to_certificates(
@@ -135,6 +152,7 @@ def seed_data():
 
         if not certificate_bundles:
             logger.info(f"No certificate bundles found for {bmu_id}")
+            print(f"No certificate bundles found for {bmu_id}")
         else:
             _ = cqrs.write_to_database(
                 [
@@ -147,6 +165,7 @@ def seed_data():
             )
 
     logger.info("Seeding complete!")
+    print("Seeding complete!")
 
     write_session.close()
     read_session.close()

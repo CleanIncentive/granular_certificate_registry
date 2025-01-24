@@ -8,6 +8,7 @@ from gc_registry import utils
 class Token(SQLModel):
     access_token: str
     token_type: str
+    user_id: int
 
 
 class TokenRecordsBase(utils.ActiveRecord):
