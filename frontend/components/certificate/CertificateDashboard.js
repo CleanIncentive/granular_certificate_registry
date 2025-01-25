@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import dayjs from "dayjs";
+import Cookies from "js-cookie";
 
 import {
   Layout,
@@ -50,6 +51,7 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
+
 const STATUS_ENUM = Object.freeze({
   claimed: "Claimed",
   cancelled: "Cancelled",
@@ -76,7 +78,7 @@ const Dashboard = () => {
 
   const dialogRef = useRef();
 
-  const { currentAccount } = useSelector((state) => state.account);
+  const currentAccount = JSON.parse(Cookies.get("account_detail"));
 
   useEffect(() => {
     if (!currentAccount?.id) {

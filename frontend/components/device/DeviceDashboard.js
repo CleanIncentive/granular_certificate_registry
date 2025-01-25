@@ -19,6 +19,7 @@ import {
   Select,
   DatePicker,
   Dropdown,
+  Input,
 } from "antd";
 
 import {
@@ -31,6 +32,7 @@ import {
   ThunderboltOutlined,
   PlusCircleOutlined,
   UploadOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 
 import "../../assets/styles/pagination.css";
@@ -39,6 +41,8 @@ import "../../assets/styles/filter.css";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
+import Cookies from "js-cookie";
+
 import DeviceRegisterDialog from "../device/DeviceRegisterForm";
 import DeviceUploadDialog from "../device/DeviceUploadDataForm";
 import SideMenu from "../SideMenu";
@@ -46,6 +50,7 @@ import SideMenu from "../SideMenu";
 const { Header, Sider, Content } = Layout;
 const { Title, Text } = Typography;
 const { Option } = Select;
+const { Search } = Input;
 
 export const DEVICE_TECHNOLOGY_TYPE = Object.freeze({
   SOLAR_PV: "Solar PV",
@@ -65,9 +70,10 @@ const DeviceDashboard = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { currentAccount } = useSelector((state) => state.account);
+  const currentAccount = JSON.parse(Cookies.get("account_detail"));
 
   useEffect(() => {
+    console.log("currentAccount: ", currentAccount);
     if (!currentAccount?.id) {
       navigate("/login");
       return;
@@ -307,17 +313,12 @@ const DeviceDashboard = () => {
             }}
             split={<Divider type="vertical" />}
           >
-            {/* Device Filter */}
-            <Select
-              placeholder="Device"
-              mode="multiple"
-              options={deviceOptions}
-              value={filters.device}
-              onChange={(value) => handleFilterChange("device_id", value)}
-              style={{ width: 120 }}
-              suffixIcon={<LaptopOutlined />}
-              allowClear
-            ></Select>
+            <Search
+              placeholder="Search for device..."
+              onSearch={(value) => console.log(value)}
+              enterButton={<SearchOutlined />}
+              size="medium"
+            />
             {/* Device Filter */}
             <Select
               placeholder="Device"

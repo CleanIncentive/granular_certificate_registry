@@ -20,7 +20,7 @@ import {
 } from "react-router-dom";
 
 const isAuthenticated = () => {
-  const token = Cookies.get("access_token"); // Assuming the token is saved as 'authToken'
+  const token = Cookies.get("access_token");
   return !!token; // Returns true if token exists
 };
 

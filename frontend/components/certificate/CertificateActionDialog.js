@@ -12,6 +12,8 @@ import {
   cancelCertificates,
 } from "../../store/certificate/certificateThunk.js";
 
+import Cookies from "js-cookie";
+
 const { Option } = Select;
 
 const TransferCertificatesDialog = forwardRef((props, ref) => {
@@ -24,8 +26,9 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [beneficiary, setBeneficiary] = useState("");
 
-  const { currentAccount } = useSelector((state) => state.account);
   const { userInfo } = useSelector((state) => state.user);
+
+  const currentAccount = JSON.parse(Cookies.get("account_detail"));
 
   // Expose methods to the parent component
   useImperativeHandle(ref, () => ({

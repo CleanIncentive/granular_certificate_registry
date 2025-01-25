@@ -51,5 +51,5 @@ const accountSlice = createSlice({
   },
 });
 
-export const { clearAccountState } = accountSlice.actions;
+export const { clearAccountState, setAccountState } = accountSlice.actions;
 export default accountSlice.reducer;
