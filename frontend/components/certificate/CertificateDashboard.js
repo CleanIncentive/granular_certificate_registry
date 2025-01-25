@@ -78,7 +78,7 @@ const Dashboard = () => {
   const dialogRef = useRef();
 
   const currentAccount = JSON.parse(Cookies.get("account_detail"));
-  const { userInfo } = useSelector((state) => state.user);
+  const userInfo = JSON.parse(Cookies.get("user_data")).userInfo;
 
   useEffect(() => {
     if (!currentAccount?.id) {

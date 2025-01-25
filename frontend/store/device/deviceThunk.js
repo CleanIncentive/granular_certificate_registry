@@ -3,7 +3,7 @@ import { createDeviceAPI } from "../../api/deviceAPI";
 
 export const createDevice = createAsyncThunk("device/createDevice", async (_, { dispatch, rejectWithValue }) => {
   try {
-    const response = await createDeviceAPI();
+    const response = await createDeviceAPI(_);
     console.log(response)
     return response?.data;
   } catch (error) {

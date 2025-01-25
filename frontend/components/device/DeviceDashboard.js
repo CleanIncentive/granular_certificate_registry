@@ -65,37 +65,10 @@ export const DEVICE_TECHNOLOGY_TYPE = Object.freeze({
 const DeviceDashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const deviceRegisterDialogRef = useRef();
-  const deviceUploadDialogRef = useRef();
+
+  const { currentAccount, devices } = useSelector((state) => state.account);
 
   const [currentPage, setCurrentPage] = useState(1);
-
-  const currentAccount = JSON.parse(Cookies.get("account_detail"));
-
-  useEffect(() => {
-    console.log("currentAccount: ", currentAccount);
-    if (!currentAccount?.id) {
-      navigate("/login");
-      return;
-    }
-  }, [currentAccount, navigate]);
-
-  if (!currentAccount?.id) {
-    return null;
-  }
-
-  const devices = currentAccount.devices;
-
-  const deviceOptions = useMemo(
-    () =>
-      currentAccount.devices.map((device) => ({
-        value: device.id,
-        label:
-          `${device.device_name} (${device.local_device_identifier})` ||
-          `Device (${device.local_device_identifier})`,
-      })),
-    [currentAccount.devices]
-  );
 
   const defaultFilters = {
     deviceName: null,
@@ -103,6 +76,33 @@ const DeviceDashboard = () => {
   };
 
   const [filters, setFilters] = useState(defaultFilters);
+
+  const deviceRegisterDialogRef = useRef();
+  const deviceUploadDialogRef = useRef();
+
+  const deviceOptions = useMemo(
+    () =>
+      devices.map((device) => ({
+        value: device.id,
+        label:
+          `${device.device_name} (${device.local_device_identifier})` ||
+          `Device (${device.local_device_identifier})`,
+      })),
+    [devices]
+  );
+
+  useEffect(() => {
+    console.log("devices: ", devices);
+    if (!currentAccount?.id && devices && devices.length > 0) {
+      navigate("/login");
+      return;
+    }
+
+  }, [devices, navigate]);
+
+  if (!currentAccount?.id) {
+    return null;
+  }
 
   const pageSize = 10;
   const totalPages = Math.ceil(devices?.length / pageSize);

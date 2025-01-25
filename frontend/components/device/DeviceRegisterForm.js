@@ -1,11 +1,20 @@
 import React, { useState, forwardRef, useImperativeHandle } from "react";
 import { Modal, Input, Select, DatePicker, Checkbox, Form } from "antd";
 
+import { useDispatch } from "react-redux";
+
+import Cookies from "js-cookie";
+
+import { createDevice } from "../../store/device/deviceThunk";
+
 const { Option } = Select;
 
 const DeviceRegisterDialog = forwardRef((props, ref) => {
+  const dispatch = useDispatch();
   const [visible, setVisible] = useState(false);
   const [form] = Form.useForm();
+
+  const currentAccount = JSON.parse(Cookies.get("account_detail"));
 
   useImperativeHandle(ref, () => ({
     openDialog: () => setVisible(true),
@@ -20,7 +29,13 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
+      values.location = `${values.location.latitude}, ${values.location.longitude}`
       console.log("Device registration values:", values);
+      const resonse = await dispatch(
+        createDevice({ ...values, account_id: currentAccount.id })
+      ).unwrap();
+      console.log("Create Device Response: ", resonse);
+      await dispatch(getAccountDetails(currentAccount.id)).unwrap();
       setVisible(false);
     } catch (error) {
       console.error("Validation failed:", error);
