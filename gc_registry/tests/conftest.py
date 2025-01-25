@@ -232,7 +232,7 @@ def add_entity_to_write_and_read(
 def fake_db_user(write_session: Session, read_session: Session) -> User:
     user_dict = {
         "name": "fake_user",
-        "primary_contact": "jake_fake@fakecorp.com",
+        "email": "jake_fake@fakecorp.com",
         "hashed_password": get_password_hash("password"),
         "role": UserRoles.ADMIN,
     }
@@ -249,7 +249,7 @@ def token(api_client, fake_db_user: User):
     token = api_client.post(
         "auth/login",
         data={
-            "username": "fake_user",
+            "username": "jake_fake@fakecorp.com",
             "password": "password",
         },
     )
@@ -264,6 +264,7 @@ def fake_db_account(
     account_dict = {
         "account_name": "fake_account",
         "user_ids": [fake_db_user.id],
+        "users": [fake_db_user],
     }
     account_write = Account.model_validate(account_dict)
 
@@ -287,12 +288,19 @@ def fake_db_account_2(
     account_dict = {
         "account_name": "fake_account_2",
         "user_ids": [fake_db_user.id],
+        "users": [fake_db_user],
     }
     account_write = Account.model_validate(account_dict)
 
     account_read = add_entity_to_write_and_read(
         account_write, write_session, read_session
     )
+
+    user_account_link = UserAccountLink.model_validate(
+        {"user_id": fake_db_user.id, "account_id": account_read.id}
+    )
+
+    _ = add_entity_to_write_and_read(user_account_link, write_session, read_session)
 
     return account_read
 

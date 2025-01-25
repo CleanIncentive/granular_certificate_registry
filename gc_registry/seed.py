@@ -43,7 +43,7 @@ def seed_data():
 
     # Create an inital Admin user
     admin_user_dict = {
-        "primary_contact": "admin_user@usermail.com",
+        "email": "admin_user@usermail.com",
         "name": "Admin",
         "hashed_password": get_password_hash("admin"),
         "role": UserRoles.ADMIN,
@@ -53,7 +53,7 @@ def seed_data():
     ]
 
     production_user_dict = {
-        "primary_contact": "production_user@usermail.com",
+        "email": "production_user@usermail.com",
         "name": "Production",
         "hashed_password": get_password_hash("production"),
         "role": UserRoles.PRODUCTION_USER,
@@ -63,7 +63,7 @@ def seed_data():
     )[0]
 
     trading_user_dict = {
-        "primary_contact": "trading_user@usermail.conm",
+        "email": "trading_user@usermail.conm",
         "name": "Trading",
         "hashed_password": get_password_hash("trading"),
         "role": UserRoles.TRADING_USER,
@@ -183,7 +183,7 @@ def create_device_account_and_user(
     """Create a default device, account and user for the device"""
 
     user_dict = {
-        "primary_contact": "a_user@usermail.com",
+        "email": "a_user@usermail.com",
         "name": f"Default user for {device_name}",
         "hashed_password": get_password_hash("password"),
         "role": UserRoles.PRODUCTION_USER,

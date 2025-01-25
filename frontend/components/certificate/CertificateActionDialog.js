@@ -99,6 +99,7 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
 
       setVisible(false); // Close the dialog after confirming
       props.updateCertificateActionDialog(null);
+      props.setSelectedRowKeys([]);
       message.success(
         `${
           props.dialogAction.charAt(0).toUpperCase() +
@@ -106,12 +107,14 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
         } successful 🎉`,
         2
       );
+
+      props.fetchCertificatesData();
     } catch (error) {
       message.error(
         `${
           props.dialogAction.charAt(0).toUpperCase() +
           props.dialogAction.slice(1)
-        } failed: ${error}`,
+        } failed: ${error.message.split(",")[0]}`,
         3
       );
     }

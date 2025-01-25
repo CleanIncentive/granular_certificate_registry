@@ -51,8 +51,20 @@ def get_account_summary(account: Account, read_session: Session):
 
 
 def get_accounts_by_user_id(
-    user_id: int, read_session: Session
+    user_id: int | None, read_session: Session
 ) -> list[AccountRead] | None:
+    """Get accounts by user ID.
+
+    Args:
+        user_id (int): The ID of the user.
+        read_session (Session): The read session.
+
+    Returns:
+        list[AccountRead] | None: List of accounts or None if no accounts are found.
+    """
+    if not user_id:
+        raise ValueError("User ID is required")
+
     stmt: SelectOfScalar = (
         select(Account)
         .join(UserAccountLink)
@@ -62,6 +74,8 @@ def get_accounts_by_user_id(
         )
     )
     accounts = read_session.exec(stmt).all()
+    if not accounts:
+        return None
 
     account_reads = [AccountRead.model_validate(a.model_dump()) for a in accounts]
 
