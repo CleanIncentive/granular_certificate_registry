@@ -34,7 +34,6 @@ class TestCQRS:
             "account_id": fake_db_account.id,
             "device_type": "wind",
             "is_renewable": True,
-            "fuel_source": "wind",
             "location": "USA",
             "capacity_mw": 100,
             "commissioning_date": "2020-01-01",
@@ -52,7 +51,7 @@ class TestCQRS:
         user_dict = fake_db_user.model_dump()
         user_dict["name"] = "fake_user_2"
         user_dict["id"] = None
-        user_dict["primary_contact"] = "fake_contact_email"
+        user_dict["email"] = "fake_email@fea.com"
         user_dict["role"] = UserRoles.ADMIN
         user = User.model_validate(user_dict)
 

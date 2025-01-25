@@ -4,8 +4,7 @@ from esdbclient import EventStoreDBClient
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
-from gc_registry.account.models import Account
-from gc_registry.account.schemas import AccountUpdate
+from gc_registry.account.models import Account, AccountWhitelistLink
 from gc_registry.certificate.models import GranularCertificateBundle
 from gc_registry.certificate.services import create_issuance_id
 from gc_registry.user.models import User
@@ -57,15 +56,21 @@ def test_transfer_certificate(
 
     # Whitelist the source account for the target account
     fake_db_account = write_session.merge(fake_db_account)
-    fake_db_account.update(
-        AccountUpdate(account_whitelist=[fake_db_account_2.id]),  # type: ignore
+    AccountWhitelistLink.create(
+        {
+            "target_account_id": fake_db_account.id,
+            "source_account_id": fake_db_account_2.id,
+        },
         write_session,
         read_session,
         esdb_client,
     )
     fake_db_account_2 = write_session.merge(fake_db_account_2)
-    fake_db_account_2.update(
-        AccountUpdate(account_whitelist=[fake_db_account.id]),  # type: ignore
+    AccountWhitelistLink.create(
+        {
+            "target_account_id": fake_db_account_2.id,
+            "source_account_id": fake_db_account.id,
+        },
         write_session,
         read_session,
         esdb_client,
@@ -475,4 +480,24 @@ def test_query_certificate_bundles(
     assert (
         response.json()["detail"][0]["msg"]
         == "Input should be 'solar_pv', 'wind', 'hydro', 'biomass', 'nuclear', 'electrolysis', 'geothermal', 'battery_storage', 'chp' or 'other'"
+    )
+
+
+def test_read_certificate_bundle(
+    api_client: TestClient,
+    token: str,
+    fake_db_granular_certificate_bundle: GranularCertificateBundle,
+    fake_db_granular_certificate_bundle_2: GranularCertificateBundle,
+    fake_db_user: User,
+    fake_db_account: Account,
+):
+    response = api_client.get(
+        f"/certificate/{fake_db_granular_certificate_bundle.id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 200
+    assert (
+        response.json()["issuance_id"]
+        == fake_db_granular_certificate_bundle.issuance_id
     )

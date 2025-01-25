@@ -50,7 +50,15 @@ class DButils:
         else:
             self.connection_str = f"postgresql://{self._db_username}:{self._db_password}@{self._db_host}:{self._db_port}/{self._db_name}"
 
-        self.engine = create_engine(self.connection_str, pool_pre_ping=True)
+        self.engine = create_engine(
+            self.connection_str,
+            pool_pre_ping=True,
+            pool_size=10,
+            max_overflow=20,
+            pool_timeout=30,
+            pool_recycle=1800,
+            echo=False,
+        )
 
     def yield_session(self) -> Generator[Any, Any, Any]:
         with Session(self.engine) as session, session.begin():

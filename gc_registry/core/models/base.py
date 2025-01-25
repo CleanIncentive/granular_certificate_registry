@@ -26,7 +26,7 @@ class DeviceTechnologyType(str, enum.Enum):
     wind_turbine = "wind_turbine"
     hydro = "hydro"
     battery_storage = "battery_storage"
-    ev_charger = "ev_charger"
+    other_storage = "other_storage"
     chp = "chp"
     other = "other"
 

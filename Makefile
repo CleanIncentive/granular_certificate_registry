@@ -43,6 +43,11 @@ db.update:
 	docker compose run --rm gc_registry alembic upgrade head && \
 	docker compose down
 
+.PHONY: db.downgrade
+db.downgrade:
+	docker compose run --rm gc_registry alembic downgrade -1 && \
+	docker compose down
+
 .PHONY: db.fix
 db.fix:
 	docker compose run --rm gc_registry sh -c 'echo "Checking for multiple heads..." && \
@@ -93,17 +98,16 @@ db.revision:
 	make db.fix  && \
 		echo "Creating new revision..." && \
 		docker compose run --rm gc_registry alembic revision --autogenerate -m $(NAME) && \
-		echo "Revision created successfully." && \
-		docker compose down
+		echo "Revision created successfully."
 
 .PHONY: db.reset
 db.reset:
 	docker compose down && \
-		docker volume rm granular_certificate_registry_postgres_data_read && \
-		docker volume rm granular_certificate_registry_postgres_data_write && \
+	docker volume rm granular_certificate_registry_postgres_data_read && \
+	docker volume rm granular_certificate_registry_postgres_data_write && \
 		docker volume rm granular_certificate_registry_eventstore-volume-data && \
 		docker volume rm granular_certificate_registry_eventstore-volume-logs && \
-		make db.update
+	make db.update
 
 .PHONY: db.test.migrations
 db.test.migrations:

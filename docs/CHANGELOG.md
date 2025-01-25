@@ -2,6 +2,24 @@
 
 Tracks changes between releases following the semantic versioning outlined in the development documentation.
 
+### v. 0.2.2
+
+**New Features**
+- Adds `GET /users/me` and `GET /users/me/accounts` to retrieve the logged in user and its linked accounts
+- Adds `GET /accounts/{account_id}/users` to retrieve the users linked to an account
+- Adds `GET /accounts/{account_id}/certificates` to retrieve the certificates linked to an account
+- Adds `GET /accounts/{account_id}/devices` to retrieve the devices linked to an account
+- Changes authentication to use the user's email address rather than user name
+
+### v. 0.2.1
+
+**New Features**
+- Refactor account whitelisting to use a link table between source and target accounts to facilitate easier 
+retrieval of inverse whitelists - necessary for the frontend to display to a user which accounts they may transfer to
+
+**Fixes**
+- Adds `make eventstore.reset` to reset the eventstore
+
 ### v. 0.2.0
 
 **New Features**
