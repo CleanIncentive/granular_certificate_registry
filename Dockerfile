@@ -39,5 +39,8 @@ COPY ./README.md ./README.md
 COPY ./Makefile ./Makefile
 COPY ./alembic.ini ./alembic.ini
 
+COPY package.json package.json
+COPY webpack.config.js webpack.config.js
+
 # Start both FastAPI and React (via uvicorn and static file serving)
 CMD ["uvicorn", "gc_registry.main:app", "--host", "0.0.0.0", "--port", "8080"]
