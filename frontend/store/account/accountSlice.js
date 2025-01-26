@@ -10,6 +10,7 @@ const accountSlice = createSlice({
       devices: [],
       whiteListInverse: []
     },
+    devices: [],
     loading: false,
     error: null,
   },
@@ -20,6 +21,11 @@ const accountSlice = createSlice({
         account_name: "",
         devices: [],
       };
+      state.error = null;
+    },
+    setAccountState: (state, action) => {
+      state.currentAccount = action.payload
+      state.devices = action.payload.devices
       state.error = null;
     },
   },
@@ -37,6 +43,7 @@ const accountSlice = createSlice({
           devices: action.payload.devices,
           whiteListInverse: action.payload.whiteListInverse
         };
+        state.devices = action.payload.devices
       })
       .addCase(getAccountDetails.rejected, (state, action) => {
         state.loading = false;
@@ -51,5 +58,5 @@ const accountSlice = createSlice({
   },
 });
 
-export const { clearAccountState } = accountSlice.actions;
+export const { clearAccountState, setAccountState } = accountSlice.actions;
 export default accountSlice.reducer;
