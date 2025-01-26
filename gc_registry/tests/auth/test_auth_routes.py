@@ -29,6 +29,4 @@ class TestAuthRoutes:
             data={"username": "incorrect@wrong.com", "password": "password"},
         )
         assert response.status_code == 404
-        assert response.json() == {
-            "detail": "User with email 'incorrect@wrong.com' not found."
-        }
+        assert response.json() == {"detail": "User 'incorrect@wrong.com' not found."}

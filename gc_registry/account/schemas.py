@@ -29,6 +29,8 @@ class AccountSummary(BaseModel):
     id: int
     account_name: str
     num_devices: int
+    num_devices_by_type: dict[str, int] | None = None
+    device_capacity_by_type: dict[str, int] | None = None
     num_granular_certificate_bundles: int
     total_certificate_energy: int
     energy_by_fuel_type: dict[str, int] | None = None

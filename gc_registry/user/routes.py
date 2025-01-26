@@ -36,8 +36,12 @@ def create_user(
 
 
 @router.get("/me", response_model=UserRead)
-def read_current_user(current_user: LoggedInUser) -> UserRead:
+def read_current_user(
+    current_user: LoggedInUser, read_session: Session = Depends(db.get_read_session)
+) -> UserRead:
     user_read = UserRead.model_validate(current_user.model_dump())
+    user_accounts = get_accounts_by_user_id(current_user.id, read_session)
+    user_read.accounts = user_accounts
     return user_read
 
 

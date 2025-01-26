@@ -67,6 +67,9 @@ def api_client(
     app.dependency_overrides[events.get_esdb_client] = get_esdb_client_override
 
     with TestClient(app) as client:
+        response = client.get("/csrf-token")
+        csrf_token = response.json()["csrf_token"]
+        client.headers["X-CSRF-Token"] = csrf_token
         yield client
 
 
@@ -233,6 +236,22 @@ def fake_db_user(write_session: Session, read_session: Session) -> User:
     user_dict = {
         "name": "fake_user",
         "email": "jake_fake@fakecorp.com",
+        "hashed_password": get_password_hash("password"),
+        "role": UserRoles.ADMIN,
+    }
+
+    user_write = User.model_validate(user_dict)
+
+    user_read = add_entity_to_write_and_read(user_write, write_session, read_session)
+
+    return user_read
+
+
+@pytest.fixture()
+def fake_db_user_2(write_session: Session, read_session: Session) -> User:
+    user_dict = {
+        "name": "fake_user_2",
+        "email": "jake_fake_2@fakecorp.com",
         "hashed_password": get_password_hash("password"),
         "role": UserRoles.ADMIN,
     }

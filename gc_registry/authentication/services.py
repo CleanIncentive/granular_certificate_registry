@@ -32,7 +32,7 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-def get_user(email: str, read_session: Session) -> User:
+def get_user(email: str, read_session: Session) -> User | None:
     """Retrieve a User from the database matching the provided name.
 
     Args:
@@ -47,10 +47,7 @@ def get_user(email: str, read_session: Session) -> User:
 
     """
     user = read_session.exec(select(User).where(User.email == email)).first()
-    if user is None:
-        raise HTTPException(
-            status_code=404, detail=f"User with email '{email}' not found."
-        )
+
     return user
 
 
@@ -70,6 +67,12 @@ def authenticate_user(email: str, password: str, read_session: Session) -> User:
 
     """
     user = get_user(email, read_session)
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User '{email}' not found.",
+        )
 
     if not verify_password(password, user.hashed_password):
         raise HTTPException(
