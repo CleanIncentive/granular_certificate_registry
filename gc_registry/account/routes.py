@@ -96,7 +96,7 @@ def update_account(
     validate_user_access(current_user, account_id, read_session)
 
     account = Account.by_id(account_id, write_session)
-    if not account:
+    if not account or not account.id:
         raise HTTPException(
             status_code=404, detail=f"Account ID not found: {account_id}"
         )
@@ -106,7 +106,7 @@ def update_account(
 
     if account_update.user_ids is not None:
         services.update_account_user_links(
-            account, account_update, write_session, read_session, esdb_client
+            account.id, account_update, write_session, read_session, esdb_client
         )
 
     updated_account = account.update(

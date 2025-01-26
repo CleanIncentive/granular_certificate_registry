@@ -1,6 +1,5 @@
 from esdbclient import EventStoreDBClient
 from fastapi import HTTPException, status
-from sqlalchemy.sql.expression import Delete
 from sqlmodel import Session, delete, func, select
 from sqlmodel.sql.expression import SelectOfScalar
 
@@ -119,7 +118,7 @@ def get_accounts_by_user_id(
 
 
 def update_account_user_links(
-    account: Account,
+    account_id: int,
     account_update: AccountUpdate,
     write_session: Session,
     read_session: Session,
@@ -138,7 +137,7 @@ def update_account_user_links(
         return
 
     # Get existing list of users associated with the account
-    existing_users = get_users_by_account_id(account.id, read_session)
+    existing_users = get_users_by_account_id(account_id, read_session)
 
     if not existing_users:
         raise HTTPException(
@@ -150,22 +149,22 @@ def update_account_user_links(
     users_to_add = set(account_update.user_ids).difference(
         {user.id for user in existing_users}
     )
-    users_to_remove = {user.id for user in existing_users}.difference(
-        set(account_update.user_ids)
-    )
+    users_to_remove = {
+        user.id for user in existing_users if user.id is not None
+    }.difference(set(account_update.user_ids))
 
     for user_id in users_to_add:
         UserAccountLink.create(
-            [{"user_id": user_id, "account_id": account.id}],
+            [{"user_id": user_id, "account_id": account_id}],
             write_session,
             read_session,
             esdb_client,
         )
 
-    for user_id in users_to_remove:  # type: ignore
-        stmt: Delete = delete(UserAccountLink).where(
+    for user_id in users_to_remove:
+        delete_stmt = delete(UserAccountLink).where(
             UserAccountLink.user_id == user_id,
-            UserAccountLink.account_id == account.id,
+            UserAccountLink.account_id == account_id,
         )
-        read_session.exec(stmt)  # type: ignore
-        write_session.exec(stmt)  # type: ignore
+        read_session.exec(delete_stmt)  # type: ignore
+        write_session.exec(delete_stmt)  # type: ignore
