@@ -82,7 +82,7 @@ def submit_readings(
     try:
         issuance_metadata = IssuanceMetaData.by_id(1, read_session)
     except HTTPException:
-        issuance_metadata = IssuanceMetaData.create(
+        issuance_metadata_list = IssuanceMetaData.create(
             {
                 "issue_market_zone": "UK",
                 "country_of_issuance": "UK",
@@ -93,6 +93,11 @@ def submit_readings(
             read_session,
             esdb_client,
         )
+        if not issuance_metadata_list:
+            raise HTTPException(
+                status_code=500, detail="Could not create issuance metadata."
+            )
+        issuance_metadata = issuance_metadata_list[0]  # type: ignore
 
     issue_certificates_by_device_in_date_range(
         device=device,
@@ -101,7 +106,7 @@ def submit_readings(
         write_session=write_session,
         read_session=read_session,
         esdb_client=esdb_client,
-        issuance_metadata_id=issuance_metadata[0].id,
+        issuance_metadata_id=issuance_metadata.id,
         meter_data_client=meter_data_client,
     )
 
