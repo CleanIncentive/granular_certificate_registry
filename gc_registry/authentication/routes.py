@@ -59,13 +59,14 @@ async def login_for_access_token(
         )
 
     user = services.authenticate_user(username, password, read_session)
+
+    if user.id is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
     access_token_expires = timedelta(minutes=st.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = services.create_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires
     )
-
-    if user.id is None:
-        raise HTTPException(status_code=404, detail="User not found")
 
     token_record = TokenRecords(
         email=user.email,
