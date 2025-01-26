@@ -53,7 +53,7 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
       cancelText="Cancel"
       width={600}
     >
-      <Form form={form} layout="vertical">
+      <Form form={form} layout="vertical" initialValues={{ is_storage: false }}>
         <Form.Item
           label="Device Name"
           name="device_name"
@@ -155,9 +155,9 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
         <Form.Item
           name="is_storage"
           valuePropName="checked"
-          rules={[{ required: false }]}
+          rules={[{ required: true }]}
         >
-          <Checkbox>Is storage</Checkbox>
+          <Checkbox>Is storage device?</Checkbox>
         </Form.Item>
       </Form>
     </Modal>
