@@ -33,8 +33,9 @@ csrf_bearer = HTTPBearer()
 
 
 class CSRFMiddleware:
-    def __init__(self, app):
+    def __init__(self, app, allow_origins: list[str] | None = None):
         self.app = app
+        self.allow_origins = allow_origins
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
@@ -44,6 +45,10 @@ class CSRFMiddleware:
             return Request(scope, receive=receive)
 
         request = await get_request()
+        if self.allow_origins and any(
+            o in str(request.url) for o in self.allow_origins
+        ):
+            return await self.app(scope, receive, send)
 
         if request.method in ("POST", "PUT", "DELETE", "PATCH"):
             csrf_token = request.headers.get("X-CSRF-Token")
@@ -104,6 +109,7 @@ app = FastAPI(
 origins = [
     "http://localhost:9000",
     "http://127.0.0.1:9000",
+    "http://localhost:8000",
 ]
 
 app.add_middleware(
@@ -113,7 +119,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*", "X-CSRF-Token"],
 )
-app.add_middleware(CSRFMiddleware)
+app.add_middleware(CSRFMiddleware, allow_origins=origins)
 app.add_middleware(SessionMiddleware, secret_key=settings.MIDDLEWARE_SECRET_KEY)
 
 
