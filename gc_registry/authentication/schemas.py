@@ -1,11 +1,12 @@
 import datetime
 
+from pydantic import BaseModel
 from sqlmodel import Field, SQLModel
 
 from gc_registry import utils
 
 
-class LoginRequest(SQLModel):
+class LoginRequest(BaseModel):
     username: str
     password: str
 
