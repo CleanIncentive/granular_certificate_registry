@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     REFRESH_WARNING_MINS: int
     MIDDLEWARE_SECRET_KEY: str
     LOG_LEVEL: str
+    PROFILING_ENABLED: bool = False
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
