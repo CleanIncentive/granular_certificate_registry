@@ -43,7 +43,7 @@ const Login = () => {
       }
 
       message.success("Login successful 🎉", 2);
-      navigate("/certificates");
+      navigate("/account-picker");
     } catch (error) {
       message.error(`Login failed: ${error}`, 3);
     }
@@ -85,29 +85,6 @@ const Login = () => {
                   style={{ height: "40px" }}
                 />
               </div>
-
-              {/* Role Field */}
-
-              <div style={{ marginTop: 16, width: "400px" }}>
-                <div
-                  className={`${styles["login-form-title"]} ${styles["font-color"]}`}
-                >
-                  <Text>Role</Text>
-                </div>
-
-                <Select
-                  placeholder="Select..."
-                  value={role}
-                  onChange={(value) => setRole(value)}
-                  style={{ width: "100%", height: "40px", textAlign: "left" }}
-                  dropdownStyle={{ textAlign: "left" }}
-                >
-                  <Option value="admin">Admin</Option>
-                  <Option value="user">User</Option>
-                  <Option value="guest">Guest</Option>
-                </Select>
-              </div>
-
               {/* Password Field */}
               <div style={{ marginTop: 16, width: "400px" }}>
                 <div

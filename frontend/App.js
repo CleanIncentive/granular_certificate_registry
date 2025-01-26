@@ -12,6 +12,11 @@ const DeviceDashboard = React.lazy(() =>
   import("./components/device/DeviceDashboard")
 );
 
+const AccountPicker = React.lazy(() =>
+  import("./components/account/AccountPicker")
+);
+
+
 import {
   BrowserRouter as Router,
   Routes,
@@ -34,6 +39,10 @@ const App = () => {
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route
+            path="/account-picker"
+            element={<PrivateRoute element={AccountPicker} />}
+          />
           <Route
             path="/certificates"
             element={<PrivateRoute element={CertificateDashboard} />}
