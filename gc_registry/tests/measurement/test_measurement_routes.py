@@ -2,7 +2,10 @@ import json
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlmodel import Session, select
+from sqlmodel.sql.expression import SelectOfScalar
 
+from gc_registry.certificate.models import GranularCertificateBundle
 from gc_registry.device.models import Device
 
 
@@ -39,6 +42,8 @@ def test_submit_readings_success(
     api_client: TestClient,
     token: str,
     valid_measurement_json: str,
+    fake_db_solar_device: Device,
+    read_session: Session,
 ):
     """Test successful submission of readings."""
 
@@ -55,3 +60,11 @@ def test_submit_readings_success(
     assert response_data["total_device_usage"] == 45
     assert response_data["first_reading_datetime"] == "2024-11-18T10:00:00"
     assert response_data["last_reading_datetime"] == "2024-11-18T12:00:00"
+
+    # check that the certificates have been issued
+    stmt: SelectOfScalar = select(GranularCertificateBundle).where(
+        GranularCertificateBundle.device_id == fake_db_solar_device.id
+    )
+    certificates = read_session.exec(stmt).all()
+    assert len(certificates) == 3
+    assert sum(certificate.bundle_quantity for certificate in certificates) == 45

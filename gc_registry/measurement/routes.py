@@ -4,8 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 
 from gc_registry.authentication.services import get_current_user
+from gc_registry.certificate.models import IssuanceMetaData
+from gc_registry.certificate.services import issue_certificates_by_device_in_date_range
 from gc_registry.core.database import db, events
 from gc_registry.core.models.base import UserRoles
+from gc_registry.device.meter_data.manual_submission import ManualSubmissionMeterClient
 from gc_registry.device.models import Device
 from gc_registry.measurement import models
 from gc_registry.measurement.services import parse_measurement_json
@@ -29,6 +32,13 @@ def submit_readings(
     """Submit meter readings as a JSON-serialised CSV file for a single device,
     creating a MeasurementReport for each production interval against which GC
     Bundles can be issued. Returns a summary of the readings submitted.
+
+    Until an issuance metadata workflow is implemented, the submission will use a
+    default set of issuance metadata. In the front end, this will be implemented as
+    a dialogue box that presents the user with the default metadata values, and allow
+    them to edit them if desired at the point of issuance.
+
+    TODO: Implement issuance metadata workflow on front end.
 
     Args:
         measurement_json (str): A JSON-serialised CSV file containing the meter readings.
@@ -62,6 +72,38 @@ def submit_readings(
         raise HTTPException(
             status_code=500, detail="Could not create measurement reports."
         )
+
+    # issue GCs against these readings
+    meter_data_client = ManualSubmissionMeterClient()
+
+    # if no issuance metadata is in the database, create a default entry and link
+    # issuance to that. This is where the values passed by the user will be attached
+    # following an upstream process on the front end.
+    try:
+        issuance_metadata = IssuanceMetaData.by_id(1, read_session)
+    except HTTPException:
+        issuance_metadata = IssuanceMetaData.create(
+            {
+                "issue_market_zone": "UK",
+                "country_of_issuance": "UK",
+                "issuing_body": "OFGEM",
+                "connected_grid_identification": "UK",
+            },
+            write_session,
+            read_session,
+            esdb_client,
+        )
+
+    issue_certificates_by_device_in_date_range(
+        device=device,
+        from_datetime=measurement_df["interval_start_datetime"].min(),
+        to_datetime=measurement_df["interval_end_datetime"].max(),
+        write_session=write_session,
+        read_session=read_session,
+        esdb_client=esdb_client,
+        issuance_metadata_id=issuance_metadata[0].id,
+        meter_data_client=meter_data_client,
+    )
 
     measurement_response = models.MeasurementSubmissionResponse(
         message="Readings submitted successfully.",
