@@ -1,6 +1,8 @@
-FROM node:18-alpine
+FROM node:20-bullseye-slim
 
 WORKDIR /app
+
+ENV REACT_APP_API_URL=https://api-dot-rich-store-445612-c6.ew.r.appspot.com
 
 COPY ./package.json ./package.json 
 COPY ./package-lock.json ./package-lock.json 

@@ -35,5 +35,4 @@ COPY ./README.md ./README.md
 COPY ./Makefile ./Makefile
 COPY ./alembic.ini ./alembic.ini
 
-
 CMD ["uvicorn", "gc_registry.main:app", "--host", "0.0.0.0", "--port", "8080"]

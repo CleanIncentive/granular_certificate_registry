@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     POSTGRES_USER: str | None = None
     POSTGRES_PASSWORD: str | None = None
     ESDB_CONNECTION_STRING: str | None = None
+    FRONTEND_URL: str | None = "localhost:9000"
 
     # Other configuration
     DATABASE_PORT: int = 5432
@@ -50,6 +51,7 @@ class Settings(BaseSettings):
                 self.POSTGRES_USER = get_secret("POSTGRES_USER")
                 self.POSTGRES_PASSWORD = get_secret("POSTGRES_PASSWORD")
                 self.ESDB_CONNECTION_STRING = get_secret("ESDB_CONNECTION_STRING")
+                self.FRONTEND_URL = get_secret("FRONTEND_URL")
             except Exception as e:
                 logging.warning(f"Error fetching secret: {e}")
 
