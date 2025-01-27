@@ -9,4 +9,3 @@ services:
         INSTALL_DEV: ${INSTALL_DEV-false}
     ports:
       - "8080:8080"
-      - "9000:9000"
