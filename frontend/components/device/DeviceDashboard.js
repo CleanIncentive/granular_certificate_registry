@@ -97,7 +97,6 @@ const DeviceDashboard = () => {
       navigate("/login");
       return;
     }
-
   }, [devices, navigate]);
 
   if (!currentAccount?.id) {
@@ -206,7 +205,8 @@ const DeviceDashboard = () => {
           onClick={() =>
             deviceUploadDialogRef.current.openDialog({
               deviceName: row.device_name,
-              deviceId: row.local_device_identifier,
+              deviceLocalID: row.local_device_identifier,
+              deviceID: row.id,
             })
           }
         >

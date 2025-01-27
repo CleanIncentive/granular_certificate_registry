@@ -1,5 +1,6 @@
 import json
 from typing import Literal, overload
+from fastapi import HTTPException
 
 import pandas as pd
 
@@ -54,15 +55,17 @@ def parse_measurement_json(
         pd.DataFrame: A pandas DataFrame representation of the data.
     """
     raw_input = pd.DataFrame.from_dict(json.loads(recieved_json))
-    assert all(
-        col in raw_input.columns
-        for col in [
-            "device_id",
-            "interval_start_datetime",
-            "interval_end_datetime",
-            "interval_usage",
-            "gross_net_indicator",
-        ]
-    ), "Dataframe columns must be 'device_id', 'interval_start_datetime', 'interval_usage', 'gross_net_indicator'"
+
+    required_columns = [
+        "device_id",
+        "interval_start_datetime",
+        "interval_end_datetime",
+        "interval_usage",
+        # "gross_net_indicator",
+    ]
+
+    if not all(col in raw_input.columns for col in required_columns):
+        missing_cols = set(required_columns) - set(raw_input.columns)
+        raise HTTPException(status_code=402, detail="Input data missing columns: " + ", ".join(missing_cols))
 
     return raw_input if to_df else raw_input.to_dict(orient="records")

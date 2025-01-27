@@ -27,6 +27,7 @@ router = APIRouter(tags=["Measurements"])
 @router.post("/submit_readings", response_model=models.MeasurementSubmissionResponse)
 def submit_readings(
     measurement_json: str,
+    device_id: int,
     current_user: User = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
@@ -54,14 +55,21 @@ def submit_readings(
     measurement_df = parse_measurement_json(measurement_json, to_df=True)
 
     # Check that the device ID is associated with an account that the user has access to
-    device_id = measurement_df["device_id"].unique()
-    if len(device_id) != 1:
+    device_id_in_csv = measurement_df["device_id"].unique()
+    if len(device_id_in_csv) != 1:
         raise HTTPException(
             status_code=400,
             detail="Measurement JSON must contain readings for a single device.",
         )
 
-    device = Device.by_id(device_id[0], read_session)
+    device = Device.by_id(device_id, read_session)
+
+    if not device:
+        raise HTTPException(
+            status_code=404, detail=f"Device with ID {device_id} not found."
+        )
+
+
     validate_user_access(current_user, device.account_id, read_session)
 
     readings = models.MeasurementReport.create(
@@ -82,25 +90,25 @@ def submit_readings(
     # if no issuance metadata is in the database, create a default entry and link
     # issuance to that. This is where the values passed by the user will be attached
     # following an upstream process on the front end.
-    try:
-        issuance_metadata = IssuanceMetaData.by_id(1, read_session)
-    except HTTPException:
-        issuance_metadata_list = IssuanceMetaData.create(
-            {
-                "issue_market_zone": "UK",
-                "country_of_issuance": "UK",
-                "issuing_body": "OFGEM",
-                "connected_grid_identification": "UK",
-            },
-            write_session,
-            read_session,
-            esdb_client,
-        )
-        if not issuance_metadata_list:
-            raise HTTPException(
-                status_code=500, detail="Could not create issuance metadata."
-            )
-        issuance_metadata = issuance_metadata_list[0]  # type: ignore
+    #try:
+    issuance_metadata = IssuanceMetaData.by_id(1, read_session)
+    # except HTTPException:
+    #     issuance_metadata_list = IssuanceMetaData.create(
+    #         {
+    #             "issue_market_zone": "UK",
+    #             "country_of_issuance": "UK",
+    #             "issuing_body": "OFGEM",
+    #             "connected_grid_identification": "UK",
+    #         },
+    #         write_session,
+    #         read_session,
+    #         esdb_client,
+    #     )
+    #     if not issuance_metadata_list:
+    #         raise HTTPException(
+    #             status_code=500, detail="Could not create issuance metadata."
+    #         )
+    #     issuance_metadata = issuance_metadata_list[0]  # type: ignore
 
     issue_certificates_by_device_in_date_range(
         device=device,
@@ -192,7 +200,7 @@ def delete_measurement(
 
 
 @router.get("/meter_readings_template", response_class=FileResponse)
-def get_meter_readings_template():
+def get_meter_readings_template(current_user: User = Depends(get_current_user)):
     """Return the CSV template for meter readings submission."""
     template_path = (
         Path(__file__).parent.parent

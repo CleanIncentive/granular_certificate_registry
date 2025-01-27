@@ -16,6 +16,7 @@ const { Text } = Typography;
 const DeviceUploadDialog = forwardRef((props, ref) => {
   const [visible, setVisible] = useState(false);
   const [deviceInfo, setDeviceInfo] = useState(null);
+  console.log(deviceInfo);
   const [fileList, setFileList] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
@@ -89,7 +90,11 @@ const DeviceUploadDialog = forwardRef((props, ref) => {
       try {
         const csvContent = e.target.result;
         const csvJSON = csvToJson(csvContent);
-        const response = await submitMeterReadingsAPI(csvJSON);
+        const deviceID = deviceInfo?.deviceID;
+
+        console.log(deviceID);
+
+        const response = await submitMeterReadingsAPI(csvJSON, deviceID);
 
         messageApi.success({
           content: "Meter readings submitted successfully!",
@@ -154,7 +159,7 @@ const DeviceUploadDialog = forwardRef((props, ref) => {
           <Space direction="vertical" size={2} style={{ width: "100%" }}>
             <div>
               <Text strong>Upload Data - {deviceInfo?.deviceName} </Text>
-              <Text type="secondary">({deviceInfo?.deviceId})</Text>
+              <Text type="secondary">({deviceInfo?.deviceLocalID})</Text>
             </div>
             <Text type="secondary">Date of the latest certificate:</Text>
             <Space>
