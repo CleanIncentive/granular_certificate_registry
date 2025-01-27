@@ -1,9 +1,10 @@
 # Imports
+from pathlib import Path
+
 from esdbclient import EventStoreDBClient
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session
 from fastapi.responses import FileResponse
-from pathlib import Path
+from sqlmodel import Session
 
 from gc_registry.authentication.services import get_current_user
 from gc_registry.certificate.models import IssuanceMetaData
