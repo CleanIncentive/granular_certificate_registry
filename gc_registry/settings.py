@@ -1,7 +1,8 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
-import os
-from google.cloud import secretmanager
 import logging
+import os
+
+from google.cloud import secretmanager
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 def get_secret(secret_name: str) -> str:
@@ -27,10 +28,10 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str | None = None
     ESDB_CONNECTION_STRING: str | None = None
     FRONTEND_URL: str | None = "localhost:9000"
-    JWT_SECRET_KEY: str | None = None
-    JWT_ALGORITHM: str | None = None
-    MIDDLEWARE_SECRET_KEY: str | None = None
-    
+
+    JWT_SECRET_KEY: str
+    JWT_ALGORITHM: str
+    MIDDLEWARE_SECRET_KEY: str
 
     # Other configuration
     DATABASE_PORT: int = 5432
