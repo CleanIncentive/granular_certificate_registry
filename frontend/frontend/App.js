@@ -20,8 +20,8 @@ import {
 } from "react-router-dom";
 
 const isAuthenticated = () => {
-  const token = Cookies.get("access_token"); // Assuming the token is saved as 'authToken'
-  return !!token; // Returns true if token exists
+  const token = Cookies.get("access_token");
+  return !!token;
 };
 
 const PrivateRoute = ({ element: Element, ...rest }) => {

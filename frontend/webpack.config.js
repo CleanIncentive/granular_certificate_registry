@@ -50,7 +50,7 @@ module.exports = {
         exclude: /\.module\.css$/, // Exclude CSS Modules
         use: [
           "style-loader", // Injects CSS into the DOM
-          "css-loader",   // Resolves CSS imports
+          "css-loader", // Resolves CSS imports
         ],
       },
       {
@@ -93,8 +93,10 @@ module.exports = {
         analyzerMode: "static",
         openAnalyzer: false,
       }),
-      new webpack.DefinePlugin({
-      "process.env.REACT_APP_API_URL": JSON.stringify(process.env.REACT_APP_API_URL),
+    new webpack.DefinePlugin({
+      "process.env.REACT_APP_API_URL": JSON.stringify(
+        process.env.REACT_APP_API_URL
+      ),
     }),
   ].filter(Boolean),
 
@@ -106,7 +108,7 @@ module.exports = {
     compress: true,
     port: 9000,
     open: true,
-    hot: true, // Enable hot module replacement
+    hot: true,
   },
 
   resolve: {
