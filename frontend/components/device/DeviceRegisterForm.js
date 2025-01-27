@@ -8,6 +8,10 @@ import Cookies from "js-cookie";
 import { createDevice } from "../../store/device/deviceThunk";
 import { getAccountDetails } from "../../store/account/accountThunk";
 
+import { EnergySourceType, TechnologyType } from "../../enum/device";
+import formatEnergySource from "./formatEnergySource";
+import formatTechnologyType from "./formatTechnologyType";
+
 const { Option } = Select;
 
 const DeviceRegisterDialog = forwardRef((props, ref) => {
@@ -85,13 +89,15 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
           rules={[{ required: true, message: "Please select technology type" }]}
         >
           <Select placeholder="Select...">
-            <Option value="solar_pv">Solar PV</Option>
-            <Option value="wind_turbine">Wind turbine</Option>
-            <Option value="hydro">Hydro</Option>
-            <Option value="battery_storage">Battery storage</Option>
-            <Option value="other_storage">Other storage</Option>
-            <Option value="chp">CHP</Option>
-            <Option value="other">Other</Option>
+            {Object.keys(TechnologyType).map((key) => {
+              const value = TechnologyType[key];
+              const label = formatTechnologyType(value); // Use the format function
+              return (
+                <Option key={value} value={value}>
+                  {label}
+                </Option>
+              );
+            })}
           </Select>
         </Form.Item>
 
@@ -101,9 +107,15 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
           rules={[{ required: true, message: "Please select energy source" }]}
         >
           <Select placeholder="Select...">
-            <Option value="solar">Solar</Option>
-            <Option value="wind">Wind</Option>
-            <Option value="hydro">Hydro</Option>
+            {Object.keys(EnergySourceType).map((key) => {
+              const value = EnergySourceType[key];
+              const label = formatEnergySource(value); // Use the format function
+              return (
+                <Option key={value} value={value}>
+                  {label}
+                </Option>
+              );
+            })}
           </Select>
         </Form.Item>
 
