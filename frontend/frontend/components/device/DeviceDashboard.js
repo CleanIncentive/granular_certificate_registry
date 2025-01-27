@@ -19,6 +19,7 @@ import {
   Select,
   DatePicker,
   Dropdown,
+  Input,
 } from "antd";
 
 import {
@@ -31,6 +32,7 @@ import {
   ThunderboltOutlined,
   PlusCircleOutlined,
   UploadOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 
 import "../../assets/styles/pagination.css";
@@ -39,6 +41,8 @@ import "../../assets/styles/filter.css";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
+import Cookies from "js-cookie";
+
 import DeviceRegisterDialog from "../device/DeviceRegisterForm";
 import DeviceUploadDialog from "../device/DeviceUploadDataForm";
 import SideMenu from "../SideMenu";
@@ -46,6 +50,7 @@ import SideMenu from "../SideMenu";
 const { Header, Sider, Content } = Layout;
 const { Title, Text } = Typography;
 const { Option } = Select;
+const { Search } = Input;
 
 export const DEVICE_TECHNOLOGY_TYPE = Object.freeze({
   SOLAR_PV: "Solar PV",
@@ -60,36 +65,10 @@ export const DEVICE_TECHNOLOGY_TYPE = Object.freeze({
 const DeviceDashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const deviceRegisterDialogRef = useRef();
-  const deviceUploadDialogRef = useRef();
+
+  const { currentAccount, devices } = useSelector((state) => state.account);
 
   const [currentPage, setCurrentPage] = useState(1);
-
-  const { currentAccount } = useSelector((state) => state.account);
-
-  useEffect(() => {
-    if (!currentAccount?.id) {
-      navigate("/login");
-      return;
-    }
-  }, [currentAccount, navigate]);
-
-  if (!currentAccount?.id) {
-    return null;
-  }
-
-  const devices = currentAccount.devices;
-
-  const deviceOptions = useMemo(
-    () =>
-      currentAccount.devices.map((device) => ({
-        value: device.id,
-        label:
-          `${device.device_name} (${device.local_device_identifier})` ||
-          `Device (${device.local_device_identifier})`,
-      })),
-    [currentAccount.devices]
-  );
 
   const defaultFilters = {
     deviceName: null,
@@ -97,6 +76,33 @@ const DeviceDashboard = () => {
   };
 
   const [filters, setFilters] = useState(defaultFilters);
+
+  const deviceRegisterDialogRef = useRef();
+  const deviceUploadDialogRef = useRef();
+
+  const deviceOptions = useMemo(
+    () =>
+      devices.map((device) => ({
+        value: device.id,
+        label:
+          `${device.device_name} (${device.local_device_identifier})` ||
+          `Device (${device.local_device_identifier})`,
+      })),
+    [devices]
+  );
+
+  useEffect(() => {
+    console.log("devices: ", devices);
+    if (!currentAccount?.id && devices && devices.length > 0) {
+      navigate("/login");
+      return;
+    }
+
+  }, [devices, navigate]);
+
+  if (!currentAccount?.id) {
+    return null;
+  }
 
   const pageSize = 10;
   const totalPages = Math.ceil(devices?.length / pageSize);
@@ -307,17 +313,12 @@ const DeviceDashboard = () => {
             }}
             split={<Divider type="vertical" />}
           >
-            {/* Device Filter */}
-            <Select
-              placeholder="Device"
-              mode="multiple"
-              options={deviceOptions}
-              value={filters.device}
-              onChange={(value) => handleFilterChange("device_id", value)}
-              style={{ width: 120 }}
-              suffixIcon={<LaptopOutlined />}
-              allowClear
-            ></Select>
+            <Search
+              placeholder="Search for device..."
+              onSearch={(value) => console.log(value)}
+              enterButton={<SearchOutlined />}
+              size="medium"
+            />
             {/* Device Filter */}
             <Select
               placeholder="Device"

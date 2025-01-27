@@ -18,6 +18,7 @@ class TestAuthServices:
 
     def test_get_user(self, read_session: Session, fake_db_user: User):
         user = get_user(fake_db_user.email, read_session)
+        assert user is not None
         assert user.name == fake_db_user.name
 
     def test_authenticate_user(self, read_session: Session, fake_db_user: User):

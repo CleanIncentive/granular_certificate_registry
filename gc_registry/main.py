@@ -1,11 +1,13 @@
 import datetime
 import logging
+import secrets
 from pathlib import Path
 from typing import Callable
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.security import HTTPBearer
 from fastapi.templating import Jinja2Templates
 from markdown import markdown
 from pyinstrument import Profiler
@@ -26,6 +28,40 @@ from .storage.routes import router as storage_router
 from .user.routes import router as user_router
 
 STATIC_DIR_FP = Path(__file__).parent / "static"
+
+csrf_bearer = HTTPBearer()
+
+
+class CSRFMiddleware:
+    def __init__(self, app, allow_origins: list[str] | None = None):
+        self.app = app
+        self.allow_origins = allow_origins
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            return await self.app(scope, receive, send)
+
+        async def get_request():
+            return Request(scope, receive=receive)
+
+        request = await get_request()
+        if self.allow_origins and any(
+            o in str(request.url) for o in self.allow_origins
+        ):
+            return await self.app(scope, receive, send)
+
+        if request.method in ("POST", "PUT", "DELETE", "PATCH"):
+            csrf_token = request.headers.get("X-CSRF-Token")
+            session_token = request.session.get("csrf_token")
+
+            if not csrf_token or not session_token or csrf_token != session_token:
+                response = JSONResponse(
+                    status_code=403, content={"detail": "CSRF token missing or invalid"}
+                )
+                return await response(scope, receive, send)
+
+        return await self.app(scope, receive, send)
+
 
 descriptions = {}
 for desc in ["api", "certificate", "storage"]:
@@ -74,6 +110,7 @@ origins = [
     "http://localhost:9000",
     "http://127.0.0.1:9000",
     settings.FRONTEND_URL,
+    "http://localhost:8000",
 ]
 
 app.add_middleware(
@@ -81,10 +118,18 @@ app.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*", "X-CSRF-Token"],
 )
-
+app.add_middleware(CSRFMiddleware, allow_origins=origins)
 app.add_middleware(SessionMiddleware, secret_key=settings.MIDDLEWARE_SECRET_KEY)
+
+
+@app.get("/csrf-token", tags=["Core"])
+async def get_csrf_token(request: Request):
+    token = secrets.token_urlsafe(32)
+    request.session["csrf_token"] = token
+    return {"csrf_token": token}
+
 
 app.include_router(
     certificate_router,

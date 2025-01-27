@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import dayjs from "dayjs";
+import Cookies from "js-cookie";
 
 import {
   Layout,
@@ -44,6 +45,7 @@ import { useNavigate } from "react-router-dom";
 import { fetchCertificates } from "../../store/certificate/certificateThunk";
 
 import CertificateActionDialog from "./CertificateActionDialog";
+import SideMenu from "../SideMenu";
 
 const { Header, Sider, Content } = Layout;
 const { Title, Text } = Typography;
@@ -76,7 +78,8 @@ const Dashboard = () => {
 
   const dialogRef = useRef();
 
-  const { currentAccount } = useSelector((state) => state.account);
+  const currentAccount = JSON.parse(Cookies.get("account_detail"));
+  const userInfo = JSON.parse(Cookies.get("user_data")).userInfo;
 
   useEffect(() => {
     if (!currentAccount?.id) {
@@ -151,7 +154,7 @@ const Dashboard = () => {
 
   const fetchCertificatesData = async () => {
     const fetchBody = {
-      user_id: 1,
+      user_id: userInfo.userID,
       source_id: currentAccount.id,
       device_id: filters.device_id,
       certificate_bundle_status: STATUS_ENUM[filters.certificate_bundle_status], // Transform status to match API expectations
@@ -314,46 +317,8 @@ const Dashboard = () => {
         width={224}
         style={{ background: "#fff", padding: "0 20px 0 10px" }}
       >
-        <div
-          style={{
-            padding: "16px",
-            textAlign: "center",
-            fontSize: "20px",
-            fontWeight: "bold",
-          }}
-        >
-          Granular <span style={{ color: "#0057FF" }}>CertOS</span>
-        </div>
-        <Menu
-          mode="vertical"
-          selectedKeys={[location.pathname]}
-          style={{ border: "none" }}
-        >
-          <Menu.Item
-            key="/certificates"
-            icon={<AppstoreOutlined />}
-            onClick={() => navigate("/certificates")}
-            style={{
-              backgroundColor:
-                location.pathname === "/certificates" ? "#0057FF" : "",
-              color: location.pathname === "/certificates" ? "#fff" : "",
-              borderRadius: "8px",
-              margin: "10px",
-            }}
-          >
-            Certificates
-          </Menu.Item>
-          <Menu.Item
-            key="/transfer-history"
-            icon={<SwapOutlined />}
-            onClick={() => navigate("/transfer-history")}
-            style={{ margin: "10px" }}
-          >
-            Transfer History
-          </Menu.Item>
-        </Menu>
+        <SideMenu />
       </Sider>
-
       <Layout>
         <Header
           style={{
@@ -628,6 +593,8 @@ const Dashboard = () => {
         selectedDevices={selectedDevices}
         updateCertificateActionDialog={setDialogAction}
         getDeviceName={getDeviceName}
+        fetchCertificatesData={fetchCertificatesData}
+        setSelectedRowKeys={setSelectedRowKeys}
       />
     </Layout>
   );
