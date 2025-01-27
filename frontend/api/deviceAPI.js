@@ -1,6 +1,6 @@
 import baseAPI from "./baseAPI"
 
-export const createDeviceAPI = () => baseAPI.post("/device/create");
+export const createDeviceAPI = (deviceData) => baseAPI.post("/device/create", deviceData);
 
 export const submitMeterReadingsAPI = (csvData) => {
   return baseAPI.post("/measurement/submit_readings", {
@@ -13,3 +13,5 @@ export const downloadMeterReadingsTemplateAPI = () => {
     responseType: 'blob'
   });
 };
+
+

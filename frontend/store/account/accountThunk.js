@@ -1,5 +1,18 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { getAccountAPI, getAccountDevicesAPI, getAccountWhitelistInverseAPI } from "../../api/accountAPI";
+import {
+  getAccountAPI,
+  getAccountDevicesAPI,
+  getAccountWhitelistInverseAPI,
+} from "../../api/accountAPI";
+import Cookies from "js-cookie";
+
+const saveAccountToCookie = (accountDetail) => {
+  Cookies.set("account_detail", JSON.stringify(accountDetail), {
+    expires: 7,
+    path: "",
+    secure: true,
+  });
+};
 
 // Thunk to fetch account details
 export const getAccountDetails = createAsyncThunk(
@@ -8,13 +21,17 @@ export const getAccountDetails = createAsyncThunk(
     try {
       const accountResponse = await getAccountAPI(accountId);
       const devicesResponse = await getAccountDevicesAPI(accountId);
-      const whiteListResponse = await getAccountWhitelistInverseAPI(accountId)
+      const whiteListResponse = await getAccountWhitelistInverseAPI(accountId);
 
-      return {
+      const accountDetail = {
         ...accountResponse.data,
         devices: devicesResponse.data,
-        whiteListInverse: whiteListResponse.data
+        whiteListInverse: whiteListResponse.data,
       };
+
+      saveAccountToCookie(accountDetail);
+
+      return accountDetail;
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
