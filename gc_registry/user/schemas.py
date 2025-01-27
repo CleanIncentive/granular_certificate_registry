@@ -1,6 +1,6 @@
 import re
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, model_serializer
 from sqlmodel import Field
 
 from gc_registry.account.schemas import AccountRead
@@ -33,7 +33,6 @@ class UserBase(BaseModel):
 class UserUpdate(BaseModel):
     name: str | None = None
     email: str | None = None
-    account_ids: list[int] | None = None
     organisation: str | None = None
     hashed_password: str | None = None
     role: UserRoles | None = None
@@ -46,3 +45,16 @@ class UserRead(BaseModel):
     role: UserRoles
     accounts: list[AccountRead] | None = None
     organisation: str | None = None
+
+    @model_serializer(mode="plain")
+    def serializer(self, info, *, many=False):
+        return {
+            "role": self.role.name,
+            "name": self.name,
+            "email": self.email,
+            "id": self.id,
+            "accounts": [AccountRead.model_validate(a) for a in self.accounts]
+            if self.accounts
+            else None,
+            "organisation": self.organisation,
+        }

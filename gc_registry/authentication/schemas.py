@@ -1,8 +1,14 @@
 import datetime
 
+from pydantic import BaseModel
 from sqlmodel import Field, SQLModel
 
 from gc_registry import utils
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
 
 
 class Token(SQLModel):
