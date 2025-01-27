@@ -2,6 +2,8 @@
 from esdbclient import EventStoreDBClient
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
+from fastapi.responses import FileResponse
+from pathlib import Path
 
 from gc_registry.authentication.services import get_current_user
 from gc_registry.certificate.models import IssuanceMetaData
@@ -186,3 +188,23 @@ def delete_measurement(
     db_measurement = models.MeasurementReport.by_id(measurement_id, write_session)
 
     return db_measurement.delete(write_session, read_session, esdb_client)
+
+
+@router.get("/meter_readings_template", response_class=FileResponse)
+def get_meter_readings_template():
+    """Return the CSV template for meter readings submission."""
+    template_path = (
+        Path(__file__).parent.parent
+        / "static"
+        / "templates"
+        / "meter_readings_template.csv"
+    )
+
+    if not template_path.exists():
+        raise HTTPException(status_code=404, detail="Template file not found.")
+
+    return FileResponse(
+        path=template_path,
+        filename="meter_readings_template.csv",
+        media_type="text/csv",
+    )
