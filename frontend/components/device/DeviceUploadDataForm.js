@@ -6,7 +6,10 @@ import {
   CalendarOutlined,
   LoadingOutlined,
 } from "@ant-design/icons";
-import { submitMeterReadingsAPI, downloadMeterReadingsTemplateAPI } from "../../api/deviceAPI";
+import {
+  submitMeterReadingsAPI,
+  downloadMeterReadingsTemplateAPI,
+} from "../../api/deviceAPI";
 
 const { Text } = Typography;
 
@@ -34,21 +37,47 @@ const DeviceUploadDialog = forwardRef((props, ref) => {
     try {
       const response = await downloadMeterReadingsTemplateAPI();
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', 'meter_readings_template.csv');
+      link.setAttribute("download", "meter_readings_template.csv");
       document.body.appendChild(link);
       link.click();
       link.remove();
     } catch (error) {
-      messageApi.error('Failed to download template');
-      console.error('Download template error:', error);
+      messageApi.error("Failed to download template");
+      console.error("Download template error:", error);
     }
+  };
+
+  const csvToJson = (csvString) => {
+    if (!csvString) {
+      throw new Error("CSV data is empty or undefined.");
+    }
+
+    const [headerLine, ...rows] = csvString
+      .split("\n")
+      .filter((line) => line.trim() !== ""); // Remove empty lines
+    const headers = headerLine.split(",").map((header) => header.trim());
+
+    return rows.map((row, rowIndex) => {
+      const values = row.split(",").map((value) => value.trim());
+
+      if (values.length !== headers.length) {
+        throw new Error(
+          `Row ${rowIndex + 1} has an inconsistent number of columns.`
+        );
+      }
+
+      return headers.reduce((acc, header, index) => {
+        acc[header] = values[index] || null;
+        return acc;
+      }, {});
+    });
   };
 
   const handleSubmit = async () => {
     if (!fileList.length) {
-      messageApi.warning('Please select a file to upload');
+      messageApi.warning("Please select a file to upload");
       return;
     }
 
@@ -59,31 +88,40 @@ const DeviceUploadDialog = forwardRef((props, ref) => {
     reader.onload = async (e) => {
       try {
         const csvContent = e.target.result;
-        const response = await submitMeterReadingsAPI(csvContent);
-        
+        const csvJSON = csvToJson(csvContent);
+        const response = await submitMeterReadingsAPI(csvJSON);
+
         messageApi.success({
-          content: 'Meter readings submitted successfully!',
+          content: "Meter readings submitted successfully!",
           duration: 5,
           onClose: () => {
             setVisible(false);
             setFileList([]);
-          }
+          },
         });
 
         // Show submission summary
         Modal.success({
-          title: 'Submission Summary',
+          title: "Submission Summary",
           content: (
             <div>
               <p>Total device usage: {response.data.total_device_usage} kWh</p>
-              <p>First reading: {new Date(response.data.first_reading_datetime).toLocaleString()}</p>
-              <p>Last reading: {new Date(response.data.last_reading_datetime).toLocaleString()}</p>
+              <p>
+                First reading:{" "}
+                {new Date(
+                  response.data.first_reading_datetime
+                ).toLocaleString()}
+              </p>
+              <p>
+                Last reading:{" "}
+                {new Date(response.data.last_reading_datetime).toLocaleString()}
+              </p>
             </div>
           ),
         });
       } catch (error) {
-        messageApi.error('Failed to submit meter readings');
-        console.error('Submit readings error:', error);
+        messageApi.error("Failed to submit meter readings");
+        console.error("Submit readings error:", error);
       } finally {
         setUploading(false);
       }
@@ -94,9 +132,9 @@ const DeviceUploadDialog = forwardRef((props, ref) => {
 
   const uploadProps = {
     beforeUpload: (file) => {
-      const isCsv = file.type === 'text/csv' || file.name.endsWith('.csv');
+      const isCsv = file.type === "text/csv" || file.name.endsWith(".csv");
       if (!isCsv) {
-        messageApi.error('You can only upload CSV files!');
+        messageApi.error("You can only upload CSV files!");
         return false;
       }
       setFileList([file]);
