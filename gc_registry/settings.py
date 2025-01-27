@@ -27,19 +27,20 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str | None = None
     ESDB_CONNECTION_STRING: str | None = None
     FRONTEND_URL: str | None = "localhost:9000"
+    JWT_SECRET_KEY: str | None = None
+    JWT_ALGORITHM: str | None = None
+    MIDDLEWARE_SECRET_KEY: str | None = None
+    
 
     # Other configuration
     DATABASE_PORT: int = 5432
-    POSTGRES_DB: str
+    POSTGRES_DB: str = "registry"
     CERTIFICATE_GRANULARITY_HOURS: float = 1
     CERTIFICATE_EXPIRY_YEARS: int = 2
     CAPACITY_MARGIN: float = 1.1
-    JWT_SECRET_KEY: str
-    JWT_ALGORITHM: str
-    ACCESS_TOKEN_EXPIRE_MINUTES: int
-    REFRESH_WARNING_MINS: int
-    MIDDLEWARE_SECRET_KEY: str
-    LOG_LEVEL: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    REFRESH_WARNING_MINS: int = 5
+    LOG_LEVEL: str = "INFO"
     PROFILING_ENABLED: bool = False
 
     def __init__(self, **kwargs):
@@ -52,6 +53,9 @@ class Settings(BaseSettings):
                 self.POSTGRES_PASSWORD = get_secret("POSTGRES_PASSWORD")
                 self.ESDB_CONNECTION_STRING = get_secret("ESDB_CONNECTION_STRING")
                 self.FRONTEND_URL = get_secret("FRONTEND_URL")
+                self.JWT_SECRET_KEY = get_secret("JWT_SECRET_KEY")
+                self.JWT_ALGORITHM = get_secret("JWT_ALGORITHM")
+                self.MIDDLEWARE_SECRET_KEY = get_secret("MIDDLEWARE_SECRET_KEY")
             except Exception as e:
                 logging.warning(f"Error fetching secret: {e}")
 
