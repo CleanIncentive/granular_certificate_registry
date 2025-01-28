@@ -291,14 +291,14 @@ const Dashboard = () => {
     },
     {
       title: <span style={{ color: "#80868B" }}>Certificate Period Start</span>,
-      dataIndex: "certificate_bundle_id_range_start",
-      key: "certificate_bundle_id_range_start",
+      dataIndex: "production_starting_interval",
+      key: "production_starting_interval",
       render: (text) => <span style={{ color: "#5F6368" }}>{text}</span>,
     },
     {
       title: <span style={{ color: "#80868B" }}>Certificate Period End</span>,
-      dataIndex: "certificate_bundle_id_range_end",
-      key: "certificate_bundle_id_range_end",
+      dataIndex: "production_ending_interval",
+      key: "production_ending_interval",
       render: (text) => <span style={{ color: "#5F6368" }}>{text}</span>,
     },
     {
