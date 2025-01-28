@@ -10,6 +10,14 @@ const DeviceDashboard = React.lazy(() =>
   import("./components/device/DeviceDashboard")
 );
 
+const AccountPicker = React.lazy(() =>
+  import("./components/account/AccountPicker")
+);
+
+const AccountManagement = React.lazy(() =>
+  import("./pages/AccountManagement/AccountManagement")
+);
+
 import {
   BrowserRouter as Router,
   Routes,
@@ -19,6 +27,7 @@ import {
 
 import { useDispatch } from "react-redux";
 import { setAccountState } from "./store/account/accountSlice";
+import { setCurrentUserInfoState } from "./store/user/userSlice";
 
 const isAuthenticated = () => {
   const token = Cookies.get("access_token");
@@ -29,25 +38,42 @@ const PrivateRoute = ({ element: Element, ...rest }) => {
   return isAuthenticated() ? <Element {...rest} /> : <Navigate to="/login" />;
 };
 
+function isEmpty(obj) {
+  return Object.keys(obj).length === 0;
+}
+
 const App = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const setAccountDataState = async () => {
-      const currentAccount = JSON.parse(Cookies.get("account_detail"));
+    const setAccountAndUserDataState = async () => {
+      const accountDetail = Cookies.get("account_detail");
+      const userDataDetail = Cookies.get("user_data");
 
-      if (!!currentAccount) {
-        await dispatch(setAccountState(currentAccount));
-      }
+      const currentAccount = accountDetail ? JSON.parse(accountDetail) : {};
+      const userData = userDataDetail ? JSON.parse(userDataDetail) : {};
+
+      await Promise.all([
+        !isEmpty(currentAccount) && dispatch(setAccountState(currentAccount)),
+        !isEmpty(userData) && dispatch(setCurrentUserInfoState(userData)),
+      ]);
     };
 
-    setAccountDataState();
+    setAccountAndUserDataState();
   }, [dispatch]);
 
   return (
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route
+          path="/account-picker"
+          element={<PrivateRoute element={AccountPicker} />}
+        />
+        <Route
+          path="/account-management"
+          element={<PrivateRoute element={AccountManagement} />}
+        />
         <Route
           path="/certificates"
           element={<PrivateRoute element={CertificateDashboard} />}

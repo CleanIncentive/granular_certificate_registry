@@ -63,7 +63,7 @@ def seed_data():
     )[0]
 
     trading_user_dict = {
-        "email": "trading_user@usermail.conm",
+        "email": "trading_user@usermail.com",
         "name": "Trading",
         "hashed_password": get_password_hash("trading"),
         "role": UserRoles.TRADING_USER,

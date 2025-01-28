@@ -43,8 +43,8 @@ import { useNavigate } from "react-router-dom";
 
 import Cookies from "js-cookie";
 
-import DeviceRegisterDialog from "../device/DeviceRegisterForm";
-import DeviceUploadDialog from "../device/DeviceUploadDataForm";
+import DeviceRegisterDialog from "./DeviceRegisterForm";
+import DeviceUploadDialog from "./DeviceUploadDataForm";
 import SideMenu from "../SideMenu";
 
 const { Header, Sider, Content } = Layout;
@@ -67,6 +67,9 @@ const DeviceDashboard = () => {
   const navigate = useNavigate();
 
   const { currentAccount, devices } = useSelector((state) => state.account);
+  const { userInfo, accounts } = useSelector((state) => state.user);
+
+  const interactAllowed = userInfo.role !== "TRADING_USER" && userInfo.role !== "AUDIT_USER";
 
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -92,11 +95,14 @@ const DeviceDashboard = () => {
   );
 
   useEffect(() => {
-    console.log("devices: ", devices);
-    if (!currentAccount?.id && devices && devices.length > 0) {
-      navigate("/login");
+    if (!interactAllowed) {
+      navigate("/certificates");
       return;
     }
+    // if (!currentAccount?.id && devices && devices.length > 0) {
+    //   navigate("/login");
+    //   return;
+    // }
   }, [devices, navigate]);
 
   if (!currentAccount?.id) {

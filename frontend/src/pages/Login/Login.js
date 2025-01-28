@@ -19,7 +19,7 @@ const { Option } = Select;
 
 import { useDispatch } from "react-redux";
 import { login } from "../../store/auth/authThunk";
-import { readUser } from "../../store/user/userThunk";
+import { readCurrentUser } from "../../store/user/userThunk";
 import { getAccountDetails } from "../../store/account/accountThunk";
 
 import { useNavigate } from "react-router-dom";
@@ -35,7 +35,7 @@ const Login = () => {
     e.preventDefault();
     try {
       const userID = await dispatch(login({ username, password })).unwrap();
-      const userData = await dispatch(readUser(userID)).unwrap();
+      const userData = await dispatch(readCurrentUser()).unwrap();
 
       if (userData.accounts && userData.accounts.length > 0) {
         const defaultAccount = userData.accounts[0];
@@ -43,7 +43,11 @@ const Login = () => {
       }
 
       message.success("Login successful 🎉", 2);
-      navigate("/certificates");
+      if (userData.accounts.length > 1) {
+        navigate("/account-picker");
+      } else {
+        navigate("/certificates");
+      }
     } catch (error) {
       message.error(`Login failed: ${error}`, 3);
     }
@@ -85,29 +89,6 @@ const Login = () => {
                   style={{ height: "40px" }}
                 />
               </div>
-
-              {/* Role Field */}
-
-              <div style={{ marginTop: 16, width: "400px" }}>
-                <div
-                  className={`${styles["login-form-title"]} ${styles["font-color"]}`}
-                >
-                  <Text>Role</Text>
-                </div>
-
-                <Select
-                  placeholder="Select..."
-                  value={role}
-                  onChange={(value) => setRole(value)}
-                  style={{ width: "100%", height: "40px", textAlign: "left" }}
-                  dropdownStyle={{ textAlign: "left" }}
-                >
-                  <Option value="admin">Admin</Option>
-                  <Option value="user">User</Option>
-                  <Option value="guest">Guest</Option>
-                </Select>
-              </div>
-
               {/* Password Field */}
               <div style={{ marginTop: 16, width: "400px" }}>
                 <div
@@ -165,7 +146,9 @@ const Login = () => {
                 </Divider>
                 <Text>
                   <Link
-                    href="#"
+                    href="https://docs.google.com/forms/d/e/1FAIpQLSdSkHMAYSu43VJFevngfVT5hvnWRZvwkelIf9QaPtpLVrIlxA/viewform?usp=sf_link"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     style={{ fontWeight: "500", color: "#043DDC" }}
                   >
                     Request account
