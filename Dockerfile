@@ -2,6 +2,7 @@ FROM python:3.11.4-slim
 
 # Set environment variables to non-interactive to avoid prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
+ENV FRONTEND_URL=https://frontend-dot-rich-store-445612-c6.ew.r.appspot.com
 
 RUN apt update && apt install -y \
     curl \

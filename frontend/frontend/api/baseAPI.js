@@ -9,17 +9,13 @@ const baseAPI = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: false,
+  withCredentials: true,
 });
 
 const fetchCSRFToken = async () => {
   try {
     const response = await baseAPI.get("/csrf-token");
-    const token = response.data.csrf_token;
-    if (token) {
-      Cookies.set("csrf_token", token);
-    }
-    return token;
+    return response.data.csrf_token;
   } catch (error) {
     console.error("Failed to fetch CSRF token:", error);
     return null;
@@ -28,13 +24,11 @@ const fetchCSRFToken = async () => {
 
 baseAPI.interceptors.request.use(
   async (config) => {
-    // Check if the request URL is in the whitelist
     const isAuthRoute = AUTH_LIST.some((route) => config.url?.includes(route));
     const isCSRFExempt = CSRF_EXEMPT.some((route) =>
       config.url?.includes(route)
     );
 
-    // Add Authorization header if not an auth route
     if (!isAuthRoute) {
       const token = Cookies.get("access_token");
       if (token) {
@@ -43,12 +37,7 @@ baseAPI.interceptors.request.use(
     }
 
     if (!isCSRFExempt && config.method !== "get") {
-      let csrfToken = Cookies.get("csrf_token");
-
-      if (!csrfToken) {
-        csrfToken = await fetchCSRFToken();
-      }
-
+      const csrfToken = await fetchCSRFToken();
       if (csrfToken) {
         config.headers["X-CSRF-Token"] = csrfToken;
       }

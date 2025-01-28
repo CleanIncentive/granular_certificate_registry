@@ -29,9 +29,9 @@ class Settings(BaseSettings):
     ESDB_CONNECTION_STRING: str | None = None
     FRONTEND_URL: str | None = "localhost:9000"
 
-    JWT_SECRET_KEY: str
-    JWT_ALGORITHM: str
-    MIDDLEWARE_SECRET_KEY: str
+    JWT_SECRET_KEY: str = "secret_key"
+    JWT_ALGORITHM: str = "HS256"
+    MIDDLEWARE_SECRET_KEY: str = "secret_key"
 
     # Other configuration
     DATABASE_PORT: int = 5432
