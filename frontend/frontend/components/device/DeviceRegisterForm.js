@@ -133,7 +133,7 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
           <Input suffix="MW" placeholder="Ex: 80" />
         </Form.Item>
 
-        <Form.Item label="Location">
+        <Form.Item label="Location" rules={[{ required: true }]}>
           <Input.Group compact>
             <Form.Item
               name={["location", "latitude"]}
