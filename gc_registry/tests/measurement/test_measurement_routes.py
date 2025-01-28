@@ -1,4 +1,5 @@
-import json
+import io
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -10,46 +11,39 @@ from gc_registry.device.models import Device
 
 
 @pytest.fixture
-def valid_measurement_json():
-    return json.dumps(
-        [
-            {
-                "interval_usage": 10,
-                "interval_start_datetime": "2024-11-18T10:00:00",
-                "interval_end_datetime": "2024-11-18T11:00:00",
-                "gross_net_indicator": "NET",
-            },
-            {
-                "interval_usage": 15,
-                "interval_start_datetime": "2024-11-18T11:00:00",
-                "interval_end_datetime": "2024-11-18T12:00:00",
-                "gross_net_indicator": "NET",
-            },
-            {
-                "interval_usage": 20,
-                "interval_start_datetime": "2024-11-18T12:00:00",
-                "interval_end_datetime": "2024-11-18T13:00:00",
-                "gross_net_indicator": "NET",
-            },
-        ]
+def valid_measurement_csv():
+    """Create a CSV string with valid measurement data."""
+    return (
+        "interval_usage,interval_start_datetime,interval_end_datetime,gross_net_indicator\n"
+        "10,2024-11-18T10:00:00,2024-11-18T11:00:00,NET\n"
+        "15,2024-11-18T11:00:00,2024-11-18T12:00:00,NET\n"
+        "20,2024-11-18T12:00:00,2024-11-18T13:00:00,NET\n"
     )
 
 
 def test_submit_readings_success(
     api_client: TestClient,
     token: str,
-    valid_measurement_json: str,
+    valid_measurement_csv: str,
     fake_db_solar_device: Device,
     read_session: Session,
 ):
     """Test successful submission of readings."""
+    # Create file-like object from CSV string
+    csv_file = io.BytesIO(valid_measurement_csv.encode("utf-8"))
+
+    # Create files dict for multipart form data
+    files = {"file": ("measurements.csv", csv_file, "text/csv")}
+
+    # Create form data
+    data = {
+        "deviceID": str(fake_db_solar_device.id),  # Form data must be strings
+    }
 
     response = api_client.post(
-        "measurement/submit_readings",
-        params={
-            "measurement_json": valid_measurement_json,
-            "device_id": fake_db_solar_device.id,
-        },
+        "/measurement/submit_readings",
+        files=files,
+        data=data,
         headers={"Authorization": f"Bearer {token}"},
     )
 
