@@ -162,7 +162,7 @@ class TestCertificateServices:
         # This will fail because the bundle_quantity is greater than the device max watts hours
 
         granular_certificate_bundle_dict["bundle_quantity"] = (
-            fake_db_wind_device.capacity * hours
+            1e6 * fake_db_wind_device.capacity * hours
         ) * 1.5
         granular_certificate_bundle_dict["certificate_bundle_id_range_end"] = (
             granular_certificate_bundle_dict["certificate_bundle_id_range_start"]

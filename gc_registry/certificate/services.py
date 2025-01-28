@@ -1,8 +1,8 @@
 import datetime
 from typing import Any, Callable
 
-from esdbclient import EventStoreDBClient
 import pandas as pd
+from esdbclient import EventStoreDBClient
 from sqlalchemy import func
 from sqlmodel import Session, SQLModel, desc, or_, select
 from sqlmodel.sql.expression import SelectOfScalar
@@ -220,7 +220,7 @@ def get_max_certificate_timestamp_by_device_id(
     if not max_certificate_timestamp:
         return None
     else:
-        return pd.to_datetime(max_certificate_timestamp, utc=True)
+        return max_certificate_timestamp
 
 
 def issue_certificates_by_device_in_date_range(
@@ -261,6 +261,7 @@ def issue_certificates_by_device_in_date_range(
     max_issued_timestamp = get_max_certificate_timestamp_by_device_id(
         read_session, device.id
     )
+    max_issued_timestamp = pd.to_datetime(max_issued_timestamp, utc=True)
 
     # check if the device has already been issued certificates for the given period
     if max_issued_timestamp and max_issued_timestamp >= to_datetime:

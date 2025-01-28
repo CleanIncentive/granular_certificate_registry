@@ -1,10 +1,10 @@
 # Imports
 from pathlib import Path
 
+import pandas as pd
 from esdbclient import EventStoreDBClient
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
-import pandas as pd
 from sqlmodel import Session
 
 from gc_registry.authentication.services import get_current_user
