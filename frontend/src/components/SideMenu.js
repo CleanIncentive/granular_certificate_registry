@@ -26,8 +26,8 @@ const SideMenu = () => {
   const isShowDevices =
     userInfo.role !== "TRADING_USER" && userInfo.role !== "AUDIT_USER";
 
-  const isAccountPickerAllowed = accounts?.lentgh > 1;
-
+  const isAccountPickerAllowed = accounts.length > 1;
+  
   const generateMenuStyle = (path, isVisible = true) => ({
     display: isVisible ? "flex" : "none",
     backgroundColor: location.pathname === path ? "#0057FF" : "",

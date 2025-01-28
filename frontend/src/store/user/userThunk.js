@@ -36,7 +36,6 @@ export const readCurrentUser = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await readCurrentUserAPI();
-      console.log(response?.data);
 
       const userData = {
         accounts: response?.data?.accounts || [],
