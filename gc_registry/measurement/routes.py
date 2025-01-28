@@ -24,6 +24,26 @@ router = APIRouter(tags=["Measurements"])
 ### Device Meter Readings ###
 
 
+@router.get("/meter_readings_template", response_class=FileResponse)
+def get_meter_readings_template(current_user: User = Depends(get_current_user)):
+    """Return the CSV template for meter readings submission."""
+    template_path = (
+        Path(__file__).parent.parent
+        / "static"
+        / "templates"
+        / "meter_readings_template.csv"
+    )
+
+    if not template_path.exists():
+        raise HTTPException(status_code=404, detail="Template file not found.")
+
+    return FileResponse(
+        path=template_path,
+        filename="meter_readings_template.csv",
+        media_type="text/csv",
+    )
+
+
 @router.post("/submit_readings", response_model=models.MeasurementSubmissionResponse)
 def submit_readings(
     measurement_json: str,
@@ -69,7 +89,6 @@ def submit_readings(
             status_code=404, detail=f"Device with ID {device_id} not found."
         )
 
-
     validate_user_access(current_user, device.account_id, read_session)
 
     readings = models.MeasurementReport.create(
@@ -90,7 +109,7 @@ def submit_readings(
     # if no issuance metadata is in the database, create a default entry and link
     # issuance to that. This is where the values passed by the user will be attached
     # following an upstream process on the front end.
-    #try:
+    # try:
     issuance_metadata = IssuanceMetaData.by_id(1, read_session)
     # except HTTPException:
     #     issuance_metadata_list = IssuanceMetaData.create(
@@ -197,23 +216,3 @@ def delete_measurement(
     db_measurement = models.MeasurementReport.by_id(measurement_id, write_session)
 
     return db_measurement.delete(write_session, read_session, esdb_client)
-
-
-@router.get("/meter_readings_template", response_class=FileResponse)
-def get_meter_readings_template(current_user: User = Depends(get_current_user)):
-    """Return the CSV template for meter readings submission."""
-    template_path = (
-        Path(__file__).parent.parent
-        / "static"
-        / "templates"
-        / "meter_readings_template.csv"
-    )
-
-    if not template_path.exists():
-        raise HTTPException(status_code=404, detail="Template file not found.")
-
-    return FileResponse(
-        path=template_path,
-        filename="meter_readings_template.csv",
-        media_type="text/csv",
-    )
