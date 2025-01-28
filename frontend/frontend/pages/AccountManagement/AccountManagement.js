@@ -99,8 +99,9 @@ const AccountManagement = () => {
             <Form.Item label="Role" name="role">
               <Select>
                 <Option value="ADMIN">Admin</Option>
-                <Option value="TRADING">Trading User</Option>
-                <Option value="AUDIT">Audit User</Option>
+                <Option value="PRODUCTION_USER">Production User</Option>
+                <Option value="TRADING_USER">Trading User</Option>
+                <Option value="AUDIT_USER">Audit User</Option>
               </Select>
             </Form.Item>
           </Form>

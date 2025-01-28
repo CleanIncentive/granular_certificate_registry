@@ -11,7 +11,7 @@ const webpack = require("webpack");
 module.exports = {
   mode: isDevelopment ? "development" : "production",
 
-  entry: "./frontend/index.js",
+  entry: "./index.js",
 
   output: {
     path: path.resolve(__dirname, "dist"),
