@@ -4,6 +4,7 @@ from pathlib import Path
 from esdbclient import EventStoreDBClient
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
+import pandas as pd
 from sqlmodel import Session
 
 from gc_registry.authentication.services import get_current_user
@@ -73,15 +74,9 @@ def submit_readings(
     validate_user_role(current_user, required_role=UserRoles.PRODUCTION_USER)
 
     measurement_df = parse_measurement_json(measurement_json, to_df=True)
+    measurement_df["device_id"] = device_id
 
     # Check that the device ID is associated with an account that the user has access to
-    device_id_in_csv = measurement_df["device_id"].unique()
-    if len(device_id_in_csv) != 1:
-        raise HTTPException(
-            status_code=400,
-            detail="Measurement JSON must contain readings for a single device.",
-        )
-
     device = Device.by_id(device_id, read_session)
 
     if not device:
@@ -109,30 +104,34 @@ def submit_readings(
     # if no issuance metadata is in the database, create a default entry and link
     # issuance to that. This is where the values passed by the user will be attached
     # following an upstream process on the front end.
-    # try:
-    issuance_metadata = IssuanceMetaData.by_id(1, read_session)
-    # except HTTPException:
-    #     issuance_metadata_list = IssuanceMetaData.create(
-    #         {
-    #             "issue_market_zone": "UK",
-    #             "country_of_issuance": "UK",
-    #             "issuing_body": "OFGEM",
-    #             "connected_grid_identification": "UK",
-    #         },
-    #         write_session,
-    #         read_session,
-    #         esdb_client,
-    #     )
-    #     if not issuance_metadata_list:
-    #         raise HTTPException(
-    #             status_code=500, detail="Could not create issuance metadata."
-    #         )
-    #     issuance_metadata = issuance_metadata_list[0]  # type: ignore
+    try:
+        issuance_metadata = IssuanceMetaData.by_id(1, read_session)
+    except HTTPException:
+        issuance_metadata_list = IssuanceMetaData.create(
+            {
+                "issue_market_zone": "UK",
+                "country_of_issuance": "UK",
+                "issuing_body": "OFGEM",
+                "connected_grid_identification": "UK",
+            },
+            write_session,
+            read_session,
+            esdb_client,
+        )
+        if not issuance_metadata_list:
+            raise HTTPException(
+                status_code=500, detail="Could not create issuance metadata."
+            )
+        issuance_metadata = issuance_metadata_list[0]  # type: ignore
 
     issue_certificates_by_device_in_date_range(
         device=device,
-        from_datetime=measurement_df["interval_start_datetime"].min(),
-        to_datetime=measurement_df["interval_end_datetime"].max(),
+        from_datetime=pd.to_datetime(
+            measurement_df["interval_start_datetime"].min(), utc=True
+        ),
+        to_datetime=pd.to_datetime(
+            measurement_df["interval_end_datetime"].max(), utc=True
+        ),
         write_session=write_session,
         read_session=read_session,
         esdb_client=esdb_client,
@@ -142,9 +141,13 @@ def submit_readings(
 
     measurement_response = models.MeasurementSubmissionResponse(
         message="Readings submitted successfully.",
-        total_device_usage=measurement_df["interval_usage"].sum().astype(int),
-        first_reading_datetime=measurement_df["interval_start_datetime"].min(),
-        last_reading_datetime=measurement_df["interval_start_datetime"].max(),
+        total_device_usage=int(measurement_df["interval_usage"].sum()),
+        first_reading_datetime=pd.to_datetime(
+            measurement_df["interval_start_datetime"].min(), utc=True
+        ),
+        last_reading_datetime=pd.to_datetime(
+            measurement_df["interval_start_datetime"].max(), utc=True
+        ),
     )
 
     return measurement_response

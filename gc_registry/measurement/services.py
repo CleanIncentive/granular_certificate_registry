@@ -1,8 +1,8 @@
 import json
 from typing import Literal, overload
-from fastapi import HTTPException
 
 import pandas as pd
+from fastapi import HTTPException, status
 
 
 def serialise_measurement_csv(measurement_csv_path: str) -> str:
@@ -57,15 +57,17 @@ def parse_measurement_json(
     raw_input = pd.DataFrame.from_dict(json.loads(recieved_json))
 
     required_columns = [
-        "device_id",
         "interval_start_datetime",
         "interval_end_datetime",
         "interval_usage",
-        # "gross_net_indicator",
+        "gross_net_indicator",
     ]
 
     if not all(col in raw_input.columns for col in required_columns):
         missing_cols = set(required_columns) - set(raw_input.columns)
-        raise HTTPException(status_code=402, detail="Input data missing columns: " + ", ".join(missing_cols))
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Input data missing columns: " + ", ".join(missing_cols),
+        )
 
     return raw_input if to_df else raw_input.to_dict(orient="records")

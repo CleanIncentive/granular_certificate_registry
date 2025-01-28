@@ -101,7 +101,7 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
           rules={[{ required: true, message: "Please select energy source" }]}
         >
           <Select placeholder="Select...">
-            <Option value="solar">Solar</Option>
+            <Option value="solar_pv">Solar</Option>
             <Option value="wind">Wind</Option>
             <Option value="hydro">Hydro</Option>
           </Select>
