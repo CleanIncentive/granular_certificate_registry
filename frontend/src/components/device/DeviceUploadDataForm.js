@@ -50,32 +50,6 @@ const DeviceUploadDialog = forwardRef((props, ref) => {
     }
   };
 
-  const csvToJson = (csvString) => {
-    if (!csvString) {
-      throw new Error("CSV data is empty or undefined.");
-    }
-
-    const [headerLine, ...rows] = csvString
-      .split("\n")
-      .filter((line) => line.trim() !== ""); // Remove empty lines
-    const headers = headerLine.split(",").map((header) => header.trim());
-
-    return rows.map((row, rowIndex) => {
-      const values = row.split(",").map((value) => value.trim());
-
-      if (values.length !== headers.length) {
-        throw new Error(
-          `Row ${rowIndex + 1} has an inconsistent number of columns.`
-        );
-      }
-
-      return headers.reduce((acc, header, index) => {
-        acc[header] = values[index] || null;
-        return acc;
-      }, {});
-    });
-  };
-
   const handleSubmit = async () => {
     if (!fileList.length) {
       messageApi.warning("Please select a file to upload");
@@ -83,56 +57,39 @@ const DeviceUploadDialog = forwardRef((props, ref) => {
     }
 
     setUploading(true);
-    const file = fileList[0];
-    const reader = new FileReader();
+    try {
+      const formData = new FormData();
+      formData.append('file', fileList[0]);
+      formData.append('deviceID', deviceInfo?.deviceID);
 
-    reader.onload = async (e) => {
-      try {
-        const csvContent = e.target.result;
-        const csvJSON = csvToJson(csvContent);
-        const deviceID = deviceInfo?.deviceID;
+      const response = await submitMeterReadingsAPI(formData);
 
-        console.log(deviceID);
+      messageApi.success({
+        content: "Meter readings submitted successfully!",
+        duration: 5,
+        onClose: () => {
+          setVisible(false);
+          setFileList([]);
+        },
+      });
 
-        const response = await submitMeterReadingsAPI(csvJSON, deviceID);
-
-        messageApi.success({
-          content: "Meter readings submitted successfully!",
-          duration: 5,
-          onClose: () => {
-            setVisible(false);
-            setFileList([]);
-          },
-        });
-
-        // Show submission summary
-        Modal.success({
-          title: "Submission Summary",
-          content: (
-            <div>
-              <p>Total device usage: {response.data.total_device_usage} kWh</p>
-              <p>
-                First reading:{" "}
-                {new Date(
-                  response.data.first_reading_datetime
-                ).toLocaleString()}
-              </p>
-              <p>
-                Last reading:{" "}
-                {new Date(response.data.last_reading_datetime).toLocaleString()}
-              </p>
-            </div>
-          ),
-        });
-      } catch (error) {
-        messageApi.error("Failed to submit meter readings");
-        console.error("Submit readings error:", error);
-      } finally {
-        setUploading(false);
-      }
-    };
-
-    reader.readAsText(file);
+      // Show submission summary
+      Modal.success({
+        title: "Submission Summary",
+        content: (
+          <div>
+            <p>Total device usage: {response.data.total_device_usage / 1e6} MWh</p>
+            <p>First reading: {new Date(response.data.first_reading_datetime).toLocaleString()}</p>
+            <p>Last reading: {new Date(response.data.last_reading_datetime).toLocaleString()}</p>
+          </div>
+        ),
+      });
+    } catch (error) {
+      messageApi.error("Failed to submit meter readings");
+      console.error("Submit readings error:", error);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const uploadProps = {
@@ -181,9 +138,10 @@ const DeviceUploadDialog = forwardRef((props, ref) => {
             type="primary"
             onClick={handleSubmit}
             loading={uploading}
+            disabled={fileList.length === 0}
             style={{
-              backgroundColor: fileList.length > 0 ? "#043DDC" : "#CEDAFD",
-              color: fileList.length > 0 ? "#FFFFFF" : "#000000",
+              backgroundColor: fileList.length > 0 ? "#043DDC" : "#F5F5F5",
+              color: fileList.length > 0 ? "#FFFFFF" : "#00000040",
             }}
           >
             Submit meter readings
