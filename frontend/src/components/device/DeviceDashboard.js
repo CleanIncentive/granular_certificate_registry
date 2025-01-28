@@ -69,16 +69,18 @@ const DeviceDashboard = () => {
   const { currentAccount, devices } = useSelector((state) => state.account);
   const { userInfo, accounts } = useSelector((state) => state.user);
 
-  const interactAllowed = userInfo.role !== "TRADING_USER" && userInfo.role !== "AUDIT_USER";
-
-  const [currentPage, setCurrentPage] = useState(1);
+  const interactAllowed =
+    userInfo.role !== "TRADING_USER" && userInfo.role !== "AUDIT_USER";
 
   const defaultFilters = {
-    deviceName: null,
-    technologyType: null,
+    device_id: null,
+    technology_type: null,
   };
 
+  const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState(defaultFilters);
+  const [filteredDevices, setFiltersDevices] = useState(devices);
+  const [searchKey, setSearchKey] = useState("");
 
   const deviceRegisterDialogRef = useRef();
   const deviceUploadDialogRef = useRef();
@@ -126,16 +128,38 @@ const DeviceDashboard = () => {
 
   const handleApplyFilter = () => {
     // Apply the filter logic here
-    console.log("Applying filters", filters);
+    const filteredDevices = devices.filter((device) => {
+      // Check each filter
+      const matchedFilters =
+        (filters.device_id ? device.id === filters.device_id : true) &&
+        (filters.technology_type
+          ? device.technology_type === filters.technology_type.toLowerCase()
+          : true);
+
+      const searchFilter = !!searchKey
+        ? device.device_name.toLowerCase().includes(searchKey.toLowerCase()) ||
+          device.local_device_identifier
+            .toLowerCase()
+            .includes(searchKey.toLowerCase())
+        : true;
+
+      return matchedFilters && searchFilter;
+    });
+
+    setFiltersDevices(filteredDevices);
   };
 
   const handleClearFilter = async () => {
-    setFilters({});
+    setFilters(defaultFilters);
+    setSearchKey("");
+    setFiltersDevices(devices);
   };
 
   const isEqual = (obj1, obj2) => {
     return JSON.stringify(obj1) === JSON.stringify(obj2);
   };
+
+  const isDisabledClearBtn = isEqual(defaultFilters, filters) && !searchKey;
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -333,16 +357,18 @@ const DeviceDashboard = () => {
           >
             <Search
               placeholder="Search for device..."
-              onSearch={(value) => console.log(value)}
+              onSearch={(value) => handleApplyFilter(value)}
+              value={searchKey}
+              onChange={(e) => setSearchKey(e.target.value)}
               enterButton={<SearchOutlined />}
               size="medium"
             />
             {/* Device Filter */}
             <Select
               placeholder="Device"
-              mode="multiple"
+              // mode="multiple"
               options={deviceOptions}
-              value={filters.device}
+              value={filters.device_id}
               onChange={(value) => handleFilterChange("device_id", value)}
               style={{ width: 120 }}
               suffixIcon={<LaptopOutlined />}
@@ -352,14 +378,14 @@ const DeviceDashboard = () => {
             {/* Technology Type filter */}
             <Select
               placeholder="Technology Type"
-              value={filters.technologyType}
-              onChange={(value) => handleFilterChange("technologyType", value)}
+              value={filters.technology_type}
+              onChange={(value) => handleFilterChange("technology_type", value)}
               style={{ width: 150 }}
               suffixIcon={<ThunderboltOutlined />}
               allowClear
             >
               {Object.entries(DEVICE_TECHNOLOGY_TYPE).map(([key, value]) => (
-                <Option key={key} value={value}>
+                <Option key={key} value={key}>
                   {value}
                 </Option>
               ))}
@@ -377,9 +403,9 @@ const DeviceDashboard = () => {
             <Button
               type="text"
               onClick={handleClearFilter}
-              disabled={isEqual(defaultFilters, filters) ? true : false}
+              disabled={isDisabledClearBtn ? true : false}
               style={{
-                color: isEqual(defaultFilters, filters) ? "#DADCE0" : "#5F6368",
+                color: isDisabledClearBtn ? "#DADCE0" : "#5F6368",
                 fontWeight: "600",
               }}
             >
@@ -393,7 +419,7 @@ const DeviceDashboard = () => {
               color: "#F9FAFB",
             }}
             columns={columns}
-            dataSource={devices}
+            dataSource={filteredDevices}
             rowKey="id"
             pagination={false}
           />
