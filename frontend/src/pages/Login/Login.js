@@ -43,12 +43,11 @@ const Login = () => {
       }
 
       message.success("Login successful 🎉", 2);
-      // if (userData.userInfo.role === "ADMIN") {
-      //   navigate("/account-picker");
-      // } else {
-      // }
-      navigate("/certificates");
-
+      if (userData.accounts.length > 1) {
+        navigate("/account-picker");
+      } else {
+        navigate("/certificates");
+      }
     } catch (error) {
       message.error(`Login failed: ${error}`, 3);
     }

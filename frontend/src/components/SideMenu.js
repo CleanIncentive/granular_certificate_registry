@@ -21,10 +21,12 @@ const SideMenu = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [dropDownVisible, setDropDownVisible] = useState(false);
-  const { userInfo } = useSelector((state) => state.user);
+  const { userInfo, accounts } = useSelector((state) => state.user);
 
   const isShowDevices =
     userInfo.role !== "TRADING_USER" && userInfo.role !== "AUDIT_USER";
+
+  const isAccountPickerAllowed = accounts?.lentgh > 1;
 
   const generateMenuStyle = (path, isVisible = true) => ({
     display: isVisible ? "flex" : "none",
@@ -93,7 +95,11 @@ const SideMenu = () => {
       <Menu.Item key="setting" icon={<SettingOutlined />}>
         Setting
       </Menu.Item>
-      <Menu.Item key="switch" icon={<SwapOutlined />}>
+      <Menu.Item
+        key="switch"
+        icon={<SwapOutlined />}
+        style={{ display: isAccountPickerAllowed ? "flex" : "none" }}
+      >
         Switch Account
       </Menu.Item>
       <Menu.Item key="logout" icon={<LogoutOutlined />} danger>
