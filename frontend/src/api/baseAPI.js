@@ -44,7 +44,6 @@ baseAPI.interceptors.request.use(
     }
 
     console.log(config.url, "Request Headers:", config.method, config.headers);
-
     return config;
   },
   (error) => Promise.reject(error)
