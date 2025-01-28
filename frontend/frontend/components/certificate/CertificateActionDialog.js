@@ -88,7 +88,7 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
 
       switch (props.dialogAction) {
         case "cancel":
-          apiBody = { ...apiBody, beneficiary: selectedAccount };
+          apiBody = { ...apiBody, beneficiary: beneficiary };
           await dispatch(cancelCertificates(apiBody)).unwrap();
           break;
         default:

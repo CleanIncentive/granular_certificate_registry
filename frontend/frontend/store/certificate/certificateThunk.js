@@ -3,6 +3,7 @@ import {
   fetchCertificatesAPI,
   transferCertificateAPI,
   cancelCertificateAPI,
+  getCertificateDetailsAPI,
 } from "../../api/certificateAPI";
 
 export const fetchCertificates = createAsyncThunk(
@@ -49,6 +50,20 @@ export const cancelCertificates = createAsyncThunk(
         status: error.response?.status,
         data: error.response?.data,
       });
+    }
+  }
+);
+
+export const getCertificateDetails = createAsyncThunk(
+  "certificates/getDetails",
+  async (certificateId, { rejectWithValue }) => {
+    try {
+      const response = await getCertificateDetailsAPI(certificateId);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || "Failed to fetch certificate details"
+      );
     }
   }
 );

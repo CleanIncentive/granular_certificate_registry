@@ -13,29 +13,35 @@ const statusColors = {
 };
 
 // Status Tag Style
-const StatusTag = (status) => (
-  <Tag
-    style={{
-      display: "inline-flex",
-      alignItems: "center",
-      padding: "0 10px",
-      height: "28px",
-      border: `1px solid #D0D5DD`,
-      backgroundColor: "#fff",
-    }}
-  >
-    <span
+const StatusTag = ({ status }) => {
+  const normalizedStatus = (status || "").toLowerCase();
+
+  return (
+    <Tag
       style={{
-        display: "inline-block",
-        width: "8px",
-        height: "8px",
-        borderRadius: "50%",
-        backgroundColor: statusColors[status.toLowerCase()],
-        marginRight: "8px",
+        display: "inline-flex",
+        alignItems: "center",
+        padding: "0 10px",
+        height: "28px",
+        border: `1px solid #D0D5DD`,
+        backgroundColor: "#fff",
       }}
-    />
-    <span style={{ color: "#5F6368", fontWeight: "500" }}> {status}</span>
-  </Tag>
-);
+    >
+      <span
+        style={{
+          display: "inline-block",
+          width: "8px",
+          height: "8px",
+          borderRadius: "50%",
+          backgroundColor: statusColors[normalizedStatus] || "#80868B", // Fallback color
+          marginRight: "8px",
+        }}
+      />
+      <span style={{ color: "#5F6368", fontWeight: "500" }}>
+        {status || "Unknown"} {/* Add fallback text */}
+      </span>
+    </Tag>
+  );
+};
 
 export default StatusTag;
