@@ -1,14 +1,15 @@
 import baseAPI from "./baseAPI";
+import axios from "axios";
 
 export const createDeviceAPI = (deviceData) =>
   baseAPI.post("/device/create", deviceData);
 
-export const submitMeterReadingsAPI = (csvData, deviceID) => {
-  const params = new URLSearchParams({
-    device_id: deviceID,
-    measurement_json: JSON.stringify(csvData),
-  }).toString();
-  return baseAPI.post(`/measurement/submit_readings?${params}`);
+export const submitMeterReadingsAPI = (formData) => {
+  return baseAPI.post('/measurement/submit_readings', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
 };
 
 export const downloadMeterReadingsTemplateAPI = () => {
