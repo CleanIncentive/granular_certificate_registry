@@ -93,7 +93,7 @@ const SideMenu = () => {
       <Menu.Item key="setting" icon={<SettingOutlined />}>
         Setting
       </Menu.Item>
-      <Menu.Item key="switch" icon={<SwapOutlined />} style={{disable: }}>
+      <Menu.Item key="switch" icon={<SwapOutlined />}>
         Switch Account
       </Menu.Item>
       <Menu.Item key="logout" icon={<LogoutOutlined />} danger>

@@ -11,7 +11,7 @@ const webpack = require("webpack");
 module.exports = {
   mode: isDevelopment ? "development" : "production",
 
-  entry: "./index.js",
+  entry: "./src/index.js",
 
   output: {
     path: path.resolve(__dirname, "dist"),
@@ -81,7 +81,7 @@ module.exports = {
 
   plugins: [
     new HtmlWebpackPlugin({
-      template: "./frontend/public/index.html",
+      template: "./src/public/index.html",
       minify: !isDevelopment && {
         collapseWhitespace: true,
         removeComments: true,

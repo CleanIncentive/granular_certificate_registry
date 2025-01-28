@@ -43,8 +43,8 @@ import { useNavigate } from "react-router-dom";
 
 import Cookies from "js-cookie";
 
-import DeviceRegisterDialog from "../device/DeviceRegisterForm";
-import DeviceUploadDialog from "../device/DeviceUploadDataForm";
+import DeviceRegisterDialog from "./DeviceRegisterForm";
+import DeviceUploadDialog from "./DeviceUploadDataForm";
 import SideMenu from "../SideMenu";
 
 const { Header, Sider, Content } = Layout;
