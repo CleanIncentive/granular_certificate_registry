@@ -38,24 +38,28 @@ const PrivateRoute = ({ element: Element, ...rest }) => {
   return isAuthenticated() ? <Element {...rest} /> : <Navigate to="/login" />;
 };
 
+function isEmpty(obj) {
+  return Object.keys(obj).length === 0;
+}
+
 const App = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const setAccountDataState = async () => {
-      const currentAccount = JSON.parse(Cookies.get("account_detail"));
-      const userData = JSON.parse(Cookies.get("user_data"));
+    const setAccountAndUserDataState = async () => {
+      const accountDetail = Cookies.get("account_detail");
+      const userDataDetail = Cookies.get("user_data");
 
-      if (!!currentAccount) {
-        await dispatch(setAccountState(currentAccount));
-      }
+      const currentAccount = accountDetail ? JSON.parse(accountDetail) : {};
+      const userData = userDataDetail ? JSON.parse(userDataDetail) : {};
 
-      if (!!userData) {
-        await dispatch(setCurrentUserInfoState(userData));
-      }
+      await Promise.all([
+        !isEmpty(currentAccount) && dispatch(setAccountState(currentAccount)),
+        !isEmpty(userData) && dispatch(setCurrentUserInfoState(userData)),
+      ]);
     };
 
-    setAccountDataState();
+    setAccountAndUserDataState();
   }, [dispatch]);
 
   return (
