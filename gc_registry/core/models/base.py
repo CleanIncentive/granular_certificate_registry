@@ -35,14 +35,6 @@ class DeviceTechnologyType(str, enum.Enum):
         return [e.value for e in cls]
 
 
-class EnergyCarrierType(str, enum.Enum):
-    electricity = "electricity"
-    natural_gas = "natural_gas"
-    hydrogen = "hydrogen"
-    heat = "heat"
-    other = "other"
-
-
 class EnergySourceType(str, enum.Enum):
     solar_pv = "solar_pv"
     wind = "wind"
@@ -53,6 +45,14 @@ class EnergySourceType(str, enum.Enum):
     geothermal = "geothermal"
     battery_storage = "battery_storage"
     chp = "chp"
+    other = "other"
+
+
+class EnergyCarrierType(str, enum.Enum):
+    electricity = "electricity"
+    natural_gas = "natural_gas"
+    hydrogen = "hydrogen"
+    heat = "heat"
     other = "other"
 
 

@@ -31,7 +31,7 @@ import { setCurrentUserInfoState } from "./store/user/userSlice";
 
 const isAuthenticated = () => {
   const token = Cookies.get("access_token");
-  return !!token; // Returns true if token exists
+  return !!token;
 };
 
 const PrivateRoute = ({ element: Element, ...rest }) => {
