@@ -1,6 +1,7 @@
 import datetime
 from typing import Any, Callable
 
+import pandas as pd
 from esdbclient import EventStoreDBClient
 from sqlalchemy import func
 from sqlmodel import Session, SQLModel, desc, or_, select
@@ -262,15 +263,17 @@ def issue_certificates_by_device_in_date_range(
     )
 
     # check if the device has already been issued certificates for the given period
-    if max_issued_timestamp and max_issued_timestamp >= to_datetime:
-        logger.info(
-            f"Device {device.id} has already been issued certificates for the period {from_datetime} to {to_datetime}"
-        )
-        return None
+    if max_issued_timestamp is not None:
+        max_issued_timestamp = pd.to_datetime(max_issued_timestamp, utc=True)
+        if max_issued_timestamp >= to_datetime:
+            logger.info(
+                f"Device {device.id} has already been issued certificates for the period {from_datetime} to {to_datetime}"
+            )
+            return None
 
-    # If max timestamp ias after from them use the max timestamp as the from_datetime
-    if max_issued_timestamp and max_issued_timestamp > from_datetime:
-        from_datetime = max_issued_timestamp
+        # If max timestamp ias after from them use the max timestamp as the from_datetime
+        if max_issued_timestamp > from_datetime:
+            from_datetime = max_issued_timestamp
 
     # TODO CAG - this is messy by me, will refactor down the road
     # Also, validation later on assumes the metering data is datetime sorted -

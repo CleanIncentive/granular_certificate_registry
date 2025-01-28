@@ -6,9 +6,14 @@ const deviceSlice = createSlice({
   initialState: {
     devices: [],
     loading: false,
+    uploadingMeterData: false,
     error: null,
   },
-  reducers: {},
+  reducers: {
+    setUploadingMeterData: (state, action) => {
+      state.uploadingMeterData = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(createDevice.pending, (state) => {
@@ -25,4 +30,5 @@ const deviceSlice = createSlice({
   },
 });
 
+export const { setUploadingMeterData } = deviceSlice.actions;
 export default deviceSlice.reducer;

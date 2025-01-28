@@ -50,17 +50,17 @@ def validate_granular_certificate_bundle(
         raw_granular_certificate_bundle
     )
 
-    W_IN_MW = 1e6
+    # W_IN_MW = 1e6
     device_id = granular_certificate_bundle.device_id
 
-    device_w = get_device_capacity_by_id(db_session, device_id)
-
-    if not device_w:
+    device_mw = get_device_capacity_by_id(db_session, device_id)
+    print("Printing device_mw", device_mw)
+    if not device_mw:
         raise ValueError(f"Device with ID {device_id} not found")
 
-    device_mw = device_w / W_IN_MW
+    # device_mw = device_w / W_IN_MW
     device_max_watts_hours = device_mw_capacity_to_wh_max(device_mw, hours)
-
+    print("Printing device_max_watts_hours", device_max_watts_hours)
     # Validate the bundle quantity is equal to the difference between the bundle ID range
     # and less than the device max watts hours
     validate(
