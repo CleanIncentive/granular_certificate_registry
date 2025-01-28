@@ -69,3 +69,16 @@
 .card .ant-card-meta-title {
   font-weight: bold;
 }
+
+.account-initial {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #043DDC;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 500;
+}

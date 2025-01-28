@@ -1,32 +1,36 @@
-import React, { useState } from "react";
-import { Card, Button, Typography, Space, Divider } from "antd";
-import { CheckCircleOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import React from "react";
+import { Typography, Space, Divider } from "antd";
 import * as styles from "./AccountPicker.module.css";
-import edfLogo from "../../assets/images/edf-energy-logo.png";
-import bscLtdLogo from "../../assets/images/bsc-ltd-logo.png";
 import addUserBtn from "../../assets/images/add-user-btn.png";
-
 import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { getAccountDetails } from "../../store/account/accountThunk";
+import Cookies from "js-cookie";
 
 const { Title, Text } = Typography;
 
 const AccountPicker = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  // const { userData, loading } = useSelector((state) => state.user);
+  const userData = JSON.parse(Cookies.get("user_data"));
+  console.log("userData", userData);
 
-  const handleAccountSelection = (accountName) => {
-    console.log("CLICKEDDDD");
-    switch (accountName) {
-      case "production":
-        navigate("/certificates");
-        break;
-      case "trading":
-        navigate("/devices");
-        break;
-      default:
-        window.location.href =
-          "https://docs.google.com/forms/d/e/1FAIpQLSdSkHMAYSu43VJFevngfVT5hvnWRZvwkelIf9QaPtpLVrIlxA/viewform?usp=sf_link";
-        break;
+  const handleAccountSelection = async (account) => {
+    try {
+      // Get account details and store them
+      await dispatch(getAccountDetails(account.id)).unwrap();
+
+      // Navigate based on account type or default to certificates
+      navigate("/certificates");
+    } catch (error) {
+      console.error("Error selecting account:", error);
     }
+  };
+
+  const handleRequestAccount = () => {
+    window.location.href =
+      "https://docs.google.com/forms/d/e/1FAIpQLSdSkHMAYSu43VJFevngfVT5hvnWRZvwkelIf9QaPtpLVrIlxA/viewform?usp=sf_link";
   };
 
   return (
@@ -39,58 +43,37 @@ const AccountPicker = () => {
           </Text>
         </div>
 
-        <div
-          className={styles["account-card"]}
-          onClick={() => handleAccountSelection("production")}
-        >
-          <Space>
-            <img
-              src={edfLogo}
-              alt="EDF Energy"
-              className={styles["logo-img"]}
-            />
-            <div>
-              <Text style={{ display: "flex" }} strong>
-                EDF Energy
-              </Text>
-              <Text style={{ display: "flex" }} type="secondary">
-                Production account
-              </Text>
+        {/* Map through user's accounts */}
+        {userData?.accounts?.map((account, index) => (
+          <React.Fragment key={account.id}>
+            <div
+              className={styles["account-card"]}
+              onClick={() => handleAccountSelection(account)}
+            >
+              <Space>
+                <div className={styles["account-initial"]}>
+                  {account.account_name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <Text style={{ display: "flex" }} strong>
+                    {account.account_name}
+                  </Text>
+                </div>
+              </Space>
             </div>
-          </Space>
-        </div>
+            {index < userData.accounts.length - 1 && (
+              <Divider className={styles["account-card-divider"]} />
+            )}
+          </React.Fragment>
+        ))}
+
+        {/* Request Account Card */}
         <Divider className={styles["account-card-divider"]} />
-        <div
-          className={styles["account-card"]}
-          onClick={() => handleAccountSelection("trading")}
-        >
-          <Space>
-            <img
-              src={bscLtdLogo}
-              alt="EDF Energy"
-              className={styles["logo-img"]}
-            />
-            <div>
-              <Text style={{ display: "flex" }} strong>
-                Battery Storage Co Ltd.
-              </Text>
-              <div>
-                <Text style={{ display: "flex" }} type="secondary">
-                  Trading account
-                </Text>
-              </div>
-            </div>
-          </Space>
-        </div>
-        <Divider className={styles["account-card-divider"]} />
-        <div
-          className={styles["account-card"]}
-          onClick={() => handleAccountSelection("trading")}
-        >
+        <div className={styles["account-card"]} onClick={handleRequestAccount}>
           <Space>
             <img
               src={addUserBtn}
-              alt="EDF Energy"
+              alt="Request Account"
               className={styles["logo-img"]}
             />
             <Text strong>Request another account</Text>
