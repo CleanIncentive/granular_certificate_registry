@@ -1,52 +1,94 @@
 import axios from "axios";
 import Cookies from "js-cookie";
 
-// Define public routes (e.g., login, register)
 const AUTH_LIST = ["/auth/login"];
+const CSRF_EXEMPT = ["/csrf-token"];
 
-// Create a reusable Axios instance
 const baseAPI = axios.create({
   baseURL: process.env.REACT_APP_API_URL || "http://localhost:8000",
-  // timeout: 10000, // 10 seconds timeout
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true, // Include HttpOnly cookies
+  withCredentials: false,
 });
 
-// Add a request interceptor (e.g., attach token)
-baseAPI.interceptors.request.use(
-  (config) => {
-    // Check if the request URL is in the whitelist
-    const isAuthRoute = AUTH_LIST.some((route) => config.url.includes(route));
-    if (!isAuthRoute) {
-      const token = Cookies.get("access_token"); // Assuming the token is saved as 'authToken'
+const fetchCSRFToken = async () => {
+  try {
+    const response = await baseAPI.get("/csrf-token");
+    const token = response.data.csrf_token;
+    if (token) {
+      Cookies.set("csrf_token", token);
+    }
+    return token;
+  } catch (error) {
+    console.error("Failed to fetch CSRF token:", error);
+    return null;
+  }
+};
 
+baseAPI.interceptors.request.use(
+  async (config) => {
+    // Check if the request URL is in the whitelist
+    const isAuthRoute = AUTH_LIST.some((route) => config.url?.includes(route));
+    const isCSRFExempt = CSRF_EXEMPT.some((route) =>
+      config.url?.includes(route)
+    );
+
+    // Add Authorization header if not an auth route
+    if (!isAuthRoute) {
+      const token = Cookies.get("access_token");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
+
+    if (!isCSRFExempt && config.method !== "get") {
+      let csrfToken = Cookies.get("csrf_token");
+
+      if (!csrfToken) {
+        csrfToken = await fetchCSRFToken();
+      }
+
+      if (csrfToken) {
+        config.headers["X-CSRF-Token"] = csrfToken;
+      }
+    }
+
+    console.log(config.url, "Request Headers:", config.method, config.headers);
+
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Add a response interceptor (e.g., global error handling)
 baseAPI.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     console.error(error);
 
+    if (
+      error.response?.status === 403 &&
+      error.response?.data?.detail?.includes("CSRF")
+    ) {
+      const newToken = await fetchCSRFToken();
+      if (newToken && error.config) {
+        error.config.headers["X-CSRF-Token"] = newToken;
+        return baseAPI(error.config);
+      }
+    }
+
     if (error.response?.status === 422) {
-      return Promise.reject(error)
+      return Promise.reject(error);
     }
 
     const status = error.response?.status || 500;
     const message =
       error.response?.data?.detail || "An unexpected error occurred.";
 
-    return Promise.reject({ status, message }); // Standardized error
+    return Promise.reject({ status, message });
   }
 );
+
+fetchCSRFToken().catch(console.error);
 
 export default baseAPI;
