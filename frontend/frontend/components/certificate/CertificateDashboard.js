@@ -42,9 +42,13 @@ import "../../assets/styles/filter.css";
 
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { fetchCertificates } from "../../store/certificate/certificateThunk";
+import {
+  fetchCertificates,
+  getCertificateDetails,
+} from "../../store/certificate/certificateThunk";
 
 import CertificateActionDialog from "./CertificateActionDialog";
+import CertificateDetailDialog from "./CertificateDetailDialog";
 import SideMenu from "../SideMenu";
 
 const { Header, Sider, Content } = Layout;
@@ -68,6 +72,8 @@ const Dashboard = () => {
   const { certificates, loading, error } = useSelector(
     (state) => state.certificates
   );
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [selectedCertificateData, setSelectedCertificateData] = useState(null);
 
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRecords, setSelectedRecords] = useState([]);
@@ -184,6 +190,18 @@ const Dashboard = () => {
     fetchCertificatesData();
   };
 
+  const handleGetCertificateDetail = async (certificateId) => {
+    try {
+      const response = await dispatch(
+        getCertificateDetails(certificateId)
+      ).unwrap();
+      setSelectedCertificateData(response);
+      setIsDetailModalOpen(true);
+    } catch (error) {
+      message.error(error?.message || "Failed to fetch certificate details");
+    }
+  };
+
   const handleClearFilter = async () => {
     setFilters({});
   };
@@ -293,15 +311,21 @@ const Dashboard = () => {
       title: <span style={{ color: "#80868B" }}>Status</span>,
       dataIndex: "certificate_bundle_status",
       key: "certificate_bundle_status",
-      render: (status) => StatusTag(status),
+      render: (status) => <StatusTag status={String(status || "")} />, // Ensure status is a string
     },
     {
       title: "",
-      render: () => (
-        <Button style={{ color: "#043DDC", fontWeight: "600" }} type="link">
-          Detail
-        </Button>
-      ),
+      render: (_, record) => {
+        return (
+          <Button
+            style={{ color: "#043DDC", fontWeight: "600" }}
+            type="link"
+            onClick={() => handleGetCertificateDetail(record.id)}
+          >
+            Details
+          </Button>
+        );
+      },
     },
   ];
 
@@ -595,6 +619,12 @@ const Dashboard = () => {
         getDeviceName={getDeviceName}
         fetchCertificatesData={fetchCertificatesData}
         setSelectedRowKeys={setSelectedRowKeys}
+        getCertificateDetail={handleGetCertificateDetail}
+      />
+      <CertificateDetailDialog
+        open={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        certificateData={selectedCertificateData}
       />
     </Layout>
   );

@@ -12,3 +12,7 @@ export const transferCertificateAPI = (certificateData) =>
 
 export const cancelCertificateAPI = (certificateData) =>
   baseAPI.post("/certificate/cancel", certificateData);
+
+export const getCertificateDetailsAPI = (certificateId) => {
+  return baseAPI.get(`/certificate/${certificateId}`);
+};
