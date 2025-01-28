@@ -23,11 +23,12 @@ const SideMenu = () => {
   const [dropDownVisible, setDropDownVisible] = useState(false);
   const { userInfo, accounts } = useSelector((state) => state.user);
 
+  console.log(accounts.length);
   const isShowDevices =
     userInfo.role !== "TRADING_USER" && userInfo.role !== "AUDIT_USER";
 
-  const isAccountPickerAllowed = accounts?.lentgh > 1;
-
+  const isAccountPickerAllowed = accounts.length > 1;
+  console.log(isAccountPickerAllowed);
   const generateMenuStyle = (path, isVisible = true) => ({
     display: isVisible ? "flex" : "none",
     backgroundColor: location.pathname === path ? "#0057FF" : "",

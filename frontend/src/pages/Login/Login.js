@@ -36,7 +36,6 @@ const Login = () => {
     try {
       const userID = await dispatch(login({ username, password })).unwrap();
       const userData = await dispatch(readCurrentUser()).unwrap();
-
       if (userData.accounts && userData.accounts.length > 0) {
         const defaultAccount = userData.accounts[0];
         await dispatch(getAccountDetails(defaultAccount.id)).unwrap();
