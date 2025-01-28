@@ -145,7 +145,9 @@ const Login = () => {
                 </Divider>
                 <Text>
                   <Link
-                    href="#"
+                    href="https://docs.google.com/forms/d/e/1FAIpQLSdSkHMAYSu43VJFevngfVT5hvnWRZvwkelIf9QaPtpLVrIlxA/viewform?usp=sf_link"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     style={{ fontWeight: "500", color: "#043DDC" }}
                   >
                     Request account
