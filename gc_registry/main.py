@@ -77,23 +77,26 @@ app = FastAPI(
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "localhost:9000")
 
+
 class CSRFMiddleware:
     def __init__(
-        self, 
-        app, 
+        self,
+        app,
         allow_origins: list[str] | None = None,
-        exempt_paths: set[str] | None = None
+        exempt_paths: set[str] | None = None,
     ):
         self.app = app
         self.allow_origins = set(allow_origins or [])
-        self.exempt_paths = set(exempt_paths or ["/csrf-token", "/docs", "/redoc", "/openapi.json"])
+        self.exempt_paths = set(
+            exempt_paths or ["/csrf-token", "/docs", "/redoc", "/openapi.json"]
+        )
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
             return await self.app(scope, receive, send)
 
         request = Request(scope, receive=receive)
-        
+
         # Check exempt paths first
         if request.url.path in self.exempt_paths:
             return await self.app(scope, receive, send)
@@ -106,22 +109,22 @@ class CSRFMiddleware:
         if request.method in ("POST", "PUT", "DELETE", "PATCH"):
             csrf_token = request.headers.get("X-CSRF-Token")
             session_token = request.session.get("csrf_token")
-            
+
             if not csrf_token or not session_token or csrf_token != session_token:
                 response = JSONResponse(
-                    status_code=403, 
-                    content={"detail": "CSRF token missing or invalid"}
+                    status_code=403, content={"detail": "CSRF token missing or invalid"}
                 )
                 return await response(scope, receive, send)
 
         return await self.app(scope, receive, send)
+
 
 origins = [
     "http://localhost:9000",
     "http://127.0.0.1:9000",
     "http://localhost:8000",
     "https://frontend-dot-rich-store-445612-c6.ew.r.appspot.com",
-    "https://api-dot-rich-store-445612-c6.ew.r.appspot.com"
+    "https://api-dot-rich-store-445612-c6.ew.r.appspot.com",
 ]
 
 app.add_middleware(
@@ -130,13 +133,13 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*", "X-CSRF-Token"],
-    expose_headers=["X-CSRF-Token"]
+    expose_headers=["X-CSRF-Token"],
 )
 
 app.add_middleware(
-    CSRFMiddleware, 
+    CSRFMiddleware,
     allow_origins=origins,
-    exempt_paths={"/csrf-token", "/docs", "/redoc", "/openapi.json"}
+    exempt_paths={"/csrf-token", "/docs", "/redoc", "/openapi.json"},
 )
 
 app.add_middleware(SessionMiddleware, secret_key=settings.MIDDLEWARE_SECRET_KEY)
@@ -147,11 +150,7 @@ async def get_csrf_token(request: Request, response: Response):
     token = secrets.token_urlsafe(32)
     request.session["csrf_token"] = token
     response.set_cookie(
-        key="csrf_token",
-        value=token,
-        httponly=True,
-        samesite='strict',
-        secure=True  
+        key="csrf_token", value=token, httponly=True, samesite="strict", secure=True
     )
     return {"csrf_token": token}
 
