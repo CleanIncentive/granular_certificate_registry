@@ -14,6 +14,9 @@ const AccountPicker = React.lazy(() =>
   import("./components/account/AccountPicker")
 );
 
+const AccountManagement = React.lazy(() =>
+  import("./pages/AccountManagement/AccountManagement")
+);
 
 import {
   BrowserRouter as Router,
@@ -24,6 +27,7 @@ import {
 
 import { useDispatch } from "react-redux";
 import { setAccountState } from "./store/account/accountSlice";
+import { setCurrentUserInfoState } from "./store/user/userSlice";
 
 const isAuthenticated = () => {
   const token = Cookies.get("access_token");
@@ -40,12 +44,17 @@ const App = () => {
   useEffect(() => {
     const setAccountDataState = async () => {
       const currentAccount = JSON.parse(Cookies.get("account_detail"));
-      
+      const userData = JSON.parse(Cookies.get("user_data"));
+
       if (!!currentAccount) {
         await dispatch(setAccountState(currentAccount));
       }
+
+      if (!!userData) {
+        await dispatch(setCurrentUserInfoState(userData));
+      }
     };
-    
+
     setAccountDataState();
   }, [dispatch]);
 
@@ -53,6 +62,14 @@ const App = () => {
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route
+          path="/account-picker"
+          element={<PrivateRoute element={AccountPicker} />}
+        />
+        <Route
+          path="/account-management"
+          element={<PrivateRoute element={AccountManagement} />}
+        />
         <Route
           path="/certificates"
           element={<PrivateRoute element={CertificateDashboard} />}

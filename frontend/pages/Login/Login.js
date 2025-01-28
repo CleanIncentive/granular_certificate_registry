@@ -19,7 +19,7 @@ const { Option } = Select;
 
 import { useDispatch } from "react-redux";
 import { login } from "../../store/auth/authThunk";
-import { readUser } from "../../store/user/userThunk";
+import { readCurrentUser } from "../../store/user/userThunk";
 import { getAccountDetails } from "../../store/account/accountThunk";
 
 import { useNavigate } from "react-router-dom";
@@ -35,7 +35,7 @@ const Login = () => {
     e.preventDefault();
     try {
       const userID = await dispatch(login({ username, password })).unwrap();
-      const userData = await dispatch(readUser(userID)).unwrap();
+      const userData = await dispatch(readCurrentUser()).unwrap();
 
       if (userData.accounts && userData.accounts.length > 0) {
         const defaultAccount = userData.accounts[0];
@@ -43,7 +43,12 @@ const Login = () => {
       }
 
       message.success("Login successful 🎉", 2);
-      navigate("/account-picker");
+      // if (userData.userInfo.role === "ADMIN") {
+      //   navigate("/account-picker");
+      // } else {
+      // }
+      navigate("/certificates");
+
     } catch (error) {
       message.error(`Login failed: ${error}`, 3);
     }

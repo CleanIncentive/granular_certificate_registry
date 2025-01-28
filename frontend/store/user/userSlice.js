@@ -10,6 +10,8 @@ const userSlice = createSlice({
       username: null,
       role: null,
       userID: null,
+      organisation: null,
+      email: null
     },
     loading: false,
     error: null,
@@ -22,8 +24,19 @@ const userSlice = createSlice({
         username: null,
         role: null,
         userID: null,
+        organisation: null,
+        email: null
       };
       state.error = null;
+    },
+    setCurrentUserInfoState: (state, action) => {
+      state.userInfo = {
+        username: action.payload.userInfo.username,
+        role: action.payload.userInfo.role,
+        userID: action.payload.userInfo.userID,
+        organisation: action.payload.userInfo.organisation,
+        email: action.payload.userInfo.email
+      };
     },
     setSelectedAccount: (state, action) => {
       state.selectedAccount = action.payload;
@@ -57,5 +70,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { clearUser, setSelectedAccount } = userSlice.actions;
+export const { clearUser, setSelectedAccount, setCurrentUserInfoState } = userSlice.actions;
 export default userSlice.reducer;
