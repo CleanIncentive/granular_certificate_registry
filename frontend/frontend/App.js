@@ -22,7 +22,7 @@ import { setAccountState } from "./store/account/accountSlice";
 
 const isAuthenticated = () => {
   const token = Cookies.get("access_token");
-  return !!token; // Returns true if token exists
+  return !!token;
 };
 
 const PrivateRoute = ({ element: Element, ...rest }) => {
@@ -35,12 +35,12 @@ const App = () => {
   useEffect(() => {
     const setAccountDataState = async () => {
       const currentAccount = JSON.parse(Cookies.get("account_detail"));
-      
+
       if (!!currentAccount) {
         await dispatch(setAccountState(currentAccount));
       }
     };
-    
+
     setAccountDataState();
   }, [dispatch]);
 
