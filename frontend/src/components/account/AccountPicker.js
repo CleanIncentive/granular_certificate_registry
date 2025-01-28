@@ -12,9 +12,7 @@ const { Title, Text } = Typography;
 const AccountPicker = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  // const { userData, loading } = useSelector((state) => state.user);
   const userData = JSON.parse(Cookies.get("user_data"));
-  console.log("userData", userData);
 
   const handleAccountSelection = async (account) => {
     try {
@@ -29,8 +27,11 @@ const AccountPicker = () => {
   };
 
   const handleRequestAccount = () => {
-    window.location.href =
-      "https://docs.google.com/forms/d/e/1FAIpQLSdSkHMAYSu43VJFevngfVT5hvnWRZvwkelIf9QaPtpLVrIlxA/viewform?usp=sf_link";
+    window.open(
+      "https://docs.google.com/forms/d/e/1FAIpQLSdSkHMAYSu43VJFevngfVT5hvnWRZvwkelIf9QaPtpLVrIlxA/viewform?usp=sf_link",
+      "_blank",
+      "noopener,noreferrer"
+    );
   };
 
   return (
