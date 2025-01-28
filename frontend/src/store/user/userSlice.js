@@ -73,7 +73,6 @@ const userSlice = createSlice({
       })
       .addCase(readCurrentUser.fulfilled, (state, action) => {
         state.loading = false;
-        console.log(action.payload.accounts);
         state.accounts = action.payload.accounts;
         state.userInfo = action.payload.userInfo;
         if (action.payload.accounts.length > 0) {
