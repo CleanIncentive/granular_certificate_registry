@@ -181,7 +181,10 @@ const DeviceUploadDialog = forwardRef((props, ref) => {
             type="primary"
             onClick={handleSubmit}
             loading={uploading}
-            style={{ backgroundColor: "#CEDAFD" }}
+            style={{
+              backgroundColor: fileList.length > 0 ? "#043DDC" : "#CEDAFD",
+              color: fileList.length > 0 ? "#FFFFFF" : "#000000",
+            }}
           >
             Submit meter readings
           </Button>,
