@@ -1,9 +1,10 @@
 # Imports
+import io
 from pathlib import Path
 
 import pandas as pd
 from esdbclient import EventStoreDBClient
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from sqlmodel import Session
 
@@ -15,7 +16,6 @@ from gc_registry.core.models.base import UserRoles
 from gc_registry.device.meter_data.manual_submission import ManualSubmissionMeterClient
 from gc_registry.device.models import Device
 from gc_registry.measurement import models
-from gc_registry.measurement.services import parse_measurement_json
 from gc_registry.user.models import User
 from gc_registry.user.validation import validate_user_access, validate_user_role
 
@@ -46,15 +46,15 @@ def get_meter_readings_template(current_user: User = Depends(get_current_user)):
 
 
 @router.post("/submit_readings", response_model=models.MeasurementSubmissionResponse)
-def submit_readings(
-    measurement_json: str,
-    device_id: int,
+async def submit_readings(
+    file: UploadFile = File(...),
+    deviceID: int = Form(...),
     current_user: User = Depends(get_current_user),
     write_session: Session = Depends(db.get_write_session),
     read_session: Session = Depends(db.get_read_session),
     esdb_client: EventStoreDBClient = Depends(events.get_esdb_client),
 ):
-    """Submit meter readings as a JSON-serialised CSV file for a single device,
+    """Submit meter readings as a CSV file for a single device,
     creating a MeasurementReport for each production interval against which GC
     Bundles can be issued. Returns a summary of the readings submitted.
 
@@ -66,22 +66,28 @@ def submit_readings(
     TODO: Implement issuance metadata workflow on front end.
 
     Args:
-        measurement_json (str): A JSON-serialised CSV file containing the meter readings.
+        file (UploadFile): The CSV file containing meter readings
+        deviceID (int): The ID of the device the readings are for
 
     Returns:
         models.MeasurementSubmissionResponse: A summary of the readings submitted.
     """
     validate_user_role(current_user, required_role=UserRoles.PRODUCTION_USER)
 
-    measurement_df = parse_measurement_json(measurement_json, to_df=True)
-    measurement_df["device_id"] = device_id
+    # Read the uploaded file
+    contents = await file.read()
+    csv_file = io.StringIO(contents.decode("utf-8"))
+
+    # Convert to DataFrame
+    measurement_df = pd.read_csv(csv_file)
+    measurement_df["device_id"] = deviceID
 
     # Check that the device ID is associated with an account that the user has access to
-    device = Device.by_id(device_id, read_session)
+    device = Device.by_id(deviceID, read_session)
 
     if not device:
         raise HTTPException(
-            status_code=404, detail=f"Device with ID {device_id} not found."
+            status_code=404, detail=f"Device with ID {deviceID} not found."
         )
 
     validate_user_access(current_user, device.account_id, read_session)
@@ -141,7 +147,7 @@ def submit_readings(
 
     measurement_response = models.MeasurementSubmissionResponse(
         message="Readings submitted successfully.",
-        total_device_usage=int(measurement_df["interval_usage"].sum()),
+        total_device_usage=measurement_df["interval_usage"].astype(int).sum(),
         first_reading_datetime=pd.to_datetime(
             measurement_df["interval_start_datetime"].min(), utc=True
         ),

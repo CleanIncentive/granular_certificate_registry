@@ -270,39 +270,51 @@ const DeviceDashboard = () => {
           <Row gutter={16}>
             <Col span={8}>
               <Card>
-                <Space align="middle">
+                <Space align="start" size={16}>
                   <AppstoreOutlined
-                    style={{ fontSize: "32px", color: "#0057FF" }}
+                    style={{ 
+                      fontSize: "32px", 
+                      color: "#0057FF",
+                      marginTop: "4px"
+                    }}
                   />
-                  <div>
-                    <h3>10293</h3>
-                    <p>Total devices</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <h3 style={{ margin: 0, fontSize: "24px" }}>7</h3>
+                    <p style={{ margin: 0, color: "#5F6368" }}>Number of Devices</p>
                   </div>
                 </Space>
               </Card>
             </Col>
             <Col span={8}>
               <Card>
-                <Space align="middle">
+                <Space align="start" size={16}>
                   <SwapOutlined
-                    style={{ fontSize: "32px", color: "#1890ff" }}
+                    style={{ 
+                      fontSize: "32px", 
+                      color: "#1890ff",
+                      marginTop: "4px"
+                    }}
                   />
-                  <div>
-                    <h3>89</h3>
-                    <p>Devices by fuel</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <h3 style={{ margin: 0, fontSize: "24px" }}>Wind: 5, Solar PV: 2</h3>
+                    <p style={{ margin: 0, color: "#5F6368" }}>Devices by Technology Type</p>
                   </div>
                 </Space>
               </Card>
             </Col>
             <Col span={8}>
               <Card>
-                <Space align="middle">
+                <Space align="start" size={16}>
                   <CloseCircleOutlined
-                    style={{ fontSize: "32px", color: "#1890ff" }}
+                    style={{ 
+                      fontSize: "32px", 
+                      color: "#1890ff",
+                      marginTop: "4px"
+                    }}
                   />
-                  <div>
-                    <h3>204</h3>
-                    <p>Device capacity (MW)</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <h3 style={{ margin: 0, fontSize: "24px" }}>600 MW</h3>
+                    <p style={{ margin: 0, color: "#5F6368" }}>Total Device Capacity</p>
                   </div>
                 </Space>
               </Card>

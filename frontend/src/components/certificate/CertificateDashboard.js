@@ -288,6 +288,7 @@ const Dashboard = () => {
       title: <span style={{ color: "#80868B" }}>Energy Source</span>,
       dataIndex: "energy_source",
       key: "energy_source",
+      render: (text) => <span style={{ color: "#5F6368" }}>{text.charAt(0).toUpperCase() + text.slice(1)}</span>,
     },
     {
       title: <span style={{ color: "#80868B" }}>Certificate Period Start</span>,
@@ -358,39 +359,51 @@ const Dashboard = () => {
           <Row gutter={16}>
             <Col span={8}>
               <Card>
-                <Space align="middle">
+                <Space align="start" size={16}>
                   <AppstoreOutlined
-                    style={{ fontSize: "32px", color: "#0057FF" }}
+                    style={{ 
+                      fontSize: "32px", 
+                      color: "#0057FF",
+                      marginTop: "4px"
+                    }}
                   />
-                  <div>
-                    <h3>10293</h3>
-                    <p>Total Certificates</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <h3 style={{ margin: 0, fontSize: "24px" }}>10293</h3>
+                    <p style={{ margin: 0, color: "#5F6368" }}>Total Certificates</p>
                   </div>
                 </Space>
               </Card>
             </Col>
             <Col span={8}>
               <Card>
-                <Space align="middle">
+                <Space align="start" size={16}>
                   <SwapOutlined
-                    style={{ fontSize: "32px", color: "#1890ff" }}
+                    style={{ 
+                      fontSize: "32px", 
+                      color: "#1890ff",
+                      marginTop: "4px"
+                    }}
                   />
-                  <div>
-                    <h3>89</h3>
-                    <p>Certificates Transferred</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <h3 style={{ margin: 0, fontSize: "24px" }}>89</h3>
+                    <p style={{ margin: 0, color: "#5F6368" }}>Certificates Transferred</p>
                   </div>
                 </Space>
               </Card>
             </Col>
             <Col span={8}>
               <Card>
-                <Space align="middle">
+                <Space align="start" size={16}>
                   <CloseCircleOutlined
-                    style={{ fontSize: "32px", color: "#1890ff" }}
+                    style={{ 
+                      fontSize: "32px", 
+                      color: "#1890ff",
+                      marginTop: "4px"
+                    }}
                   />
-                  <div>
-                    <h3>204</h3>
-                    <p>Certificates Cancelled</p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <h3 style={{ margin: 0, fontSize: "24px" }}>204</h3>
+                    <p style={{ margin: 0, color: "#5F6368" }}>Certificates Cancelled</p>
                   </div>
                 </Space>
               </Card>
