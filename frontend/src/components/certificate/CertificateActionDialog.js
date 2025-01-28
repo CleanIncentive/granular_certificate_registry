@@ -84,6 +84,8 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
         granular_certificate_bundle_ids: props.selectedRowKeys,
         localise_time: true,
         action_type: props.dialogAction,
+        certificate_quantity: props.quantity,
+        certificate_bundle_percentage: props.percentage,
       };
 
       switch (props.dialogAction) {
