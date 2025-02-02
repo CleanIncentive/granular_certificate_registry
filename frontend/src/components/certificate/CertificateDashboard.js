@@ -50,21 +50,12 @@ import {
 import CertificateActionDialog from "./CertificateActionDialog";
 import CertificateDetailDialog from "./CertificateDetailDialog";
 import SideMenu from "../SideMenu";
+import { CERTIFICATE_STATUS, ENERGY_SOURCE } from "../../enum";
 
 const { Header, Sider, Content } = Layout;
 const { Title, Text } = Typography;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
-
-const STATUS_ENUM = Object.freeze({
-  claimed: "Claimed",
-  cancelled: "Cancelled",
-  active: "Active",
-  expired: "Expired",
-  locked: "Locked",
-  withdraw: "Withdraw",
-  reserved: "Reserved",
-});
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -113,7 +104,7 @@ const Dashboard = () => {
   const defaultFilters = {
     device_id: null,
     energy_source: null,
-    certificate_bundle_status: STATUS_ENUM.active,
+    certificate_bundle_status: CERTIFICATE_STATUS.active,
     certificate_period_start: dayjs(one_week_ago),
     certificate_period_end: dayjs(today),
   };
@@ -163,7 +154,8 @@ const Dashboard = () => {
       user_id: userInfo.userID,
       source_id: currentAccount.id,
       device_id: filters.device_id,
-      certificate_bundle_status: STATUS_ENUM[filters.certificate_bundle_status], // Transform status to match API expectations
+      certificate_bundle_status:
+        CERTIFICATE_STATUS[filters.certificate_bundle_status], // Transform status to match API expectations
       certificate_period_start:
         filters.certificate_period_start?.format("YYYY-MM-DD"),
       certificate_period_end:
@@ -288,7 +280,11 @@ const Dashboard = () => {
       title: <span style={{ color: "#80868B" }}>Energy Source</span>,
       dataIndex: "energy_source",
       key: "energy_source",
-      render: (text) => <span style={{ color: "#5F6368" }}>{text.charAt(0).toUpperCase() + text.slice(1)}</span>,
+      render: (text) => (
+        <span style={{ color: "#5F6368" }}>
+          {text.charAt(0).toUpperCase() + text.slice(1)}
+        </span>
+      ),
     },
     {
       title: <span style={{ color: "#80868B" }}>Certificate Period Start</span>,
@@ -361,15 +357,23 @@ const Dashboard = () => {
               <Card>
                 <Space align="start" size={16}>
                   <AppstoreOutlined
-                    style={{ 
-                      fontSize: "32px", 
+                    style={{
+                      fontSize: "32px",
                       color: "#0057FF",
-                      marginTop: "4px"
+                      marginTop: "4px",
                     }}
                   />
-                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "4px",
+                    }}
+                  >
                     <h3 style={{ margin: 0, fontSize: "24px" }}>10293</h3>
-                    <p style={{ margin: 0, color: "#5F6368" }}>Total Certificates</p>
+                    <p style={{ margin: 0, color: "#5F6368" }}>
+                      Total Certificates
+                    </p>
                   </div>
                 </Space>
               </Card>
@@ -378,15 +382,23 @@ const Dashboard = () => {
               <Card>
                 <Space align="start" size={16}>
                   <SwapOutlined
-                    style={{ 
-                      fontSize: "32px", 
+                    style={{
+                      fontSize: "32px",
                       color: "#1890ff",
-                      marginTop: "4px"
+                      marginTop: "4px",
                     }}
                   />
-                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "4px",
+                    }}
+                  >
                     <h3 style={{ margin: 0, fontSize: "24px" }}>89</h3>
-                    <p style={{ margin: 0, color: "#5F6368" }}>Certificates Transferred</p>
+                    <p style={{ margin: 0, color: "#5F6368" }}>
+                      Certificates Transferred
+                    </p>
                   </div>
                 </Space>
               </Card>
@@ -395,15 +407,23 @@ const Dashboard = () => {
               <Card>
                 <Space align="start" size={16}>
                   <CloseCircleOutlined
-                    style={{ 
-                      fontSize: "32px", 
+                    style={{
+                      fontSize: "32px",
                       color: "#1890ff",
-                      marginTop: "4px"
+                      marginTop: "4px",
                     }}
                   />
-                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "4px",
+                    }}
+                  >
                     <h3 style={{ margin: 0, fontSize: "24px" }}>204</h3>
-                    <p style={{ margin: 0, color: "#5F6368" }}>Certificates Cancelled</p>
+                    <p style={{ margin: 0, color: "#5F6368" }}>
+                      Certificates Cancelled
+                    </p>
                   </div>
                 </Space>
               </Card>
@@ -495,9 +515,11 @@ const Dashboard = () => {
               suffixIcon={<ThunderboltOutlined />}
               allowClear
             >
-              <Option value="solar">Solar</Option>
-              <Option value="wind">Wind</Option>
-              <Option value="hydro">Hydropower</Option>
+              {Object.entries(ENERGY_SOURCE).map(([key, value]) => (
+                <Option key={key} value={key}>
+                  {value}
+                </Option>
+              ))}
             </Select>
 
             <RangePicker
@@ -521,7 +543,7 @@ const Dashboard = () => {
               allowClear
               suffixIcon={<ClockCircleOutlined />}
             >
-              {Object.entries(STATUS_ENUM).map(([key, value]) => (
+              {Object.entries(CERTIFICATE_STATUS).map(([key, value]) => (
                 <Option key={key} value={key}>
                   {value}
                 </Option>
