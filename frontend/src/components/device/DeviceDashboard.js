@@ -52,15 +52,7 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 const { Search } = Input;
 
-export const DEVICE_TECHNOLOGY_TYPE = Object.freeze({
-  SOLAR_PV: "Solar PV",
-  WIND_TURBINE: "Wind turbine",
-  HYDRO: "Hydro",
-  BATTERY_STORAGE: "Battery storage",
-  OTHER_STORAGE: "Other storage",
-  CHP: "CHP",
-  OTHER: "Other",
-});
+import { DEVICE_TECHNOLOGY_TYPE } from "../../enum";
 
 const DeviceDashboard = () => {
   const dispatch = useDispatch();
