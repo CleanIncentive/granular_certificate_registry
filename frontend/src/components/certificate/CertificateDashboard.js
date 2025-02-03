@@ -35,8 +35,6 @@ import {
   ClockCircleOutlined,
 } from "@ant-design/icons";
 
-import StatusTag from "../StatusTag";
-
 import "../../assets/styles/pagination.css";
 import "../../assets/styles/filter.css";
 
@@ -49,7 +47,12 @@ import {
 
 import CertificateActionDialog from "./CertificateActionDialog";
 import CertificateDetailDialog from "./CertificateDetailDialog";
+
+import StatusTag from "../StatusTag";
+
 import SideMenu from "../SideMenu";
+import FilterTable from "../FilterTable";
+
 import { CERTIFICATE_STATUS, ENERGY_SOURCE } from "../../enum";
 
 const { Header, Sider, Content } = Layout;
@@ -211,24 +214,6 @@ const Dashboard = () => {
     );
   };
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  // Go to Previous Page
-  const handlePrev = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  // Go to Next Page
-  const handleNext = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
   const handleDateChange = (dates) => {
     setFilters((prev) => ({
       ...prev,
@@ -252,111 +237,89 @@ const Dashboard = () => {
 
   const isCertificatesSelected = selectedRowKeys.length > 0;
 
-  const btnList = [
-    {
-      icon: () => {
-        return <CloseOutlined />;
+  const btnList = useMemo(
+    () => [
+      {
+        icon: <CloseOutlined />,
+        btnType: "primary",
+        type: "cancel",
+        disabled: !isCertificatesSelected,
+        style: { height: "40px" },
+        name: "Cancel",
+        handle: () => openDialog("cancel"),
       },
-      btnType: "primary",
-      type: "cancel",
-      disbled: !isCertificatesSelected,
-      style: { height: "40px" },
-      name: "Cancel",
-      handle: () => openDialog("cancel"),
-    },
-    {
-      icon: () => {
-        return <DownloadOutlined />;
+      {
+        icon: <DownloadOutlined />,
+        btnType: "primary",
+        type: "reserve",
+        disabled: !isCertificatesSelected,
+        style: { height: "40px" },
+        name: "Reserve",
+        handle: () => openDialog("reserve"),
       },
-      btnType: "primary",
-      type: "reserve",
-      disbled: !isCertificatesSelected,
-      style: { height: "40px" },
-      name: "Reserve",
-      handle: () => openDialog("reserve"),
-    },
-    {
-      icon: () => {
-        return <SwapOutlined />;
+      {
+        icon: <SwapOutlined />,
+        btnType: "primary",
+        type: "transfer",
+        disabled: !isCertificatesSelected,
+        style: { height: "40px" },
+        name: "Transfer",
+        handle: () => openDialog("transfer"),
       },
-      btnType: "primary",
-      type: "transfer",
-      disbled: !isCertificatesSelected,
-      style: { height: "40px" },
-      name: "Transfer",
-      handle: () => openDialog("transfer"),
-    },
-  ];
+    ],
+    [isCertificatesSelected]
+  );
 
   const filterComponents = [
-    () => {
-      return (
-        /* Device Filter */
-        <Select
-          placeholder="Device"
-          // mode="multiple"
-          options={deviceOptions}
-          value={filters.device}
-          onChange={(value) => handleFilterChange("device_id", value)}
-          style={{ width: 120 }}
-          suffixIcon={<LaptopOutlined />}
-          allowClear
-        ></Select>
-      );
-    },
-    () => {
-      return (
-        /* Energy Source Filter */
-        <Select
-          placeholder="Energy Source"
-          value={filters.energySource}
-          onChange={(value) => handleFilterChange("energy_source", value)}
-          style={{ width: 150 }}
-          suffixIcon={<ThunderboltOutlined />}
-          allowClear
-        >
-          {Object.entries(ENERGY_SOURCE).map(([key, value]) => (
-            <Option key={key} value={key}>
-              {value}
-            </Option>
-          ))}
-        </Select>
-      );
-    },
-    () => {
-      return (
-        /* Date range Filter */
-        <RangePicker
-          value={[
-            filters.certificate_period_start,
-            filters.certificate_period_end,
-          ]}
-          onChange={(dates) => handleDateChange(dates)}
-          allowClear={false}
-        />
-      );
-    },
-    () => {
-      return (
-        <Select
-          // mode="multiple"
-          placeholder="Status"
-          value={filters.status}
-          onChange={(value) =>
-            handleFilterChange("certificate_bundle_status", value)
-          }
-          style={{ width: 200 }}
-          allowClear
-          suffixIcon={<ClockCircleOutlined />}
-        >
-          {Object.entries(CERTIFICATE_STATUS).map(([key, value]) => (
-            <Option key={key} value={key}>
-              {value}
-            </Option>
-          ))}
-        </Select>
-      );
-    },
+    /* Device Filter */
+    <Select
+      placeholder="Device"
+      // mode="multiple"
+      options={deviceOptions}
+      value={filters.device_id}
+      onChange={(value) => handleFilterChange("device_id", value)}
+      style={{ width: 120 }}
+      suffixIcon={<LaptopOutlined />}
+      allowClear
+    ></Select>,
+    /* Energy Source Filter */
+    <Select
+      placeholder="Energy Source"
+      value={filters.energy_source}
+      onChange={(value) => handleFilterChange("energy_source", value)}
+      style={{ width: 150 }}
+      suffixIcon={<ThunderboltOutlined />}
+      allowClear
+    >
+      {Object.entries(ENERGY_SOURCE).map(([key, value]) => (
+        <Option key={key} value={key}>
+          {value}
+        </Option>
+      ))}
+    </Select>,
+    /* Date range Filter */
+    <RangePicker
+      value={[filters.certificate_period_start, filters.certificate_period_end]}
+      onChange={(dates) => handleDateChange(dates)}
+      allowClear={false}
+    />,
+    <Select
+      // mode="multiple"
+      placeholder="Status"
+      value={filters.status}
+      onChange={(value) =>
+        handleFilterChange("certificate_bundle_status", value)
+      }
+      style={{ width: 200 }}
+      allowClear
+      suffixIcon={<ClockCircleOutlined />}
+    >
+      {Object.entries(CERTIFICATE_STATUS).map(([key, value]) => (
+        <Option key={key} value={key}>
+          {value}
+        </Option>
+      ))}
+    </Select>,
   ];
 
   const columns = [
@@ -421,11 +384,84 @@ const Dashboard = () => {
     },
   ];
 
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (selectedKeys, selectedRows) =>
-      onSelectChange(selectedKeys, selectedRows),
-  };
+  const summary = (
+    <>
+      {" "}
+      <Col span={8}>
+        <Card>
+          <Space align="start" size={16}>
+            <AppstoreOutlined
+              style={{
+                fontSize: "32px",
+                color: "#0057FF",
+                marginTop: "4px",
+              }}
+            />
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "4px",
+              }}
+            >
+              <h3 style={{ margin: 0, fontSize: "24px" }}>10293</h3>
+              <p style={{ margin: 0, color: "#5F6368" }}>Total Certificates</p>
+            </div>
+          </Space>
+        </Card>
+      </Col>
+      <Col span={8}>
+        <Card>
+          <Space align="start" size={16}>
+            <SwapOutlined
+              style={{
+                fontSize: "32px",
+                color: "#1890ff",
+                marginTop: "4px",
+              }}
+            />
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "4px",
+              }}
+            >
+              <h3 style={{ margin: 0, fontSize: "24px" }}>89</h3>
+              <p style={{ margin: 0, color: "#5F6368" }}>
+                Certificates Transferred
+              </p>
+            </div>
+          </Space>
+        </Card>
+      </Col>
+      <Col span={8}>
+        <Card>
+          <Space align="start" size={16}>
+            <CloseCircleOutlined
+              style={{
+                fontSize: "32px",
+                color: "#1890ff",
+                marginTop: "4px",
+              }}
+            />
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "4px",
+              }}
+            >
+              <h3 style={{ margin: 0, fontSize: "24px" }}>204</h3>
+              <p style={{ margin: 0, color: "#5F6368" }}>
+                Certificates Cancelled
+              </p>
+            </div>
+          </Space>
+        </Card>
+      </Col>
+    </>
+  );
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -435,316 +471,20 @@ const Dashboard = () => {
       >
         <SideMenu />
       </Sider>
-      <Layout>
-        <Header
-          style={{
-            backgroundColor: "#fff",
-            padding: "16px 0",
-            borderBottom: "1px solid #E8EAED",
-          }}
-        >
-          <Title
-            style={{
-              padding: "0 24px",
-              margin: "0",
-            }}
-            level={3}
-          >
-            Certificates
-          </Title>
-        </Header>
-
-        <Content style={{ margin: "24px" }}>
-          <Row gutter={16}>
-            <Col span={8}>
-              <Card>
-                <Space align="start" size={16}>
-                  <AppstoreOutlined
-                    style={{
-                      fontSize: "32px",
-                      color: "#0057FF",
-                      marginTop: "4px",
-                    }}
-                  />
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "4px",
-                    }}
-                  >
-                    <h3 style={{ margin: 0, fontSize: "24px" }}>10293</h3>
-                    <p style={{ margin: 0, color: "#5F6368" }}>
-                      Total Certificates
-                    </p>
-                  </div>
-                </Space>
-              </Card>
-            </Col>
-            <Col span={8}>
-              <Card>
-                <Space align="start" size={16}>
-                  <SwapOutlined
-                    style={{
-                      fontSize: "32px",
-                      color: "#1890ff",
-                      marginTop: "4px",
-                    }}
-                  />
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "4px",
-                    }}
-                  >
-                    <h3 style={{ margin: 0, fontSize: "24px" }}>89</h3>
-                    <p style={{ margin: 0, color: "#5F6368" }}>
-                      Certificates Transferred
-                    </p>
-                  </div>
-                </Space>
-              </Card>
-            </Col>
-            <Col span={8}>
-              <Card>
-                <Space align="start" size={16}>
-                  <CloseCircleOutlined
-                    style={{
-                      fontSize: "32px",
-                      color: "#1890ff",
-                      marginTop: "4px",
-                    }}
-                  />
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "4px",
-                    }}
-                  >
-                    <h3 style={{ margin: 0, fontSize: "24px" }}>204</h3>
-                    <p style={{ margin: 0, color: "#5F6368" }}>
-                      Certificates Cancelled
-                    </p>
-                  </div>
-                </Space>
-              </Card>
-            </Col>
-          </Row>
-
-          <Flex
-            style={{
-              justifyContent: "space-between",
-              alignItems: "center",
-              backgroundColor: "#fff",
-              padding: "12px",
-              border: "1px solid #f0f0f0",
-              borderRadius: "8px 8px 0 0",
-              marginTop: "12px",
-            }}
-          >
-            <Text
-              style={{ color: "#344054", fontWeight: "500", fontSize: "20px" }}
-            >
-              Certificate List
-            </Text>
-            <Space>
-              <Text
-                style={{
-                  color: "#202124",
-                  fontWeight: "500",
-                  display: selectedRowKeys.length < 1 ? "none" : "inline",
-                }}
-              >
-                ({selectedRowKeys.length} selected)
-              </Text>
-              <Button
-                icon={<CloseOutlined />}
-                type="primary"
-                disabled={!isCertificatesSelected}
-                style={{ height: "40px" }}
-                onClick={() => openDialog("cancel")}
-              >
-                Cancel
-              </Button>
-              <Button
-                icon={<DownloadOutlined />}
-                type="primary"
-                disabled={!isCertificatesSelected}
-                style={{ height: "40px" }}
-                onClick={() => openDialog("reserve")}
-              >
-                Reserve
-              </Button>
-              <Button
-                icon={<SwapOutlined />}
-                type="primary"
-                disabled={!isCertificatesSelected}
-                style={{ height: "40px" }}
-                onClick={() => openDialog("transfer")}
-              >
-                Transfer
-              </Button>
-            </Space>
-          </Flex>
-          <Space
-            style={{
-              width: "100%",
-              padding: "8px 16px",
-              backgroundColor: "#fff",
-              borderBottom: "1px solid #EAECF0",
-            }}
-            split={<Divider type="vertical" />}
-          >
-            {/* Device Filter */}
-            <Select
-              placeholder="Device"
-              // mode="multiple"
-              options={deviceOptions}
-              value={filters.device}
-              onChange={(value) => handleFilterChange("device_id", value)}
-              style={{ width: 120 }}
-              suffixIcon={<LaptopOutlined />}
-              allowClear
-            ></Select>
-
-            {/* Energy Source Filter */}
-            <Select
-              placeholder="Energy Source"
-              value={filters.energySource}
-              onChange={(value) => handleFilterChange("energy_source", value)}
-              style={{ width: 150 }}
-              suffixIcon={<ThunderboltOutlined />}
-              allowClear
-            >
-              {Object.entries(ENERGY_SOURCE).map(([key, value]) => (
-                <Option key={key} value={key}>
-                  {value}
-                </Option>
-              ))}
-            </Select>
-
-            <RangePicker
-              value={[
-                filters.certificate_period_start,
-                filters.certificate_period_end,
-              ]}
-              onChange={(dates) => handleDateChange(dates)}
-              allowClear={false}
-            />
-
-            {/* Status Filter */}
-            <Select
-              // mode="multiple"
-              placeholder="Status"
-              value={filters.status}
-              onChange={(value) =>
-                handleFilterChange("certificate_bundle_status", value)
-              }
-              style={{ width: 200 }}
-              allowClear
-              suffixIcon={<ClockCircleOutlined />}
-            >
-              {Object.entries(CERTIFICATE_STATUS).map(([key, value]) => (
-                <Option key={key} value={key}>
-                  {value}
-                </Option>
-              ))}
-            </Select>
-            {/* Apply Filter Button */}
-            <Button
-              type="link"
-              onClick={() => handleApplyFilter()}
-              style={{ color: "#043DDC", fontWeight: "600" }}
-            >
-              Apply filter
-            </Button>
-
-            {/* Clear Filter Button */}
-            <Button
-              type="text"
-              onClick={handleClearFilter}
-              disabled={isEqual(defaultFilters, filters) ? true : false}
-              style={{
-                color: isEqual(defaultFilters, filters) ? "#DADCE0" : "#5F6368",
-                fontWeight: "600",
-              }}
-            >
-              Clear Filter
-            </Button>
-          </Space>
-          <Table
-            style={{
-              borderRadius: "0 0 8px 8px",
-              fontWeight: "500",
-              color: "#F9FAFB",
-            }}
-            rowSelection={rowSelection}
-            columns={columns}
-            dataSource={certificates?.slice(
-              (currentPage - 1) * pageSize,
-              currentPage * pageSize
-            )}
-            rowKey="id"
-            pagination={false}
-          />
-          <Flex className="pagination-container">
-            {/* Previous Button */}
-            <Button
-              icon={<LeftOutlined />}
-              onClick={handlePrev}
-              disabled={currentPage === 1}
-              className={`pagination-btn ${
-                currentPage === 1 ? "disabled" : ""
-              }`}
-            >
-              Previous
-            </Button>
-
-            {/* Custom Pagination */}
-            <Pagination
-              className="custom-paging"
-              current={currentPage}
-              total={certificates?.length}
-              pageSize={pageSize}
-              onChange={handlePageChange}
-              showSizeChanger={false}
-              itemRender={(page, type, originalElement) => {
-                if (type === "prev" || type === "next") {
-                  return null; // Remove default arrows
-                }
-
-                if (type === "page") {
-                  return (
-                    <div
-                      onClick={() => handlePageChange(page)}
-                      className={`pagination-number ${
-                        page === currentPage ? "active" : ""
-                      }`}
-                    >
-                      {page}
-                    </div>
-                  );
-                }
-                return originalElement;
-              }}
-            />
-
-            {/* Next Button */}
-            <Button
-              icon={<RightOutlined />}
-              onClick={handleNext}
-              disabled={currentPage === totalPages}
-              className={`pagination-btn ${
-                currentPage === totalPages ? "disabled" : ""
-              }`}
-            >
-              Next
-            </Button>
-          </Flex>
-        </Content>
-      </Layout>
+      <FilterTable
+        summary={summary}
+        tableName="Transfer history"
+        columns={columns}
+        filterComponents={filterComponents}
+        tableActionBtns={btnList}
+        defaultFilters={defaultFilters}
+        filters={filters}
+        dataSource={certificates}
+        fetchTableData={fetchCertificatesData}
+        onRowsSelected={onSelectChange}
+        handleApplyFilter={handleApplyFilter}
+        handleClearFilter={handleClearFilter}
+      />
 
       {/* Dialog component with a ref to control it from outside */}
       <CertificateActionDialog
