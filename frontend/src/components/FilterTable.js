@@ -42,16 +42,19 @@ const FilterTable = ({
   filterComponents,
   tableActionBtns,
   defaultFilters,
+  filters,
   tableThunks,
   dataSource,
   fetchTableData,
+  onRowsSelected,
+  handleApplyFilter,
+  handleClearFilter,
 }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRecords, setSelectedRecords] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [filters, setFilters] = useState(defaultFilters);
 
   const pageSize = 10;
 
@@ -62,15 +65,6 @@ const FilterTable = ({
   useEffect(() => {
     if (isEmpty(filters)) fetchTableData();
   }, [filters]);
-
-  const handleApplyFilter = () => {
-    // fetchCertificatesData();
-    fetchTableData();
-  };
-
-  const handleClearFilter = async () => {
-    setFilters({});
-  };
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -85,21 +79,15 @@ const FilterTable = ({
   };
 
   const isEqual = (obj1, obj2) => {
+    console.log(obj1);
+    console.log(obj2);
     return JSON.stringify(obj1) === JSON.stringify(obj2);
   };
 
   const isEmpty = (obj) => {
     return Object.keys(obj).length === 0;
   };
-
-  const handleDateChange = (dates) => {
-    setFilters((prev) => ({
-      ...prev,
-      certificate_period_start: dates[0],
-      certificate_period_end: dates[1],
-    }));
-  };
-
+  
   // Go to Previous Page
   const handlePrev = () => {
     if (currentPage > 1) {
@@ -121,7 +109,9 @@ const FilterTable = ({
   const onSelectChange = (newSelectedRowKeys, newSelectedRows) => {
     setSelectedRowKeys(newSelectedRowKeys);
     setSelectedRecords(newSelectedRows);
+    onRowsSelected(newSelectedRowKeys, newSelectedRows);
   };
+
   return (
     <Content style={{ margin: "24px" }}>
       <Row gutter={16}>{summary}</Row>
@@ -151,19 +141,20 @@ const FilterTable = ({
             ({selectedRowKeys.length} selected)
           </Text>
 
-          {tableActionBtns && tableActionBtns.map((action) => {
-            return (
-              <Button
-                icon={action.icon}
-                type={action.btnType}
-                disabled={!action.disabled}
-                style={action.style}
-                onClick={() => action.handle}
-              >
-                {action.name}
-              </Button>
-            );
-          })}
+          {tableActionBtns &&
+            tableActionBtns.map((action) => {
+              return (
+                <Button
+                  icon={action.icon}
+                  type={action.btnType}
+                  disabled={action.disabled}
+                  style={action.style}
+                  onClick={() => action.handle()}
+                >
+                  {action.name}
+                </Button>
+              );
+            })}
         </Space>
       </Flex>
       <Space
@@ -188,10 +179,10 @@ const FilterTable = ({
         {/* Clear Filter Button */}
         <Button
           type="text"
-          onClick={handleClearFilter}
-          disabled={isEqual(defaultFilters, filters) ? true : false}
+          onClick={() => handleClearFilter()}
+          disabled={isEmpty(filters) ? true : false}
           style={{
-            color: isEqual(defaultFilters, filters) ? "#DADCE0" : "#5F6368",
+            color: isEmpty(filters) ? "#DADCE0" : "#5F6368",
             fontWeight: "600",
           }}
         >

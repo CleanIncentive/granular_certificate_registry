@@ -205,6 +205,42 @@ const Dashboard = () => {
 
   const isCertificatesSelected = selectedRowKeys.length > 0;
 
+  const btnList = [
+    {
+      icon: () => {
+        return <CloseOutlined />;
+      },
+      btnType: "primary",
+      type: "cancel",
+      disbled: !isCertificatesSelected,
+      style: { height: "40px" },
+      name: "Cancel",
+      handle: () => openDialog("cancel"),
+    },
+    {
+      icon: () => {
+        return <DownloadOutlined />;
+      },
+      btnType: "primary",
+      type: "reserve",
+      disbled: !isCertificatesSelected,
+      style: { height: "40px" },
+      name: "Reserve",
+      handle: () => openDialog("reserve"),
+    },
+    {
+      icon: () => {
+        return <SwapOutlined />;
+      },
+      btnType: "primary",
+      type: "transfer",
+      disbled: !isCertificatesSelected,
+      style: { height: "40px" },
+      name: "Transfer",
+      handle: () => openDialog("transfer"),
+    },
+  ];
+
   const filterComponents = [
     /* Device Filter */
     <Select
@@ -217,6 +253,21 @@ const Dashboard = () => {
       suffixIcon={<LaptopOutlined />}
       allowClear
     ></Select>,
+    /* Energy Source Filter */
+    <Select
+      placeholder="Energy Source"
+      value={filters.energySource}
+      onChange={(value) => handleFilterChange("energy_source", value)}
+      style={{ width: 150 }}
+      suffixIcon={<ThunderboltOutlined />}
+      allowClear
+    >
+      {Object.entries(ENERGY_SOURCE).map(([key, value]) => (
+        <Option key={key} value={key}>
+          {value}
+        </Option>
+      ))}
+    </Select>,
     /* Date range Filter */
     <RangePicker
       value={[filters.certificate_period_start, filters.certificate_period_end]}
@@ -402,6 +453,7 @@ const Dashboard = () => {
         tableName="Transfer history"
         columns={columns}
         filterComponents={filterComponents}
+        tableActionBtns={btnList}
         defaultFilters={defaultFilters}
         dataSource={certificates}
         fetchTableData={fetchCertificatesData}
