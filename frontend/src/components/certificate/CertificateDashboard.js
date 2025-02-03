@@ -35,7 +35,7 @@ import {
   ClockCircleOutlined,
 } from "@ant-design/icons";
 
-import StatusTag from "./StatusTag";
+import StatusTag from "../StatusTag";
 
 import "../../assets/styles/pagination.css";
 import "../../assets/styles/filter.css";
@@ -242,18 +242,6 @@ const Dashboard = () => {
     setSelectedRecords(newSelectedRows);
   };
 
-  const handleTransferCertificate = (fromAccount, toAccount, certificateId) => {
-    // Perform the transfer logic here
-    console.log(
-      `Transferring certificate ${certificateId} from ${fromAccount} to ${toAccount}`
-    );
-  };
-
-  const handleCancelCertificate = (certificateId) => {
-    // Perform the cancel logic here
-    console.log(`Cancelling certificate ${certificateId}`);
-  };
-
   const openDialog = (action) => {
     setDialogAction(action);
   };
@@ -263,6 +251,113 @@ const Dashboard = () => {
   };
 
   const isCertificatesSelected = selectedRowKeys.length > 0;
+
+  const btnList = [
+    {
+      icon: () => {
+        return <CloseOutlined />;
+      },
+      btnType: "primary",
+      type: "cancel",
+      disbled: !isCertificatesSelected,
+      style: { height: "40px" },
+      name: "Cancel",
+      handle: () => openDialog("cancel"),
+    },
+    {
+      icon: () => {
+        return <DownloadOutlined />;
+      },
+      btnType: "primary",
+      type: "reserve",
+      disbled: !isCertificatesSelected,
+      style: { height: "40px" },
+      name: "Reserve",
+      handle: () => openDialog("reserve"),
+    },
+    {
+      icon: () => {
+        return <SwapOutlined />;
+      },
+      btnType: "primary",
+      type: "transfer",
+      disbled: !isCertificatesSelected,
+      style: { height: "40px" },
+      name: "Transfer",
+      handle: () => openDialog("transfer"),
+    },
+  ];
+
+  const filterComponents = [
+    () => {
+      return (
+        /* Device Filter */
+        <Select
+          placeholder="Device"
+          // mode="multiple"
+          options={deviceOptions}
+          value={filters.device}
+          onChange={(value) => handleFilterChange("device_id", value)}
+          style={{ width: 120 }}
+          suffixIcon={<LaptopOutlined />}
+          allowClear
+        ></Select>
+      );
+    },
+    () => {
+      return (
+        /* Energy Source Filter */
+        <Select
+          placeholder="Energy Source"
+          value={filters.energySource}
+          onChange={(value) => handleFilterChange("energy_source", value)}
+          style={{ width: 150 }}
+          suffixIcon={<ThunderboltOutlined />}
+          allowClear
+        >
+          {Object.entries(ENERGY_SOURCE).map(([key, value]) => (
+            <Option key={key} value={key}>
+              {value}
+            </Option>
+          ))}
+        </Select>
+      );
+    },
+    () => {
+      return (
+        /* Date range Filter */
+        <RangePicker
+          value={[
+            filters.certificate_period_start,
+            filters.certificate_period_end,
+          ]}
+          onChange={(dates) => handleDateChange(dates)}
+          allowClear={false}
+        />
+      );
+    },
+    () => {
+      return (
+        <Select
+          // mode="multiple"
+          placeholder="Status"
+          value={filters.status}
+          onChange={(value) =>
+            handleFilterChange("certificate_bundle_status", value)
+          }
+          style={{ width: 200 }}
+          allowClear
+          suffixIcon={<ClockCircleOutlined />}
+        >
+          {Object.entries(CERTIFICATE_STATUS).map(([key, value]) => (
+            <Option key={key} value={key}>
+              {value}
+            </Option>
+          ))}
+        </Select>
+      );
+    },
+  ];
 
   const columns = [
     {
@@ -344,11 +439,19 @@ const Dashboard = () => {
         <Header
           style={{
             backgroundColor: "#fff",
-            padding: "0 24px",
+            padding: "16px 0",
             borderBottom: "1px solid #E8EAED",
           }}
         >
-          <Title level={2}>Certificates</Title>
+          <Title
+            style={{
+              padding: "0 24px",
+              margin: "0",
+            }}
+            level={3}
+          >
+            Certificates
+          </Title>
         </Header>
 
         <Content style={{ margin: "24px" }}>

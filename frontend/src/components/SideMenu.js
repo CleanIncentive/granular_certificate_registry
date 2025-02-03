@@ -53,7 +53,6 @@ const SideMenu = () => {
         label: "Transfer History",
         onClick: () => navigate("/transfer-history"),
         style: generateMenuStyle("/transfer-history"),
-        disabled: true,
       },
       {
         key: "/devices",

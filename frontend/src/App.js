@@ -3,11 +3,17 @@ import Cookies from "js-cookie";
 
 // Import pages
 const Login = React.lazy(() => import("./pages/Login/Login"));
+
 const CertificateDashboard = React.lazy(() =>
   import("./components/certificate/CertificateDashboard")
 );
+
 const DeviceDashboard = React.lazy(() =>
   import("./components/device/DeviceDashboard")
+);
+
+const TransferDashboard = React.lazy(() =>
+  import("./components/transfer/TransferDashboard")
 );
 
 const AccountPicker = React.lazy(() =>
@@ -81,6 +87,10 @@ const App = () => {
         <Route
           path="/devices"
           element={<PrivateRoute element={DeviceDashboard} />}
+        />
+        <Route
+          path="/transfer-history"
+          element={<PrivateRoute element={TransferDashboard} />}
         />
         <Route path="/" element={<Navigate to="/certificates" />} />
       </Routes>
