@@ -93,10 +93,6 @@ const DeviceDashboard = () => {
       navigate("/certificates");
       return;
     }
-    // if (!currentAccount?.id && devices && devices.length > 0) {
-    //   navigate("/login");
-    //   return;
-    // }
   }, [devices, navigate]);
 
   if (!currentAccount?.id) {
@@ -264,15 +260,23 @@ const DeviceDashboard = () => {
               <Card>
                 <Space align="start" size={16}>
                   <AppstoreOutlined
-                    style={{ 
-                      fontSize: "32px", 
+                    style={{
+                      fontSize: "32px",
                       color: "#0057FF",
-                      marginTop: "4px"
+                      marginTop: "4px",
                     }}
                   />
-                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "4px",
+                    }}
+                  >
                     <h3 style={{ margin: 0, fontSize: "24px" }}>7</h3>
-                    <p style={{ margin: 0, color: "#5F6368" }}>Number of Devices</p>
+                    <p style={{ margin: 0, color: "#5F6368" }}>
+                      Number of Devices
+                    </p>
                   </div>
                 </Space>
               </Card>
@@ -281,15 +285,25 @@ const DeviceDashboard = () => {
               <Card>
                 <Space align="start" size={16}>
                   <SwapOutlined
-                    style={{ 
-                      fontSize: "32px", 
+                    style={{
+                      fontSize: "32px",
                       color: "#1890ff",
-                      marginTop: "4px"
+                      marginTop: "4px",
                     }}
                   />
-                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                    <h3 style={{ margin: 0, fontSize: "24px" }}>Wind: 5, Solar PV: 2</h3>
-                    <p style={{ margin: 0, color: "#5F6368" }}>Devices by Technology Type</p>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "4px",
+                    }}
+                  >
+                    <h3 style={{ margin: 0, fontSize: "24px" }}>
+                      Wind: 5, Solar PV: 2
+                    </h3>
+                    <p style={{ margin: 0, color: "#5F6368" }}>
+                      Devices by Technology Type
+                    </p>
                   </div>
                 </Space>
               </Card>
@@ -298,15 +312,23 @@ const DeviceDashboard = () => {
               <Card>
                 <Space align="start" size={16}>
                   <CloseCircleOutlined
-                    style={{ 
-                      fontSize: "32px", 
+                    style={{
+                      fontSize: "32px",
                       color: "#1890ff",
-                      marginTop: "4px"
+                      marginTop: "4px",
                     }}
                   />
-                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "4px",
+                    }}
+                  >
                     <h3 style={{ margin: 0, fontSize: "24px" }}>600 MW</h3>
-                    <p style={{ margin: 0, color: "#5F6368" }}>Total Device Capacity</p>
+                    <p style={{ margin: 0, color: "#5F6368" }}>
+                      Total Device Capacity
+                    </p>
                   </div>
                 </Space>
               </Card>
@@ -382,6 +404,7 @@ const DeviceDashboard = () => {
                 </Option>
               ))}
             </Select>
+
             {/* Apply Filter Button */}
             <Button
               type="link"
