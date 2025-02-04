@@ -34,8 +34,8 @@ import {
   ClockCircleOutlined,
 } from "@ant-design/icons";
 
-import StatusTag from "../StatusTag";
-import FilterTable from "../FilterTable";
+import StatusTag from "../common/StatusTag";
+import FilterTable from "../common/FilterTable";
 
 import "../../assets/styles/pagination.css";
 import "../../assets/styles/filter.css";
@@ -49,7 +49,7 @@ import {
 
 // import CertificateActionDialog from "./CertificateActionDialog";
 // import CertificateDetailDialog from "./CertificateDetailDialog";
-import SideMenu from "../SideMenu";
+import SideMenu from "../common/SideMenu";
 import { CERTIFICATE_STATUS, ENERGY_SOURCE } from "../../enum";
 
 const { Header, Sider, Content } = Layout;
@@ -203,6 +203,14 @@ const Dashboard = () => {
     dialogRef.current.closeDialog(); // Close the dialog from the parent component
   };
 
+  const handleApplyFilter = () => {
+    fetchCertificatesData();
+  };
+
+  const handleClearFilter = async () => {
+    setFilters({});
+  };
+
   const isCertificatesSelected = selectedRowKeys.length > 0;
 
   const btnList = [
@@ -253,21 +261,6 @@ const Dashboard = () => {
       suffixIcon={<LaptopOutlined />}
       allowClear
     ></Select>,
-    /* Energy Source Filter */
-    <Select
-      placeholder="Energy Source"
-      value={filters.energySource}
-      onChange={(value) => handleFilterChange("energy_source", value)}
-      style={{ width: 150 }}
-      suffixIcon={<ThunderboltOutlined />}
-      allowClear
-    >
-      {Object.entries(ENERGY_SOURCE).map(([key, value]) => (
-        <Option key={key} value={key}>
-          {value}
-        </Option>
-      ))}
-    </Select>,
     /* Date range Filter */
     <RangePicker
       value={[filters.certificate_period_start, filters.certificate_period_end]}
@@ -441,13 +434,7 @@ const Dashboard = () => {
   );
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      <Sider
-        width={224}
-        style={{ background: "#fff", padding: "0 20px 0 10px" }}
-      >
-        <SideMenu />
-      </Sider>
+    <>
       <FilterTable
         summary={summary}
         tableName="Transfer history"
@@ -455,12 +442,15 @@ const Dashboard = () => {
         filterComponents={filterComponents}
         tableActionBtns={btnList}
         defaultFilters={defaultFilters}
+        filters={filters}
         dataSource={certificates}
         fetchTableData={fetchCertificatesData}
+        handleClearFilter={handleClearFilter}
+        handleApplyFilter={handleApplyFilter}
       />
 
       {/* Dialog component with a ref to control it from outside */}
-    </Layout>
+    </>
   );
 };
 

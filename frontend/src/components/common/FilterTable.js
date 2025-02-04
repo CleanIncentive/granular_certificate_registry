@@ -59,11 +59,11 @@ const FilterTable = ({
   const pageSize = 10;
 
   useEffect(() => {
-    fetchTableData();
+    if (fetchTableData) fetchTableData();
   }, [dispatch]);
 
   useEffect(() => {
-    if (isEmpty(filters)) fetchTableData();
+    if (isEmpty(filters) && fetchTableData) fetchTableData();
   }, [filters]);
 
   const handleFilterChange = (key, value) => {
@@ -87,7 +87,7 @@ const FilterTable = ({
   const isEmpty = (obj) => {
     return Object.keys(obj).length === 0;
   };
-  
+
   // Go to Previous Page
   const handlePrev = () => {
     if (currentPage > 1) {
