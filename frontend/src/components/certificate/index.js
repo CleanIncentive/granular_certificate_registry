@@ -48,10 +48,10 @@ import {
 import CertificateActionDialog from "./CertificateActionDialog";
 import CertificateDetailDialog from "./CertificateDetailDialog";
 
-import StatusTag from "../StatusTag";
+import StatusTag from "../common/StatusTag";
 
-import SideMenu from "../SideMenu";
-import FilterTable from "../FilterTable";
+import SideMenu from "../common/SideMenu";
+import FilterTable from "../common/FilterTable";
 
 import { CERTIFICATE_STATUS, ENERGY_SOURCE } from "../../enum";
 
@@ -464,13 +464,7 @@ const Dashboard = () => {
   );
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      <Sider
-        width={224}
-        style={{ background: "#fff", padding: "0 20px 0 10px" }}
-      >
-        <SideMenu />
-      </Sider>
+    <>
       <FilterTable
         summary={summary}
         tableName="Transfer history"
@@ -504,7 +498,7 @@ const Dashboard = () => {
         onClose={() => setIsDetailModalOpen(false)}
         certificateData={selectedCertificateData}
       />
-    </Layout>
+    </>
   );
 };
 
