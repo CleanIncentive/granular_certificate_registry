@@ -8,9 +8,7 @@ import Cookies from "js-cookie";
 import { createDevice } from "../../store/device/deviceThunk";
 import { getAccountDetails } from "../../store/account/accountThunk";
 
-import { EnergySourceType, TechnologyType } from "../../enum/device";
-import formatEnergySource from "./formatEnergySource";
-import formatTechnologyType from "./formatTechnologyType";
+import { ENERGY_SOURCE, DEVICE_TECHNOLOGY_TYPE } from "../../enum";
 
 const { Option } = Select;
 
@@ -89,15 +87,11 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
           rules={[{ required: true, message: "Please select technology type" }]}
         >
           <Select placeholder="Select...">
-            {Object.keys(TechnologyType).map((key) => {
-              const value = TechnologyType[key];
-              const label = formatTechnologyType(value); // Use the format function
-              return (
-                <Option key={value} value={value}>
-                  {label}
+              {Object.entries(DEVICE_TECHNOLOGY_TYPE).map(([key, value]) => (
+                <Option key={key} value={key}>
+                  {value}
                 </Option>
-              );
-            })}
+              ))}
           </Select>
         </Form.Item>
 
@@ -107,15 +101,11 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
           rules={[{ required: true, message: "Please select energy source" }]}
         >
           <Select placeholder="Select...">
-            {Object.keys(EnergySourceType).map((key) => {
-              const value = EnergySourceType[key];
-              const label = formatEnergySource(value); // Use the format function
-              return (
-                <Option key={value} value={value}>
-                  {label}
+              {Object.entries(ENERGY_SOURCE).map(([key, value]) => (
+                <Option key={key} value={key}>
+                  {value}
                 </Option>
-              );
-            })}
+              ))}
           </Select>
         </Form.Item>
 
