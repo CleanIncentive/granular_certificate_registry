@@ -1,8 +1,8 @@
 import React from "react";
 import { Upload, Input, Select, Typography, Layout, Form, Avatar } from "antd";
 import { UploadOutlined, UserOutlined } from "@ant-design/icons";
-import SideMenu from "../../components/SideMenu";
-import sampleAvatar from "../../assets/images/sample-avatar.jpeg";
+import SideMenu from "../../common/SideMenu";
+import sampleAvatar from "../../../assets/images/sample-avatar.jpeg";
 import { useSelector } from "react-redux";
 
 const { Content, Header, Sider } = Layout;
@@ -24,25 +24,7 @@ const AccountManagement = () => {
   };
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      <Sider
-        width={224}
-        style={{ background: "#fff", padding: "0 20px 0 16px" }}
-      >
-        <SideMenu />
-      </Sider>
-
-      <Layout>
-        <Header
-          style={{
-            backgroundColor: "#fff",
-            padding: "0 24px",
-            borderBottom: "1px solid #E8EAED",
-          }}
-        >
-          <Title level={2}>Settings</Title>
-        </Header>
-
+    <>
         <Content style={{ margin: "24px" }}>
           <Form
             layout="vertical"
@@ -106,8 +88,7 @@ const AccountManagement = () => {
             </Form.Item>
           </Form>
         </Content>
-      </Layout>
-    </Layout>
+      </>
   );
 };
 

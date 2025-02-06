@@ -1,10 +1,10 @@
 import React from "react";
 import { Typography, Space, Divider } from "antd";
 import * as styles from "./AccountPicker.module.css";
-import addUserBtn from "../../assets/images/add-user-btn.png";
+import addUserBtn from "../../../assets/images/add-user-btn.png";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { getAccountDetails } from "../../store/account/accountThunk";
+import { getAccountDetails } from "../../../store/account/accountThunk";
 import Cookies from "js-cookie";
 
 const { Title, Text } = Typography;

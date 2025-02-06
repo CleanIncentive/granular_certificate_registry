@@ -12,7 +12,7 @@ import {
 } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import sampleAvatar from "../assets/images/sample-avatar.jpeg";
+import sampleAvatar from "../../assets/images/sample-avatar.jpeg";
 import Cookies from "js-cookie";
 
 const { Title, Text, Link } = Typography;
@@ -27,7 +27,7 @@ const SideMenu = () => {
     userInfo.role !== "TRADING_USER" && userInfo.role !== "AUDIT_USER";
 
   const isAccountPickerAllowed = accounts.length > 1;
-  
+
   const generateMenuStyle = (path, isVisible = true) => ({
     display: isVisible ? "flex" : "none",
     backgroundColor: location.pathname === path ? "#0057FF" : "",
@@ -41,6 +41,13 @@ const SideMenu = () => {
   const menuItems = useMemo(
     () => [
       {
+        key: "/devices",
+        icon: <ThunderboltOutlined />,
+        label: "Device management",
+        onClick: () => navigate("/devices"),
+        style: generateMenuStyle("/devices", isShowDevices),
+      },
+      {
         key: "/certificates",
         icon: <AppstoreOutlined />,
         label: "Certificates",
@@ -53,14 +60,6 @@ const SideMenu = () => {
         label: "Transfer History",
         onClick: () => navigate("/transfer-history"),
         style: generateMenuStyle("/transfer-history"),
-        disabled: true,
-      },
-      {
-        key: "/devices",
-        icon: <ThunderboltOutlined />,
-        label: "Devices",
-        onClick: () => navigate("/devices"),
-        style: generateMenuStyle("/devices", isShowDevices),
       },
     ],
     [location.pathname, isShowDevices, navigate]
