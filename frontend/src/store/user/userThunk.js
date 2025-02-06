@@ -1,10 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { readUserAPI, readCurrentUserAPI } from "../../api/userAPI";
-import Cookies from "js-cookie";
-
-const saveDataToCookies = (data) => {
-  Cookies.set("user_data", data);
-};
+import { saveDataToCookies } from "../../util";
 
 export const readUser = createAsyncThunk(
   "user/readUser",
@@ -22,7 +18,7 @@ export const readUser = createAsyncThunk(
         },
       };
 
-      saveDataToCookies(JSON.stringify(userData));
+      saveDataToCookies("user_data", JSON.stringify(userData));
 
       return userData;
     } catch (error) {
@@ -48,7 +44,7 @@ export const readCurrentUser = createAsyncThunk(
         },
       };
 
-      saveDataToCookies(JSON.stringify(userData));
+      saveDataToCookies("user_data", JSON.stringify(userData));
 
       return userData;
     } catch (error) {

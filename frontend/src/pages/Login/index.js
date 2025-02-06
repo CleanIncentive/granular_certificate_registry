@@ -23,8 +23,10 @@ import { readCurrentUser } from "../../store/user/userThunk";
 import { getAccountDetails } from "../../store/account/accountThunk";
 
 import { useNavigate } from "react-router-dom";
+import { useAccount } from "../../context/AccountContext";
 
 const Login = () => {
+  const { saveAccountDetail } = useAccount();
   const [username, setUsername] = useState("");
   const [role, setRole] = useState("");
   const [password, setPassword] = useState("");
@@ -36,10 +38,13 @@ const Login = () => {
     try {
       const userID = await dispatch(login({ username, password })).unwrap();
       const userData = await dispatch(readCurrentUser()).unwrap();
-      if (userData.accounts && userData.accounts.length > 0) {
-        const defaultAccount = userData.accounts[0];
-        await dispatch(getAccountDetails(defaultAccount.id)).unwrap();
-      }
+      console.log(userData);
+      
+      // if (userData.accounts && userData.accounts.length > 0) {
+      //   const defaultAccount = userData.accounts[0];
+      //   const accountDetail = await dispatch(getAccountDetails(defaultAccount.id)).unwrap();
+      //   saveAccountDetail(accountDetail)
+      // }
 
       message.success("Login successful 🎉", 2);
       if (userData.accounts.length > 1) {

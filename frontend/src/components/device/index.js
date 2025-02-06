@@ -1,33 +1,12 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import dayjs from "dayjs";
 
-import {
-  Layout,
-  Menu,
-  Table,
-  Tag,
-  Button,
-  Card,
-  Row,
-  Col,
-  Space,
-  Divider,
-  Typography,
-  message,
-  Flex,
-  Pagination,
-  Select,
-  DatePicker,
-  Dropdown,
-  Input,
-} from "antd";
+import { Layout, Button, Card, Col, Space, Input, Select } from "antd";
 
 import {
   AppstoreOutlined,
   SwapOutlined,
   CloseCircleOutlined,
-  LeftOutlined,
-  RightOutlined,
   LaptopOutlined,
   ThunderboltOutlined,
   PlusCircleOutlined,
@@ -38,30 +17,26 @@ import {
 import "../../assets/styles/pagination.css";
 import "../../assets/styles/filter.css";
 
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
+import { useAccount } from "../../context/AccountContext.js";
 import { useNavigate } from "react-router-dom";
-
-import Cookies from "js-cookie";
 
 import DeviceRegisterDialog from "./DeviceRegisterForm";
 import DeviceUploadDialog from "./DeviceUploadDataForm";
 
-import SideMenu from "../common/SideMenu";
 import FilterTable from "../common/FilterTable";
 
-const { Header, Sider, Content } = Layout;
-const { Title, Text } = Typography;
 const { Option } = Select;
 const { Search } = Input;
 
 import { DEVICE_TECHNOLOGY_TYPE } from "../../enum";
 
-const DeviceDashboard = () => {
-  const dispatch = useDispatch();
+const Device = () => {
   const navigate = useNavigate();
 
-  const { currentAccount, devices } = useSelector((state) => state.account);
-  const { userInfo, accounts } = useSelector((state) => state.user);
+  const { userInfo } = useSelector((state) => state.user);
+  const { currentAccount } = useAccount();
+  const devices = currentAccount?.devices || [];
 
   const interactAllowed =
     userInfo.role !== "TRADING_USER" && userInfo.role !== "AUDIT_USER";
@@ -95,26 +70,19 @@ const DeviceDashboard = () => {
       navigate("/certificates");
       return;
     }
-  }, [devices, navigate]);
 
-  if (!currentAccount?.id) {
-    return null;
-  }
+    if (!currentAccount?.id) {
+      navigate("/login");
+      return;
+    }
+  }, [currentAccount, devices, navigate]);
 
   const pageSize = 10;
   const totalPages = Math.ceil(devices?.length / pageSize);
 
-  function isEmpty(obj) {
-    return Object.keys(obj).length === 0;
-  }
-
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
-
-  function isEmpty(obj) {
-    return Object.keys(obj).length === 0;
-  }
 
   const handleApplyFilter = () => {
     // Apply the filter logic here
@@ -148,8 +116,6 @@ const DeviceDashboard = () => {
   const isEqual = (obj1, obj2) => {
     return JSON.stringify(obj1) === JSON.stringify(obj2);
   };
-
-  const isDisabledClearBtn = isEqual(defaultFilters, filters) && !searchKey;
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -376,7 +342,6 @@ const DeviceDashboard = () => {
           defaultFilters={defaultFilters}
           filters={filters}
           dataSource={filteredDevices}
-          // fetchTableData={fetchCertificatesData}
           handleClearFilter={handleClearFilter}
           handleApplyFilter={handleApplyFilter}
         />
@@ -387,4 +352,4 @@ const DeviceDashboard = () => {
   );
 };
 
-export default DeviceDashboard;
+export default Device;

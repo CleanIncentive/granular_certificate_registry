@@ -2,25 +2,7 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import dayjs from "dayjs";
 import Cookies from "js-cookie";
 
-import {
-  Layout,
-  Menu,
-  Table,
-  Tag,
-  Button,
-  Card,
-  Row,
-  Col,
-  Space,
-  Divider,
-  Typography,
-  message,
-  Flex,
-  Pagination,
-  Select,
-  DatePicker,
-  Dropdown,
-} from "antd";
+import { Button, Card, Col, Space, message, Select, DatePicker } from "antd";
 
 import {
   AppstoreOutlined,
@@ -28,8 +10,6 @@ import {
   CloseOutlined,
   CloseCircleOutlined,
   DownloadOutlined,
-  LeftOutlined,
-  RightOutlined,
   LaptopOutlined,
   ThunderboltOutlined,
   ClockCircleOutlined,
@@ -40,6 +20,7 @@ import "../../assets/styles/filter.css";
 
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { useAccount } from "../../context/AccountContext";
 import {
   fetchCertificates,
   getCertificateDetails,
@@ -50,55 +31,44 @@ import CertificateDetailDialog from "./CertificateDetailDialog";
 
 import StatusTag from "../common/StatusTag";
 
-import SideMenu from "../common/SideMenu";
 import FilterTable from "../common/FilterTable";
 
 import { CERTIFICATE_STATUS, ENERGY_SOURCE } from "../../enum";
 
-const { Header, Sider, Content } = Layout;
-const { Title, Text } = Typography;
+import { isEmpty } from "../../util";
+
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
-const Dashboard = () => {
+const Certificate = () => {
+  const { currentAccount } = useAccount();
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { certificates, loading, error } = useSelector(
-    (state) => state.certificates
-  );
+
+  const { certificates } = useSelector((state) => state.certificates);
+
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedCertificateData, setSelectedCertificateData] = useState(null);
 
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRecords, setSelectedRecords] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
   const [dialogAction, setDialogAction] = useState(null);
   const [totalProduction, setTotalProduction] = useState(null);
   const [selectedDevices, setSelectedDevices] = useState([]);
 
   const dialogRef = useRef();
 
-  const currentAccount = JSON.parse(Cookies.get("account_detail"));
+  // const currentAccount = JSON.parse(Cookies.get("account_detail"));
   const userInfo = JSON.parse(Cookies.get("user_data")).userInfo;
-
-  useEffect(() => {
-    if (!currentAccount?.id) {
-      navigate("/login");
-      return;
-    }
-  }, [currentAccount, navigate]);
-
-  if (!currentAccount?.id) {
-    return null;
-  }
-
+  
   const deviceOptions = useMemo(
     () =>
-      currentAccount.devices.map((device) => ({
+      currentAccount?.devices?.map((device) => ({
         value: device.id,
         label: device.device_name || `Device ${device.id}`,
       })),
-    [currentAccount.devices]
+    [currentAccount?.devices]
   );
 
   const today = dayjs();
@@ -123,20 +93,28 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
-    if (!dialogAction) {
-      return;
-    }
+    if (!dialogAction) return;
+
     dialogRef.current.openDialog(); // Open the dialog from the parent component
   }, [dialogAction]);
 
+  useEffect(() => {
+    if (!currentAccount?.id) {
+      navigate("/login");
+      return;
+    }
+  }, [currentAccount, navigate]);
+  
   const pageSize = 10;
 
   useEffect(() => {
+    if (!currentAccount?.id) return;
+
     fetchCertificatesData();
-  }, [dispatch]);
+  }, [currentAccount, dispatch]);
 
   useEffect(() => {
-    if (isEmpty(filters)) fetchCertificatesData();
+    if (isEmpty(filters) && !currentAccount?.id) fetchCertificatesData();
   }, [filters]);
 
   useEffect(() => {
@@ -152,10 +130,11 @@ const Dashboard = () => {
     setSelectedDevices(devices);
   }, [selectedRecords]);
 
+
   const fetchCertificatesData = async () => {
     const fetchBody = {
       user_id: userInfo.userID,
-      source_id: currentAccount.id,
+      source_id: currentAccount?.id,
       device_id: filters.device_id,
       certificate_bundle_status:
         CERTIFICATE_STATUS[filters.certificate_bundle_status], // Transform status to match API expectations
@@ -172,10 +151,6 @@ const Dashboard = () => {
       message.error(error?.message || "Failed to fetch certificates");
     }
   };
-
-  function isEmpty(obj) {
-    return Object.keys(obj).length === 0;
-  }
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -203,13 +178,9 @@ const Dashboard = () => {
 
   const totalPages = Math.ceil(certificates?.length / pageSize);
 
-  const isEqual = (obj1, obj2) => {
-    return JSON.stringify(obj1) === JSON.stringify(obj2);
-  };
-
   const getDeviceName = (deviceID) => {
     return (
-      currentAccount.devices.find((device) => deviceID === device.id)
+      currentAccount?.devices.find((device) => deviceID === device.id)
         ?.device_name || `Device ${deviceID}`
     );
   };
@@ -502,4 +473,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Certificate;

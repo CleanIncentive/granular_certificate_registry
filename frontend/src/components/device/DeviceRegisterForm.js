@@ -1,9 +1,8 @@
 import React, { useState, forwardRef, useImperativeHandle } from "react";
 import { Modal, Input, Select, DatePicker, Checkbox, Form } from "antd";
 
-import { useDispatch } from "react-redux";
-
-import Cookies from "js-cookie";
+import { useDispatch, useSelector } from "react-redux";
+import { useAccount } from "../../context/AccountContext.js";
 
 import { createDevice } from "../../store/device/deviceThunk";
 import { getAccountDetails } from "../../store/account/accountThunk";
@@ -17,8 +16,8 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
   const [visible, setVisible] = useState(false);
   const [form] = Form.useForm();
 
-  const currentAccount = JSON.parse(Cookies.get("account_detail"));
-
+  const { currentAccount } = useAccount();
+  
   useImperativeHandle(ref, () => ({
     openDialog: () => setVisible(true),
     closeDialog: () => setVisible(false),
