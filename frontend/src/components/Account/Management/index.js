@@ -11,7 +11,6 @@ const { Option } = Select;
 
 const AccountManagement = () => {
   const { userInfo } = useSelector((state) => state.user);
-  console.log(userInfo);
   const formatUserRole = (userRole) => {
     switch (userRole) {
       case "TRADING":

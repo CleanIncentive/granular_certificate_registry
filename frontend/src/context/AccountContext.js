@@ -11,7 +11,6 @@ export const AccountProvider = ({ children }) => {
 
     if (!!storedAccount) {
         try{
-            console.log(storedAccount)
             setCurrentAccount(JSON.parse(storedAccount));
         } catch (err) {
             console.log(err);
@@ -20,7 +19,6 @@ export const AccountProvider = ({ children }) => {
   }, []);
 
   const saveAccountDetail = (accountDetail) => {
-    console.log(accountDetail)
     setCurrentAccount(accountDetail);
     saveDataToCookies("account_detail", JSON.stringify(accountDetail), {
       expires: 7,

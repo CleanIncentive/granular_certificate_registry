@@ -26,8 +26,8 @@ import {
   getCertificateDetails,
 } from "../../store/certificate/certificateThunk";
 
-import CertificateActionDialog from "./CertificateActionDialog";
-import CertificateDetailDialog from "./CertificateDetailDialog";
+import CertificateActionDialog from "../Certificate/CertificateActionDialog";
+import CertificateDetailDialog from "../Certificate/CertificateDetailDialog";
 
 import StatusTag from "../common/StatusTag";
 
@@ -59,7 +59,6 @@ const Certificate = () => {
 
   const dialogRef = useRef();
 
-  // const currentAccount = JSON.parse(Cookies.get("account_detail"));
   const userInfo = JSON.parse(Cookies.get("user_data")).userInfo;
   
   const deviceOptions = useMemo(
