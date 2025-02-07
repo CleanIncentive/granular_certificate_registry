@@ -59,7 +59,6 @@ const Certificate = () => {
 
   const dialogRef = useRef();
 
-  // const currentAccount = JSON.parse(Cookies.get("account_detail"));
   const userInfo = JSON.parse(Cookies.get("user_data")).userInfo;
   
   const deviceOptions = useMemo(
