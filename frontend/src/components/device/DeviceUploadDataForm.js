@@ -59,8 +59,9 @@ const DeviceUploadDialog = forwardRef((props, ref) => {
     setUploading(true);
     try {
       const formData = new FormData();
-      formData.append('file', fileList[0]);
-      formData.append('deviceID', deviceInfo?.deviceID);
+      formData.append("file", fileList[0]);
+      formData.append("deviceID", deviceInfo?.deviceID);
+      formData.append("accountID", deviceInfo?.accountID);
 
       const response = await submitMeterReadingsAPI(formData);
 
@@ -78,9 +79,17 @@ const DeviceUploadDialog = forwardRef((props, ref) => {
         title: "Submission Summary",
         content: (
           <div>
-            <p>Total device usage: {response.data.total_device_usage / 1e6} MWh</p>
-            <p>First reading: {new Date(response.data.first_reading_datetime).toLocaleString()}</p>
-            <p>Last reading: {new Date(response.data.last_reading_datetime).toLocaleString()}</p>
+            <p>
+              Total device usage: {response.data.total_device_usage / 1e6} MWh
+            </p>
+            <p>
+              First reading:{" "}
+              {new Date(response.data.first_reading_datetime).toLocaleString()}
+            </p>
+            <p>
+              Last reading:{" "}
+              {new Date(response.data.last_reading_datetime).toLocaleString()}
+            </p>
           </div>
         ),
       });

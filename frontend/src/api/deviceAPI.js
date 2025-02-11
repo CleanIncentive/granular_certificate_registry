@@ -1,13 +1,12 @@
 import baseAPI from "./baseAPI";
-import axios from "axios";
 
 export const createDeviceAPI = (deviceData) =>
   baseAPI.post("/device/create", deviceData);
 
 export const submitMeterReadingsAPI = (formData) => {
-  return baseAPI.post('/measurement/submit_readings', formData, {
+  return baseAPI.post("/measurement/submit_readings", formData, {
     headers: {
-      'Content-Type': 'multipart/form-data',
+      "Content-Type": "multipart/form-data",
     },
   });
 };
