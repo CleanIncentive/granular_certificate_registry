@@ -115,7 +115,7 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
         user_id: userInfo.userID,
         granular_certificate_bundle_ids: props.selectedRowKeys,
         localise_time: true,
-        action_type: props.dialoRgAction,
+        action_type: props.dialogAction,
       };
 
       // if quanity not null add the quantity to the apiBody
