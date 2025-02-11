@@ -6,21 +6,15 @@ const Login = React.lazy(() => import("./pages/Login"));
 
 const Main = React.lazy(() => import("./pages/Main"));
 
-const CertificateDashboard = React.lazy(() =>
+const Certificate = React.lazy(() =>
   import("./components/Certificate")
 );
 
-const DeviceDashboard = React.lazy(() =>
-  import("./components/Device")
-);
+const Device = React.lazy(() => import("./components/Device"));
 
-const TransferDashboard = React.lazy(() =>
-  import("./components/Transfer")
-);
+const Transfer = React.lazy(() => import("./components/Transfer"));
 
-const AccountPicker = React.lazy(() =>
-  import("./components/Account/Picker")
-);
+const AccountPicker = React.lazy(() => import("./components/Account/Picker"));
 
 const AccountManagement = React.lazy(() =>
   import("./components/Account/Management")
@@ -47,30 +41,7 @@ const PrivateRoute = ({ element: Element, ...rest }) => {
   return isAuthenticated() ? <Element {...rest} /> : <Navigate to="/login" />;
 };
 
-function isEmpty(obj) {
-  return Object.keys(obj).length === 0;
-}
-
 const AppRoutes = () => {
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    const setAccountAndUserDataState = async () => {
-      const accountDetail = Cookies.get("account_detail");
-      const userDataDetail = Cookies.get("user_data");
-
-      const currentAccount = accountDetail ? JSON.parse(accountDetail) : {};
-      const userData = userDataDetail ? JSON.parse(userDataDetail) : {};
-
-      await Promise.all([
-        !isEmpty(currentAccount) && dispatch(setAccountState(currentAccount)),
-        !isEmpty(userData) && dispatch(setCurrentUserInfoState(userData)),
-      ]);
-    };
-
-    setAccountAndUserDataState();
-  }, [dispatch]);
-
   return (
     <Router>
       <Routes>
@@ -80,19 +51,19 @@ const AppRoutes = () => {
           element={<PrivateRoute element={AccountPicker} />}
         />
         <Route path="/" element={<Main />}>
-          {/* <Route index element={<Navigate to="/certificates" replace />} /> */}
+          <Route index element={<Navigate to="/certificates" replace />} />
           {/* <Route path="/" element={<Navigate to="/certificates" />} /> */}
           <Route
             path="/certificates"
-            element={<PrivateRoute element={CertificateDashboard} />}
+            element={<PrivateRoute element={Certificate} />}
           />
           <Route
             path="/devices"
-            element={<PrivateRoute element={DeviceDashboard} />}
+            element={<PrivateRoute element={Device} />}
           />
           <Route
             path="/transfer-history"
-            element={<PrivateRoute element={TransferDashboard} />}
+            element={<PrivateRoute element={Transfer} />}
           />
           <Route
             path="/account-management"

@@ -20,9 +20,9 @@ const { Option } = Select;
 import { useDispatch } from "react-redux";
 import { login } from "../../store/auth/authThunk";
 import { readCurrentUser } from "../../store/user/userThunk";
-import { getAccountDetails } from "../../store/account/accountThunk";
 
 import { useNavigate } from "react-router-dom";
+import { useAccount } from "../../context/AccountContext";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -34,12 +34,8 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const userID = await dispatch(login({ username, password })).unwrap();
+      await dispatch(login({ username, password })).unwrap();
       const userData = await dispatch(readCurrentUser()).unwrap();
-      if (userData.accounts && userData.accounts.length > 0) {
-        const defaultAccount = userData.accounts[0];
-        await dispatch(getAccountDetails(defaultAccount.id)).unwrap();
-      }
 
       message.success("Login successful 🎉", 2);
       if (userData.accounts.length > 1) {

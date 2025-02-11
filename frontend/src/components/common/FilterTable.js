@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 
 import {
   Table,
@@ -13,27 +13,14 @@ import {
 } from "antd";
 
 import {
-  AppstoreOutlined,
-  SwapOutlined,
-  CloseOutlined,
-  CloseCircleOutlined,
-  DownloadOutlined,
   LeftOutlined,
   RightOutlined,
-  LaptopOutlined,
-  ThunderboltOutlined,
-  ClockCircleOutlined,
 } from "@ant-design/icons";
 
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-// import {
-//   fetchCertificates,
-//   getCertificateDetails,
-// } from "../../store/certificate/certificateThunk";
+import { useDispatch } from "react-redux";
 
 const { Content } = Layout;
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 const FilterTable = ({
   summary,
@@ -51,20 +38,15 @@ const FilterTable = ({
   handleClearFilter,
 }) => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRecords, setSelectedRecords] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
   const pageSize = 10;
 
-  useEffect(() => {
-    if (fetchTableData) fetchTableData();
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (isEmpty(filters) && fetchTableData) fetchTableData();
-  }, [filters]);
+  // useEffect(() => {
+  //   if (fetchTableData) fetchTableData();
+  // }, [filters, dispatch]);
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -76,12 +58,6 @@ const FilterTable = ({
     selectedRowKeys,
     onChange: (selectedKeys, selectedRows) =>
       onSelectChange(selectedKeys, selectedRows),
-  };
-
-  const isEqual = (obj1, obj2) => {
-    console.log(obj1);
-    console.log(obj2);
-    return JSON.stringify(obj1) === JSON.stringify(obj2);
   };
 
   const isEmpty = (obj) => {
@@ -142,7 +118,7 @@ const FilterTable = ({
           </Text>
 
           {tableActionBtns &&
-            tableActionBtns.map((action) => {
+            tableActionBtns.map((action, index) => {
               return (
                 <Button
                   icon={action.icon}
@@ -150,6 +126,7 @@ const FilterTable = ({
                   disabled={action.disabled}
                   style={action.style}
                   onClick={() => action.handle()}
+                  key={index}
                 >
                   {action.name}
                 </Button>

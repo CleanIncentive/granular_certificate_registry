@@ -7,12 +7,12 @@ import React, {
 } from "react";
 import { Modal, Button, Input, Select, Radio, message } from "antd";
 import { useDispatch, useSelector } from "react-redux";
+import { useAccount } from "../../context/AccountContext.js";
 import {
   transferCertificates,
   cancelCertificates,
 } from "../../store/certificate/certificateThunk.js";
-
-import Cookies from "js-cookie";
+import { getCookies } from "../../util/index.js";
 
 const { Option } = Select;
 
@@ -28,8 +28,8 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
 
   const { userInfo } = useSelector((state) => state.user);
 
-  const currentAccount = JSON.parse(Cookies.get("account_detail"));
-
+  const { currentAccount } = useAccount();
+  // const currentAccount = JSON.parse(getCookies("account_detail"));
   // Expose methods to the parent component
   useImperativeHandle(ref, () => ({
     openDialog: () => setVisible(true),
@@ -59,7 +59,7 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
               onChange={(value) => setSelectedAccount(value)}
               style={{ width: "100%" }}
             >
-              {currentAccount.whiteListInverse.map((account) => (
+              {currentAccount?.whiteListInverse.map((account) => (
                 <Option value={account.id} key={account.id}>
                   {account.account_name}
                 </Option>
@@ -111,7 +111,7 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
 
     try {
       let apiBody = {
-        source_id: currentAccount.id,
+        source_id: currentAccount?.id,
         user_id: userInfo.userID,
         granular_certificate_bundle_ids: props.selectedRowKeys,
         localise_time: true,

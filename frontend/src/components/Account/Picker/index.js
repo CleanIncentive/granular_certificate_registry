@@ -4,6 +4,7 @@ import * as styles from "./AccountPicker.module.css";
 import addUserBtn from "../../../assets/images/add-user-btn.png";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import { useAccount } from "../../../context/AccountContext";
 import { getAccountDetails } from "../../../store/account/accountThunk";
 import Cookies from "js-cookie";
 
@@ -13,12 +14,15 @@ const AccountPicker = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const userData = JSON.parse(Cookies.get("user_data"));
+  const { saveAccountDetail } = useAccount();
 
   const handleAccountSelection = async (account) => {
     try {
       // Get account details and store them
-      await dispatch(getAccountDetails(account.id)).unwrap();
-
+      const accountDetail = await dispatch(
+        getAccountDetails(account.id)
+      ).unwrap();
+      saveAccountDetail(accountDetail);
       // Navigate based on account type or default to certificates
       navigate("/certificates");
     } catch (error) {
