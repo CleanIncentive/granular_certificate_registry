@@ -77,6 +77,38 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
   };
 
   const handleOk = async () => {
+    // Parse the quantity and percentage values as float or return none
+    const quantity_float_mwh = quantity ? parseFloat(quantity) : null;
+    const percentage_float = percentage ? parseFloat(percentage) : null;
+
+    if (
+      parseFloat(percentage_float) < 0 ||
+      parseFloat(percentage_float) > 100
+    ) {
+      message.error("Percentage must be between 0 and 100");
+      return;
+    }
+
+    if (
+      parseFloat(quantity_float_mwh) < 0 ||
+      parseFloat(quantity_float_mwh) > props.totalProduction / 1e6
+    ) {
+      message.error(
+        "Quantity must be more than 0 and less than total production: " +
+          props.totalProduction / 1e6 +
+          " MWh"
+      );
+      return;
+    }
+
+    if (quantity && percentage) {
+      message.error(
+        "Please specify either quantity or percentage, not both",
+        3
+      );
+      return;
+    }
+
     try {
       let apiBody = {
         source_id: currentAccount.id,
@@ -85,6 +117,22 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
         localise_time: true,
         action_type: props.dialogAction,
       };
+
+      // if quanity not null add the quantity to the apiBody
+      if (quantity_float_mwh) {
+        apiBody = {
+          ...apiBody,
+          certificate_quantity: quantity_float_mwh * 1e6,
+        };
+      }
+
+      // if percentage not null add the percentage to the apiBody
+      if (percentage_float) {
+        apiBody = {
+          ...apiBody,
+          certificate_bundle_percentage: percentage_float / 100,
+        };
+      }
 
       switch (props.dialogAction) {
         case "cancel":

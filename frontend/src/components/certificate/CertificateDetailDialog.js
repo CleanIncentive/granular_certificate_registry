@@ -90,7 +90,7 @@ const CertificateDetailDialog = ({ open, onClose, certificateData }) => {
     },
     {
       label: "Device capacity",
-      value: `${certificateData.device_capacity || 5000000} (Watts)`,
+      value: `${certificateData.device_capacity || 5000000} (MegaWatts)`,
     },
     {
       label: "Device location",
