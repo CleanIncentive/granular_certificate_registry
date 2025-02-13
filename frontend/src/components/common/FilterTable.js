@@ -36,6 +36,7 @@ const FilterTable = ({
   onRowsSelected,
   handleApplyFilter,
   handleClearFilter,
+  isShowSelection = true
 }) => {
   const dispatch = useDispatch();
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -172,7 +173,7 @@ const FilterTable = ({
           fontWeight: "500",
           color: "#F9FAFB",
         }}
-        rowSelection={rowSelection}
+        rowSelection={isShowSelection && rowSelection}
         columns={columns}
         dataSource={dataSource?.slice(
           (currentPage - 1) * pageSize,

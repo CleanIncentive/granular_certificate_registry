@@ -8,13 +8,13 @@ export const AccountProvider = ({ children }) => {
 
   useEffect(() => {
     const storedAccount = getCookies("account_detail");
-
+    console.log(storedAccount);
     if (!!storedAccount) {
-        try{
-            setCurrentAccount(JSON.parse(storedAccount));
-        } catch (err) {
-            console.log(err);
-        }
+      try {
+        setCurrentAccount(JSON.parse(storedAccount));
+      } catch (err) {
+        console.log(err);
+      }
     }
   }, []);
 
@@ -26,9 +26,7 @@ export const AccountProvider = ({ children }) => {
   };
 
   return (
-    <AccountContext.Provider
-      value={{ currentAccount, saveAccountDetail }}
-    >
+    <AccountContext.Provider value={{ currentAccount, saveAccountDetail }}>
       {children}
     </AccountContext.Provider>
   );

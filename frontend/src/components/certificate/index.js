@@ -2,13 +2,11 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import dayjs from "dayjs";
 import Cookies from "js-cookie";
 
-import { Button, Card, Col, Space, message, Select, DatePicker } from "antd";
+import { Button, message, Select, DatePicker } from "antd";
 
 import {
-  AppstoreOutlined,
   SwapOutlined,
   CloseOutlined,
-  CloseCircleOutlined,
   DownloadOutlined,
   LaptopOutlined,
   ThunderboltOutlined,
@@ -28,12 +26,16 @@ import {
 
 import CertificateActionDialog from "./CertificateActionDialog";
 import CertificateDetailDialog from "./CertificateDetailDialog";
+import Summary from "./Summary";
 
 import StatusTag from "../common/StatusTag";
 
 import FilterTable from "../common/FilterTable";
 
-import { CERTIFICATE_STATUS, ENERGY_SOURCE } from "../../enum";
+import {
+  CERTIFICATE_STATUS,
+  ENERGY_SOURCE,
+} from "../../enum";
 
 import { isEmpty } from "../../util";
 
@@ -60,7 +62,7 @@ const Certificate = () => {
   const dialogRef = useRef();
 
   const userInfo = JSON.parse(Cookies.get("user_data")).userInfo;
-  
+
   const deviceOptions = useMemo(
     () =>
       currentAccount?.devices?.map((device) => ({
@@ -98,13 +100,11 @@ const Certificate = () => {
   }, [dialogAction]);
 
   useEffect(() => {
-    if (!currentAccount?.id) {
+    if (currentAccount && !currentAccount?.id) {
       navigate("/login");
       return;
     }
   }, [currentAccount, navigate]);
-  
-  const pageSize = 10;
 
   useEffect(() => {
     if (!currentAccount?.id) return;
@@ -113,7 +113,9 @@ const Certificate = () => {
   }, [currentAccount, dispatch]);
 
   useEffect(() => {
-    if (isEmpty(filters) && !currentAccount?.id) fetchCertificatesData();
+    if (isEmpty(filters) && currentAccount?.id) {
+      fetchCertificatesData();
+    }
   }, [filters]);
 
   useEffect(() => {
@@ -128,7 +130,6 @@ const Certificate = () => {
     setTotalProduction(totalProduction);
     setSelectedDevices(devices);
   }, [selectedRecords]);
-
 
   const fetchCertificatesData = async () => {
     const fetchBody = {
@@ -175,8 +176,6 @@ const Certificate = () => {
     setFilters({});
   };
 
-  const totalPages = Math.ceil(certificates?.length / pageSize);
-
   const getDeviceName = (deviceID) => {
     return (
       currentAccount?.devices.find((device) => deviceID === device.id)
@@ -222,7 +221,7 @@ const Certificate = () => {
         icon: <DownloadOutlined />,
         btnType: "primary",
         type: "reserve",
-        disabled: !isCertificatesSelected,
+        disabled: true,
         style: { height: "40px" },
         name: "Reserve",
         handle: () => openDialog("reserve"),
@@ -272,6 +271,7 @@ const Certificate = () => {
       value={[filters.certificate_period_start, filters.certificate_period_end]}
       onChange={(dates) => handleDateChange(dates)}
       allowClear={false}
+      showTime
     />,
     <Select
       // mode="multiple"
@@ -354,89 +354,10 @@ const Certificate = () => {
     },
   ];
 
-  const summary = (
-    <>
-      {" "}
-      <Col span={8}>
-        <Card>
-          <Space align="start" size={16}>
-            <AppstoreOutlined
-              style={{
-                fontSize: "32px",
-                color: "#0057FF",
-                marginTop: "4px",
-              }}
-            />
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "4px",
-              }}
-            >
-              <h3 style={{ margin: 0, fontSize: "24px" }}>10293</h3>
-              <p style={{ margin: 0, color: "#5F6368" }}>Total Certificates</p>
-            </div>
-          </Space>
-        </Card>
-      </Col>
-      <Col span={8}>
-        <Card>
-          <Space align="start" size={16}>
-            <SwapOutlined
-              style={{
-                fontSize: "32px",
-                color: "#1890ff",
-                marginTop: "4px",
-              }}
-            />
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "4px",
-              }}
-            >
-              <h3 style={{ margin: 0, fontSize: "24px" }}>89</h3>
-              <p style={{ margin: 0, color: "#5F6368" }}>
-                Certificates Transferred
-              </p>
-            </div>
-          </Space>
-        </Card>
-      </Col>
-      <Col span={8}>
-        <Card>
-          <Space align="start" size={16}>
-            <CloseCircleOutlined
-              style={{
-                fontSize: "32px",
-                color: "#1890ff",
-                marginTop: "4px",
-              }}
-            />
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "4px",
-              }}
-            >
-              <h3 style={{ margin: 0, fontSize: "24px" }}>204</h3>
-              <p style={{ margin: 0, color: "#5F6368" }}>
-                Certificates Cancelled
-              </p>
-            </div>
-          </Space>
-        </Card>
-      </Col>
-    </>
-  );
-
   return (
     <>
       <FilterTable
-        summary={summary}
+        summary={<Summary />}
         tableName="Transfer history"
         columns={columns}
         filterComponents={filterComponents}

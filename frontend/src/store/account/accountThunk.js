@@ -1,6 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import {
   getAccountAPI,
+  getAccountSummaryAPI,
   getAccountDevicesAPI,
   getAccountWhitelistInverseAPI,
 } from "../../api/accountAPI";
@@ -11,11 +12,13 @@ export const getAccountDetails = createAsyncThunk(
   async (accountId, { rejectWithValue }) => {
     try {
       const accountResponse = await getAccountAPI(accountId);
+      const accountSummaryResponse = await getAccountSummaryAPI(accountId);
       const devicesResponse = await getAccountDevicesAPI(accountId);
       const whiteListResponse = await getAccountWhitelistInverseAPI(accountId);
 
       const accountDetail = {
         ...accountResponse.data,
+        summary: accountSummaryResponse.data,
         devices: devicesResponse.data,
         whiteListInverse: whiteListResponse.data,
       };

@@ -16,8 +16,8 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
   const [visible, setVisible] = useState(false);
   const [form] = Form.useForm();
 
-  const { currentAccount } = useAccount();
-  
+  const { currentAccount, saveAccountDetail } = useAccount();
+
   useImperativeHandle(ref, () => ({
     openDialog: () => setVisible(true),
     closeDialog: () => setVisible(false),
@@ -37,7 +37,10 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
         createDevice({ ...values, account_id: currentAccount.id })
       ).unwrap();
       console.log("Create Device Response: ", resonse);
-      await dispatch(getAccountDetails(currentAccount.id)).unwrap();
+      const accountDetails = await dispatch(
+        getAccountDetails(currentAccount.id)
+      ).unwrap();
+      saveAccountDetail(accountDetails);
       setVisible(false);
     } catch (error) {
       console.error("Validation failed:", error);
@@ -86,11 +89,11 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
           rules={[{ required: true, message: "Please select technology type" }]}
         >
           <Select placeholder="Select...">
-              {Object.entries(DEVICE_TECHNOLOGY_TYPE).map(([key, value]) => (
-                <Option key={key} value={key}>
-                  {value}
-                </Option>
-              ))}
+            {Object.entries(DEVICE_TECHNOLOGY_TYPE).map(([key, value]) => (
+              <Option key={key} value={key}>
+                {value}
+              </Option>
+            ))}
           </Select>
         </Form.Item>
 
@@ -100,11 +103,11 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
           rules={[{ required: true, message: "Please select energy source" }]}
         >
           <Select placeholder="Select...">
-              {Object.entries(ENERGY_SOURCE).map(([key, value]) => (
-                <Option key={key} value={key}>
-                  {value}
-                </Option>
-              ))}
+            {Object.entries(ENERGY_SOURCE).map(([key, value]) => (
+              <Option key={key} value={key}>
+                {value}
+              </Option>
+            ))}
           </Select>
         </Form.Item>
 
