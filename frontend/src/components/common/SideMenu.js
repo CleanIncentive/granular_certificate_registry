@@ -1,15 +1,16 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { Menu, Avatar, Typography, Dropdown, message } from "antd";
 import {
-  AppstoreOutlined,
   SwapOutlined,
-  ThunderboltOutlined,
   MoreOutlined,
   SettingOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
+import { DeviceIcon } from "../../assets/icon/DeviceIcon";
+import { CertificateIcon } from "../../assets/icon/CertificateIcon";
+import { TransferIcon } from "../../assets/icon/TransferIcon";
+import "../../assets/styles/sidemenu.css";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
 import sampleAvatar from "../../assets/images/sample-avatar.jpeg";
 import Cookies from "js-cookie";
 import { useUser } from "../../context/UserContext";
@@ -37,36 +38,42 @@ const SideMenu = () => {
 
   const generateMenuStyle = (path, isVisible = true) => ({
     display: isVisible ? "flex" : "none",
-    backgroundColor: location.pathname === path ? "#0057FF" : "",
-    color: location.pathname === path ? "#fff" : "",
+    backgroundColor: location.pathname === path ? "#0057FF" : undefined,
+    color: location.pathname === path ? "#fff" : "#3C4043",
     borderRadius: "8px",
     margin: "10px",
     height: "56px",
     alignItems: "center",
+    fontSize: "14px",
+    fontWeight: "600",
+    lineHeight: "20px",
   });
 
   const menuItems = useMemo(
     () => [
       {
-        key: "/devices",
-        icon: <ThunderboltOutlined />,
+        key: "devices",
+        icon: <DeviceIcon width={20} height={20} />,
         label: "Device management",
         onClick: () => navigate("/devices"),
         style: generateMenuStyle("/devices", isShowDevices),
+        className: "custom-menu-item",
       },
       {
-        key: "/certificates",
-        icon: <AppstoreOutlined />,
+        key: "certificates",
+        icon: <CertificateIcon />,
         label: "Certificates",
         onClick: () => navigate("/certificates"),
         style: generateMenuStyle("/certificates"),
+        className: "custom-menu-item",
       },
       {
-        key: "/transfer-history",
-        icon: <SwapOutlined />,
+        key: "transfer",
+        icon: <TransferIcon />,
         label: "Transfer History",
         onClick: () => navigate("/transfer-history"),
         style: generateMenuStyle("/transfer-history"),
+        className: "custom-menu-item",
       },
     ],
     [location.pathname, isShowDevices, navigate]

@@ -8,7 +8,6 @@ const { Text } = Typography;
 const { Option } = Select;
 
 const AccountManagement = () => {
-  const [initialValues, setInitialValues] = useState({});
   const { userData } = useUser();
   const [form] = Form.useForm();
 
