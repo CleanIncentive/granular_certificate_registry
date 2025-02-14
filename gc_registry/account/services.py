@@ -52,7 +52,7 @@ def get_account_summary(account: Account, read_session: Session) -> dict:
 
     if not num_granular_certificate_bundles:
         num_granular_certificate_bundles = 0
-        
+
     num_cancelled_granular_certificate_bundles = read_session.exec(
         select(func.count(GranularCertificateBundle.id)).where(
             GranularCertificateBundle.account_id == account.id,
