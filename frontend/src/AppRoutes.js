@@ -12,10 +12,10 @@ const Device = React.lazy(() => import("./components/Device"));
 
 const Transfer = React.lazy(() => import("./components/Transfer"));
 
-const AccountPicker = React.lazy(() => import("./components/Account/Picker"));
+const AccountPicker = React.lazy(() => import("./components/account/Picker"));
 
 const AccountManagement = React.lazy(() =>
-  import("./components/Account/Management")
+  import("./components/account/Management")
 );
 
 import {
