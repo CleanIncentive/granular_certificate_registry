@@ -37,7 +37,7 @@ const Device = () => {
 
   const { userInfo } = useSelector((state) => state.user);
   const { currentAccount } = useAccount();
-  const devices = currentAccount?.devices || [];
+  const devices = currentAccount?.detail.devices || [];
 
   const interactAllowed =
     userInfo.role !== "TRADING_USER" && userInfo.role !== "AUDIT_USER";
@@ -71,10 +71,10 @@ const Device = () => {
       return;
     }
 
-    if (currentAccount && !currentAccount?.id) {
-      navigate("/login");
-      return;
-    }
+    // if (currentAccount && !currentAccount?.id) {
+    //   navigate("/login");
+    //   return;
+    // }
 
     setFiltersDevices(devices)
   }, [currentAccount, devices, navigate]);

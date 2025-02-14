@@ -6,9 +6,7 @@ const Login = React.lazy(() => import("./pages/Login"));
 
 const Main = React.lazy(() => import("./pages/Main"));
 
-const Certificate = React.lazy(() =>
-  import("./components/Certificate")
-);
+const Certificate = React.lazy(() => import("./components/Certificate"));
 
 const Device = React.lazy(() => import("./components/Device"));
 
@@ -25,12 +23,7 @@ import {
   Routes,
   Route,
   Navigate,
-  useLocation,
 } from "react-router-dom";
-
-import { useDispatch } from "react-redux";
-import { setAccountState } from "./store/account/accountSlice";
-import { setCurrentUserInfoState } from "./store/user/userSlice";
 
 const isAuthenticated = () => {
   const token = Cookies.get("access_token");
@@ -57,10 +50,7 @@ const AppRoutes = () => {
             path="/certificates"
             element={<PrivateRoute element={Certificate} />}
           />
-          <Route
-            path="/devices"
-            element={<PrivateRoute element={Device} />}
-          />
+          <Route path="/devices" element={<PrivateRoute element={Device} />} />
           <Route
             path="/transfer-history"
             element={<PrivateRoute element={Transfer} />}

@@ -37,8 +37,8 @@ const Summary = () => {
               type="vertical"
               style={{ height: "50px", margin: "0", color: "#DADCE0" }}
             />
-            {topThreeDevices.map((deviceQuantity) => (
-              <div className={styles["top-device-container"]}>
+            {topThreeDevices.map((deviceQuantity, index) => (
+              <div className={styles["top-device-container"]} key={index}>
                 <h3 className={styles["summary-value"]}>
                   {deviceQuantity.count || "0"}
                 </h3>

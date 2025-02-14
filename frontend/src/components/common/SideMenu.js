@@ -1,11 +1,9 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Menu, Avatar, Typography, Dropdown, message } from "antd";
 import {
   AppstoreOutlined,
   SwapOutlined,
   ThunderboltOutlined,
-  FileTextOutlined,
-  HistoryOutlined,
   MoreOutlined,
   SettingOutlined,
   LogoutOutlined,
@@ -14,19 +12,28 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import sampleAvatar from "../../assets/images/sample-avatar.jpeg";
 import Cookies from "js-cookie";
+import { useUser } from "../../context/UserContext";
 
-const { Title, Text, Link } = Typography;
+const { Text } = Typography;
 
 const SideMenu = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [dropDownVisible, setDropDownVisible] = useState(false);
-  const { userInfo, accounts } = useSelector((state) => state.user);
+  const [isAccountPickerAllowed, setIsAccountPickerAllowed] = useState(false);
+  const [isShowDevices, setIsShowDevices] = useState(false);
+  const { userData } = useUser();
 
-  const isShowDevices =
-    userInfo.role !== "TRADING_USER" && userInfo.role !== "AUDIT_USER";
-
-  const isAccountPickerAllowed = accounts.length > 1;
+  useEffect(() => {
+    console.log(userData);
+    if (!!userData) {
+      setIsAccountPickerAllowed(userData.accounts.length > 1);
+      setIsShowDevices(
+        userData.userInfo.role !== "TRADING_USER" &&
+          userData.userInfo.role !== "AUDIT_USER"
+      );
+    }
+  }, [userData]);
 
   const generateMenuStyle = (path, isVisible = true) => ({
     display: isVisible ? "flex" : "none",
@@ -89,23 +96,25 @@ const SideMenu = () => {
     }
   };
 
-  const menu = (
-    <Menu onClick={handleMenuClick}>
-      <Menu.Item key="setting" icon={<SettingOutlined />}>
-        Setting
-      </Menu.Item>
-      <Menu.Item
-        key="switch"
-        icon={<SwapOutlined />}
-        style={{ display: isAccountPickerAllowed ? "flex" : "none" }}
-      >
-        Switch Account
-      </Menu.Item>
-      <Menu.Item key="logout" icon={<LogoutOutlined />} danger>
-        Log Out
-      </Menu.Item>
-    </Menu>
-  );
+  const menu = [
+    {
+      key: "setting",
+      label: "Setting",
+      icon: <SettingOutlined />,
+    },
+    {
+      key: "switch",
+      label: "Switch Account",
+      icon: <SwapOutlined />,
+      style: { display: isAccountPickerAllowed ? "flex" : "none" },
+    },
+    {
+      key: "logout",
+      label: "Log Out",
+      icon: <LogoutOutlined />,
+      danger: true,
+    },
+  ];
 
   return (
     <>
@@ -126,10 +135,13 @@ const SideMenu = () => {
         items={menuItems}
       />
       <Dropdown
-        overlay={menu}
+        menu={{
+          items: menu,
+          onClick: handleMenuClick,
+        }}
         trigger={["click"]}
-        onVisibleChange={(visible) => setDropDownVisible(visible)}
-        visible={dropDownVisible}
+        onOpenChange={(visible) => setDropDownVisible(visible)}
+        open={dropDownVisible}
       >
         <div
           style={{
@@ -180,7 +192,7 @@ const SideMenu = () => {
                       : "#202124",
                 }}
               >
-                {userInfo.username}
+                {userData?.userInfo.username}
               </Text>
               <div
                 style={{
@@ -199,7 +211,7 @@ const SideMenu = () => {
                     fontWeight: "500",
                   }}
                 >
-                  {userInfo.organisation || "Wind Farm Company"}
+                  {userData?.userInfo.organisation || "Wind Farm Company"}
                 </Text>
               </div>
             </div>

@@ -16,14 +16,16 @@ export const getAccountDetails = createAsyncThunk(
       const devicesResponse = await getAccountDevicesAPI(accountId);
       const whiteListResponse = await getAccountWhitelistInverseAPI(accountId);
 
-      const accountDetail = {
-        ...accountResponse.data,
+      const account = {
+        detail: {
+          ...accountResponse.data,
+          devices: devicesResponse.data,
+          whiteListInverse: whiteListResponse.data,
+        },
         summary: accountSummaryResponse.data,
-        devices: devicesResponse.data,
-        whiteListInverse: whiteListResponse.data,
       };
 
-      return accountDetail;
+      return account;
     } catch (error) {
       return rejectWithValue(error.response.data);
     }

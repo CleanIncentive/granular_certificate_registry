@@ -34,13 +34,13 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
       values.location = `${values.location.latitude}, ${values.location.longitude}`;
       console.log("Device registration values:", values);
       const resonse = await dispatch(
-        createDevice({ ...values, account_id: currentAccount.id })
+        createDevice({ ...values, account_id: currentAccount.detail.id })
       ).unwrap();
       console.log("Create Device Response: ", resonse);
-      const accountDetails = await dispatch(
-        getAccountDetails(currentAccount.id)
+      const account = await dispatch(
+        getAccountDetails(currentAccount.detail.id)
       ).unwrap();
-      saveAccountDetail(accountDetails);
+      saveAccountDetail(account);
       setVisible(false);
     } catch (error) {
       console.error("Validation failed:", error);

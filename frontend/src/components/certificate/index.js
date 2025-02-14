@@ -37,7 +37,7 @@ import {
   ENERGY_SOURCE,
 } from "../../enum";
 
-import { isEmpty } from "../../util";
+import { isEmpty } from "../../utils";
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -65,11 +65,11 @@ const Certificate = () => {
 
   const deviceOptions = useMemo(
     () =>
-      currentAccount?.devices?.map((device) => ({
+      currentAccount?.detail.devices?.map((device) => ({
         value: device.id,
         label: device.device_name || `Device ${device.id}`,
       })),
-    [currentAccount?.devices]
+    [currentAccount?.detail.devices]
   );
 
   const today = dayjs();
@@ -99,21 +99,20 @@ const Certificate = () => {
     dialogRef.current.openDialog(); // Open the dialog from the parent component
   }, [dialogAction]);
 
-  useEffect(() => {
-    if (currentAccount && !currentAccount?.id) {
-      navigate("/login");
-      return;
-    }
-  }, [currentAccount, navigate]);
+  // useEffect(() => {
+  //   if (!currentAccount?.id) {
+  //     navigate("/login");
+  //     return;
+  //   }
+  // }, [currentAccount, navigate]);
 
   useEffect(() => {
-    if (!currentAccount?.id) return;
-
+    if (!currentAccount?.detail.id) return;
     fetchCertificatesData();
   }, [currentAccount, dispatch]);
 
   useEffect(() => {
-    if (isEmpty(filters) && currentAccount?.id) {
+    if (isEmpty(filters) && currentAccount?.detail.id) {
       fetchCertificatesData();
     }
   }, [filters]);
@@ -134,7 +133,7 @@ const Certificate = () => {
   const fetchCertificatesData = async () => {
     const fetchBody = {
       user_id: userInfo.userID,
-      source_id: currentAccount?.id,
+      source_id: currentAccount?.detail.id,
       device_id: filters.device_id,
       certificate_bundle_status:
         CERTIFICATE_STATUS[filters.certificate_bundle_status], // Transform status to match API expectations
@@ -178,7 +177,7 @@ const Certificate = () => {
 
   const getDeviceName = (deviceID) => {
     return (
-      currentAccount?.devices.find((device) => deviceID === device.id)
+      currentAccount?.detail.devices.find((device) => deviceID === device.id)
         ?.device_name || `Device ${deviceID}`
     );
   };

@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { readUserAPI, readCurrentUserAPI } from "../../api/userAPI";
-import { saveDataToCookies } from "../../util";
+import { saveDataToCookies } from "../../utils";
 
 export const readUser = createAsyncThunk(
   "user/readUser",

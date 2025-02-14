@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { saveDataToCookies, getCookies, removeCookies } from "../util";
+import { saveDataToSessionStorage, getSessionStorage } from "../utils";
 
 const AccountContext = createContext();
 
@@ -7,22 +7,27 @@ export const AccountProvider = ({ children }) => {
   const [currentAccount, setCurrentAccount] = useState(null);
 
   useEffect(() => {
-    const storedAccount = getCookies("account_detail");
-    console.log(storedAccount);
-    if (!!storedAccount) {
+    const accountDetail = getSessionStorage("account_detail");
+    const accountSummary = getSessionStorage("account_summary");
+
+    if (!!accountDetail && !!accountSummary) {
+      const currentAccount = {
+        detail: JSON.parse(accountDetail),
+        summary: JSON.parse(accountSummary),
+      };
       try {
-        setCurrentAccount(JSON.parse(storedAccount));
+        setCurrentAccount(currentAccount);
       } catch (err) {
         console.log(err);
       }
     }
   }, []);
 
-  const saveAccountDetail = (accountDetail) => {
-    setCurrentAccount(accountDetail);
-    saveDataToCookies("account_detail", JSON.stringify(accountDetail), {
-      expires: 7,
-    });
+  const saveAccountDetail = ({ detail, summary }) => {
+    setCurrentAccount({ detail, summary });
+    // Save the object to sessionStorage as a string
+    saveDataToSessionStorage("account_detail", JSON.stringify(detail));
+    saveDataToSessionStorage("account_summary", JSON.stringify(summary));
   };
 
   return (

@@ -12,7 +12,7 @@ import {
   transferCertificates,
   cancelCertificates,
 } from "../../store/certificate/certificateThunk.js";
-import { getCookies } from "../../util/index.js";
+import { getCookies } from "../../utils/index.js";
 
 const { Option } = Select;
 
@@ -58,7 +58,7 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
               onChange={(value) => setSelectedAccount(value)}
               style={{ width: "100%" }}
             >
-              {currentAccount?.whiteListInverse.map((account) => (
+              {currentAccount?.detail.whiteListInverse.map((account) => (
                 <Option value={account.id} key={account.id}>
                   {account.account_name}
                 </Option>
@@ -110,7 +110,7 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
 
     try {
       let apiBody = {
-        source_id: currentAccount?.id,
+        source_id: currentAccount?.detail.id,
         user_id: userInfo.userID,
         granular_certificate_bundle_ids: props.selectedRowKeys,
         localise_time: true,
