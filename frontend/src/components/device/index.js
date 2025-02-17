@@ -128,6 +128,7 @@ const Device = () => {
       title: <span style={{ color: "#80868B" }}>Device name & ID</span>,
       dataIndex: "device_name",
       key: "device_name",
+      sorter: (a, b) => a.device_name.localeCompare(b.device_name),
     },
     {
       title: <span style={{ color: "#80868B" }}>Technology type</span>,
@@ -137,18 +138,27 @@ const Device = () => {
         const upperKey = type?.toUpperCase().replace(/ /g, "_");
         return DEVICE_TECHNOLOGY_TYPE[upperKey] || type;
       },
+      sorter: (a, b) => {
+        // Sorting based on the raw value; adjust if needed
+        return a.technology_type?.localeCompare(b.technology_type) || 0;
+      },
     },
     {
       title: <span style={{ color: "#80868B" }}>Production start date</span>,
       dataIndex: "operational_date",
       key: "operational_date",
       render: (date) => (date ? dayjs(date).format("YYYY-MM-DD") : "-"),
+      sorter: (a, b) => {
+        // Convert dates to timestamps for comparison
+        return new Date(a.operational_date) - new Date(b.operational_date);
+      },
     },
     {
       title: <span style={{ color: "#80868B" }}>Device capacity (MW)</span>,
       dataIndex: "capacity",
       key: "capacity",
       render: (text) => <span style={{ color: "#5F6368" }}>{text}</span>,
+      sorter: (a, b) => a.capacity - b.capacity,
     },
     {
       title: <span style={{ color: "#80868B" }}>Location</span>,
