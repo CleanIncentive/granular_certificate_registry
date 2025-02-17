@@ -117,5 +117,6 @@ module.exports = {
 
   resolve: {
     extensions: [".js", ".jsx"],
+    mainFiles: ['index'],
   },
 };
