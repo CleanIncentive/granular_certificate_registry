@@ -10,7 +10,7 @@ const Certificate = React.lazy(() => import("./components/Certificate"));
 
 const Device = React.lazy(() => import("./components/Device"));
 
-const Transfer = React.lazy(() => import("./components/Transfer"));
+// const Transfer = React.lazy(() => import("./components/Transfer"));
 
 const AccountPicker = React.lazy(() => import("./components/Account/Picker"));
 
@@ -51,14 +51,16 @@ const AppRoutes = () => {
             element={<PrivateRoute element={Certificate} />}
           />
           <Route path="/devices" element={<PrivateRoute element={Device} />} />
-          <Route
+          {/* <Route
             path="/transfer-history"
             element={<PrivateRoute element={Transfer} />}
-          />
+          /> */}
           <Route
             path="/account-management"
             element={<PrivateRoute element={AccountManagement} />}
           />
+          {/* Catch-all route */}
+          <Route path="*" element={<Navigate to="/certificates" replace />} />
         </Route>
       </Routes>
     </Router>
