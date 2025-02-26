@@ -71,9 +71,10 @@ const SideMenu = () => {
         key: "transfer",
         icon: <TransferIcon />,
         label: "Transfer History",
-        onClick: () => navigate("/transfer-history"),
+        // onClick: () => navigate("/transfer-history"),
         style: generateMenuStyle("/transfer-history"),
         className: "custom-menu-item",
+        disabled: true,
       },
     ],
     [location.pathname, isShowDevices, navigate]

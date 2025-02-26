@@ -47,8 +47,8 @@ export const readCurrentUser = createAsyncThunk(
       saveDataToCookies("user_data", JSON.stringify(userData));
 
       return userData;
-    } catch (error) {
-      return rejectWithValue(error.response.data);
+    } catch ({ message, status }) {
+      return rejectWithValue({ message, status });
     }
   }
 );

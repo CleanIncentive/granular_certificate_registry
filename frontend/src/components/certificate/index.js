@@ -32,10 +32,7 @@ import StatusTag from "../common/StatusTag";
 
 import FilterTable from "../common/FilterTable";
 
-import {
-  CERTIFICATE_STATUS,
-  ENERGY_SOURCE,
-} from "../../enum";
+import { CERTIFICATE_STATUS, ENERGY_SOURCE } from "../../enum";
 
 import { isEmpty } from "../../utils";
 
@@ -296,12 +293,16 @@ const Certificate = () => {
       title: <span style={{ color: "#80868B" }}>Issuance ID</span>,
       dataIndex: "issuance_id",
       key: "issuance_id",
+      sorter: (a, b) =>
+        a.issuance_id.toString().localeCompare(b.issuance_id.toString()),
     },
     {
       title: <span style={{ color: "#80868B" }}>Device Name</span>,
       dataIndex: "device_id",
       key: "device_id",
       render: (id) => <span>{getDeviceName(id)}</span>,
+      sorter: (a, b) =>
+        getDeviceName(a.device_id).localeCompare(getDeviceName(b.device_id)),
     },
     {
       title: <span style={{ color: "#80868B" }}>Energy Source</span>,
@@ -312,30 +313,46 @@ const Certificate = () => {
           {text.charAt(0).toUpperCase() + text.slice(1)}
         </span>
       ),
+      sorter: (a, b) =>
+        a.energy_source
+          .toLowerCase()
+          .localeCompare(b.energy_source.toLowerCase()),
     },
     {
       title: <span style={{ color: "#80868B" }}>Certificate Period Start</span>,
       dataIndex: "production_starting_interval",
       key: "production_starting_interval",
       render: (text) => <span style={{ color: "#5F6368" }}>{text}</span>,
+      sorter: (a, b) =>
+        new Date(a.production_starting_interval) -
+        new Date(b.production_starting_interval),
     },
     {
       title: <span style={{ color: "#80868B" }}>Certificate Period End</span>,
       dataIndex: "production_ending_interval",
       key: "production_ending_interval",
       render: (text) => <span style={{ color: "#5F6368" }}>{text}</span>,
+
+      sorter: (a, b) =>
+        new Date(a.production_ending_interval) -
+        new Date(b.production_ending_interval),
     },
     {
       title: <span style={{ color: "#80868B" }}>Production (MWh)</span>,
       dataIndex: "bundle_quantity",
       key: "bundle_quantity",
       render: (value) => (value / 1e6).toFixed(3), // Divides by 1,000,000 and shows 3 decimal places
+      sorter: (a, b) => a.bundle_quantity - b.bundle_quantity,
     },
     {
       title: <span style={{ color: "#80868B" }}>Status</span>,
       dataIndex: "certificate_bundle_status",
       key: "certificate_bundle_status",
       render: (status) => <StatusTag status={String(status || "")} />, // Ensure status is a string
+      sorter: (a, b) =>
+        String(a.certificate_bundle_status).localeCompare(
+          String(b.certificate_bundle_status)
+        ),
     },
     {
       title: "",

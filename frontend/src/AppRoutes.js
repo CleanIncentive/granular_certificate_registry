@@ -10,7 +10,7 @@ const Certificate = React.lazy(() => import("./components/Certificate"));
 
 const Device = React.lazy(() => import("./components/Device"));
 
-const Transfer = React.lazy(() => import("./components/Transfer"));
+// const Transfer = React.lazy(() => import("./components/Transfer"));
 
 const AccountPicker = React.lazy(() => import("./components/account/Picker"));
 
@@ -23,7 +23,15 @@ import {
   Routes,
   Route,
   Navigate,
+  useNavigate,
+  useLocation,
 } from "react-router-dom";
+
+import { message } from "antd";
+
+import { useDispatch } from "react-redux";
+import { readCurrentUser } from "./store/user/userThunk";
+import { useUser } from "./context/UserContext";
 
 const isAuthenticated = () => {
   const token = Cookies.get("access_token");
@@ -35,33 +43,55 @@ const PrivateRoute = ({ element: Element, ...rest }) => {
 };
 
 const AppRoutes = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { saveUserData } = useUser();
+
+  useEffect(() => {
+    const validateCredentials = async () => {
+      try {
+        const userData = await dispatch(readCurrentUser()).unwrap();
+        saveUserData(userData);
+      } catch (err) {
+        console.error("Failed to validate credentials:", err);
+        message.error(err?.message || "Credentials validation failed", 3);
+        navigate("/login");
+      }
+    };
+
+    if (location.pathname !== "/login") {
+      validateCredentials();
+    }
+  }, [dispatch]);
+
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route
+        path="/account-picker"
+        element={<PrivateRoute element={AccountPicker} />}
+      />
+      <Route path="/" element={<Main />}>
+        <Route index element={<Navigate to="/certificates" replace />} />
+        {/* <Route path="/" element={<Navigate to="/certificates" />} /> */}
         <Route
-          path="/account-picker"
-          element={<PrivateRoute element={AccountPicker} />}
+          path="/certificates"
+          element={<PrivateRoute element={Certificate} />}
         />
-        <Route path="/" element={<Main />}>
-          <Route index element={<Navigate to="/certificates" replace />} />
-          {/* <Route path="/" element={<Navigate to="/certificates" />} /> */}
-          <Route
-            path="/certificates"
-            element={<PrivateRoute element={Certificate} />}
-          />
-          <Route path="/devices" element={<PrivateRoute element={Device} />} />
-          <Route
+        <Route path="/devices" element={<PrivateRoute element={Device} />} />
+        {/* <Route
             path="/transfer-history"
             element={<PrivateRoute element={Transfer} />}
-          />
-          <Route
-            path="/account-management"
-            element={<PrivateRoute element={AccountManagement} />}
-          />
-        </Route>
-      </Routes>
-    </Router>
+          /> */}
+        <Route
+          path="/account-management"
+          element={<PrivateRoute element={AccountManagement} />}
+        />
+        {/* Catch-all route */}
+        <Route path="*" element={<Navigate to="/certificates" replace />} />
+      </Route>
+    </Routes>
   );
 };
 
