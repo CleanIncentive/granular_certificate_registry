@@ -33,10 +33,10 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
       const values = await form.validateFields();
       values.location = `${values.location.latitude}, ${values.location.longitude}`;
       console.log("Device registration values:", values);
-      const resonse = await dispatch(
+      const response = await dispatch(
         createDevice({ ...values, account_id: currentAccount.detail.id })
       ).unwrap();
-      console.log("Create Device Response: ", resonse);
+      console.log("Create Device Response: ", response);
       const account = await dispatch(
         getAccountDetails(currentAccount.detail.id)
       ).unwrap();
