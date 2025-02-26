@@ -28,6 +28,7 @@ from gc_registry.certificate.services import get_certificate_bundles_by_account_
 from gc_registry.core.database import db, events
 from gc_registry.core.models.base import UserRoles
 from gc_registry.device.models import DeviceRead
+from gc_registry.logging_config import logger
 from gc_registry.user.models import User, UserAccountLink
 from gc_registry.user.validation import validate_user_access, validate_user_role
 
@@ -284,10 +285,32 @@ def get_all_devices_by_account_id(
     devices = device_services.get_devices_by_account_id(account_id, read_session)
 
     if not devices:
-        raise HTTPException(status_code=404, detail="No devices found for account")
+        logger.info(f"No devices found for account {account_id}")
+        return []
 
     for device in devices:
         validate_user_access(current_user, device.account_id, read_session)
+
+    return [device.model_dump() for device in devices]
+
+
+@router.get("/{account_id}/certificates/devices", response_model=list[DeviceRead])
+def get_devices_for_account_certificates(
+    account_id: int,
+    current_user: User = Depends(get_current_user),
+    read_session: Session = Depends(db.get_read_session),
+):
+    """Return all devices associated with an account that have certificates issued against them."""
+    validate_user_role(current_user, required_role=UserRoles.TRADING_USER)
+    validate_user_access(current_user, account_id, read_session)
+
+    devices = device_services.get_certificate_devices_by_account_id(
+        read_session, account_id
+    )
+
+    if not devices:
+        logger.info(f"No devices found for account {account_id} certificates")
+        return []
 
     return [device.model_dump() for device in devices]
 

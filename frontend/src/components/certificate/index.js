@@ -59,17 +59,23 @@ const Certificate = () => {
 
   const dialogRef = useRef();
 
-  // const currentAccount = JSON.parse(Cookies.get("account_detail"));
   const userInfo = JSON.parse(Cookies.get("user_data")).userInfo;
-  
-  const deviceOptions = useMemo(
-    () =>
-      currentAccount?.devices?.map((device) => ({
-        value: device.id,
-        label: device.device_name || `Device ${device.id}`,
-      })),
-    [currentAccount?.devices]
-  );
+
+  const deviceOptions = useMemo(() => {
+    const allDevices = [
+      ...(currentAccount?.devices || []),
+      ...(currentAccount?.certificateDevices || []),
+    ];
+
+    const uniqueDevices = Array.from(
+      new Map(allDevices.map((device) => [device.id, device])).values()
+    );
+
+    return uniqueDevices.map((device) => ({
+      value: device.id,
+      label: device.device_name || `Device ${device.id}`,
+    }));
+  }, [currentAccount?.devices, currentAccount?.certificateDevices]);
 
   const today = dayjs();
   const one_week_ago = dayjs().subtract(30, "days");
@@ -104,7 +110,7 @@ const Certificate = () => {
       return;
     }
   }, [currentAccount, navigate]);
-  
+
   const pageSize = 10;
 
   useEffect(() => {
@@ -130,14 +136,13 @@ const Certificate = () => {
     setSelectedDevices(devices);
   }, [selectedRecords]);
 
-
   const fetchCertificatesData = async () => {
     const fetchBody = {
       user_id: userInfo.userID,
       source_id: currentAccount?.id,
       device_id: filters.device_id,
       certificate_bundle_status:
-        CERTIFICATE_STATUS[filters.certificate_bundle_status], // Transform status to match API expectations
+        CERTIFICATE_STATUS[filters.certificate_bundle_status],
       certificate_period_start:
         filters.certificate_period_start?.format("YYYY-MM-DD"),
       certificate_period_end:
@@ -176,13 +181,15 @@ const Certificate = () => {
     setFilters({});
   };
 
-  const totalPages = Math.ceil(certificates?.length / pageSize);
-
   const getDeviceName = (deviceID) => {
-    return (
-      currentAccount?.devices.find((device) => deviceID === device.id)
-        ?.device_name || `Device ${deviceID}`
-    );
+    const allDevices = [
+      ...(currentAccount?.devices || []),
+      ...(currentAccount?.certificateDevices || []),
+    ];
+
+    const device = allDevices.find((device) => deviceID === device.id);
+
+    return device?.device_name || `Device ${deviceID}`;
   };
 
   const handleDateChange = (dates) => {

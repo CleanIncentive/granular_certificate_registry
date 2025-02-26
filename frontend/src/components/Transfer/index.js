@@ -60,15 +60,22 @@ const Certificate = () => {
   const dialogRef = useRef();
 
   const userInfo = JSON.parse(Cookies.get("user_data")).userInfo;
-  
-  const deviceOptions = useMemo(
-    () =>
-      currentAccount?.devices?.map((device) => ({
-        value: device.id,
-        label: device.device_name || `Device ${device.id}`,
-      })),
-    [currentAccount?.devices]
-  );
+
+  const deviceOptions = useMemo(() => {
+    const allDevices = [
+      ...(currentAccount?.devices || []),
+      ...(currentAccount?.certificateDevices || []),
+    ];
+
+    const uniqueDevices = Array.from(
+      new Map(allDevices.map((device) => [device.id, device])).values()
+    );
+
+    return uniqueDevices.map((device) => ({
+      value: device.id,
+      label: device.device_name || `Device ${device.id}`,
+    }));
+  }, [currentAccount?.devices, currentAccount?.certificateDevices]);
 
   const today = dayjs();
   const one_week_ago = dayjs().subtract(30, "days");
@@ -103,7 +110,7 @@ const Certificate = () => {
       return;
     }
   }, [currentAccount, navigate]);
-  
+
   const pageSize = 10;
 
   useEffect(() => {
@@ -128,7 +135,6 @@ const Certificate = () => {
     setTotalProduction(totalProduction);
     setSelectedDevices(devices);
   }, [selectedRecords]);
-
 
   const fetchCertificatesData = async () => {
     const fetchBody = {

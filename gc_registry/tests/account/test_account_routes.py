@@ -222,6 +222,25 @@ class TestAccountRoutes:
         assert response.status_code == 200
         assert len(response.json()["granular_certificate_bundles"]) == 1
 
+    def test_list_all_account_certificate_devices(
+        self,
+        api_client: TestClient,
+        token: str,
+        fake_db_granular_certificate_bundle: GranularCertificateBundle,
+        fake_db_wind_device: Device,
+        fake_db_user: User,
+        fake_db_account: Account,
+    ):
+        response = api_client.get(
+            f"/account/{fake_db_account.id}/certificates/devices",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        print(response.json())
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+        assert response.json()[0]["device_name"] == "fake_wind_device"
+
     def test_update_account_users(
         self,
         api_client: TestClient,
