@@ -267,7 +267,7 @@ const Certificate = () => {
       value={[filters.certificate_period_start, filters.certificate_period_end]}
       onChange={(dates) => handleDateChange(dates)}
       allowClear={false}
-      showTime
+      format="YYYY-MM-DD"
     />,
     <Select
       // mode="multiple"
