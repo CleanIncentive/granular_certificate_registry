@@ -32,6 +32,10 @@ class DeviceRead(DeviceBase):
     id: int
 
 
+class DeviceCreate(DeviceBase):
+    account_id: int
+
+
 class DeviceUpdate(SQLModel):
     device_name: str | None = None
     grid: str | None = None
