@@ -38,11 +38,7 @@ const Login = () => {
       const userData = await dispatch(readCurrentUser()).unwrap();
       saveUserData(userData);
       message.success("Login successful 🎉", 2);
-      if (userData.accounts.length > 1) {
-        navigate("/account-picker");
-      } else {
-        navigate("/certificates");
-      }
+      navigate("/account-picker");
     } catch (error) {
       message.error(`Login failed: ${error}`, 3);
     }
