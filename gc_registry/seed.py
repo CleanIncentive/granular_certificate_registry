@@ -94,6 +94,12 @@ def seed_data():
     account_2 = Account.create(account_dict, write_session, read_session, esdb_client)[
         0
     ]
+    _ = UserAccountLink.create(
+        {"user_id": admin_user.id, "account_id": account_2.id},
+        write_session,
+        read_session,
+        esdb_client,
+    )
 
     white_list_link_dict = {
         "target_account_id": account_2.id,
