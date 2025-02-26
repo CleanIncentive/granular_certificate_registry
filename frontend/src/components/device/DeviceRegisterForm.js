@@ -17,7 +17,7 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
   const [form] = Form.useForm();
 
   const { currentAccount } = useAccount();
-  
+
   useImperativeHandle(ref, () => ({
     openDialog: () => setVisible(true),
     closeDialog: () => setVisible(false),
@@ -86,11 +86,11 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
           rules={[{ required: true, message: "Please select technology type" }]}
         >
           <Select placeholder="Select...">
-              {Object.entries(DEVICE_TECHNOLOGY_TYPE).map(([key, value]) => (
-                <Option key={key} value={key}>
-                  {value}
-                </Option>
-              ))}
+            {Object.entries(DEVICE_TECHNOLOGY_TYPE).map(([key, value]) => (
+              <Option key={key} value={key.toLocaleLowerCase()}>
+                {value}
+              </Option>
+            ))}
           </Select>
         </Form.Item>
 
@@ -100,11 +100,11 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
           rules={[{ required: true, message: "Please select energy source" }]}
         >
           <Select placeholder="Select...">
-              {Object.entries(ENERGY_SOURCE).map(([key, value]) => (
-                <Option key={key} value={key}>
-                  {value}
-                </Option>
-              ))}
+            {Object.entries(ENERGY_SOURCE).map(([key, value]) => (
+              <Option key={key} value={key.toLocaleLowerCase()}>
+                {value}
+              </Option>
+            ))}
           </Select>
         </Form.Item>
 

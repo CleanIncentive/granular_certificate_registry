@@ -3,6 +3,7 @@ import datetime
 from sqlmodel import Field
 
 from gc_registry import utils
+from gc_registry.core.models.base import DeviceTechnologyType, EnergySourceType
 
 
 class DeviceBase(utils.ActiveRecord):
@@ -13,8 +14,8 @@ class DeviceBase(utils.ActiveRecord):
                        and link it to available data sources. This could be a meter number, a serial number, or other appropriate identifier""",
     )
     grid: str
-    energy_source: str
-    technology_type: str
+    energy_source: EnergySourceType
+    technology_type: DeviceTechnologyType
     operational_date: datetime.datetime
     capacity: float
     peak_demand: float

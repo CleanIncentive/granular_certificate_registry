@@ -61,7 +61,7 @@ const Certificate = () => {
 
   // const currentAccount = JSON.parse(Cookies.get("account_detail"));
   const userInfo = JSON.parse(Cookies.get("user_data")).userInfo;
-  
+
   const deviceOptions = useMemo(
     () =>
       currentAccount?.devices?.map((device) => ({
@@ -104,7 +104,7 @@ const Certificate = () => {
       return;
     }
   }, [currentAccount, navigate]);
-  
+
   const pageSize = 10;
 
   useEffect(() => {
@@ -129,7 +129,6 @@ const Certificate = () => {
     setTotalProduction(totalProduction);
     setSelectedDevices(devices);
   }, [selectedRecords]);
-
 
   const fetchCertificatesData = async () => {
     const fetchBody = {
@@ -263,7 +262,7 @@ const Certificate = () => {
       allowClear
     >
       {Object.entries(ENERGY_SOURCE).map(([key, value]) => (
-        <Option key={key} value={key}>
+        <Option key={key} value={key.toLocaleLowerCase()}>
           {value}
         </Option>
       ))}
