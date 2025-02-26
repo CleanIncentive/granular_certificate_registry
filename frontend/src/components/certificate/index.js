@@ -293,16 +293,21 @@ const Certificate = () => {
       title: <span style={{ color: "#80868B" }}>Issuance ID</span>,
       dataIndex: "issuance_id",
       key: "issuance_id",
-      sorter: (a, b) =>
-        a.issuance_id.toString().localeCompare(b.issuance_id.toString()),
+      defaultSortOrder: 'ascend',
+      sorter: {
+        compare: (a, b) => a.issuance_id.toString().localeCompare(b.issuance_id.toString()),
+        multiple: 1
+      },
     },
     {
       title: <span style={{ color: "#80868B" }}>Device Name</span>,
       dataIndex: "device_id",
       key: "device_id",
       render: (id) => <span>{getDeviceName(id)}</span>,
-      sorter: (a, b) =>
-        getDeviceName(a.device_id).localeCompare(getDeviceName(b.device_id)),
+      sorter: {
+        compare: (a, b) => getDeviceName(a.device_id).localeCompare(getDeviceName(b.device_id)),
+        multiple: 2
+      },
     },
     {
       title: <span style={{ color: "#80868B" }}>Energy Source</span>,
@@ -313,46 +318,50 @@ const Certificate = () => {
           {text.charAt(0).toUpperCase() + text.slice(1)}
         </span>
       ),
-      sorter: (a, b) =>
-        a.energy_source
-          .toLowerCase()
-          .localeCompare(b.energy_source.toLowerCase()),
+      sorter: {
+        compare: (a, b) => a.energy_source.toLowerCase().localeCompare(b.energy_source.toLowerCase()),
+        multiple: 3
+      },
     },
     {
       title: <span style={{ color: "#80868B" }}>Certificate Period Start</span>,
       dataIndex: "production_starting_interval",
       key: "production_starting_interval",
       render: (text) => <span style={{ color: "#5F6368" }}>{text}</span>,
-      sorter: (a, b) =>
-        new Date(a.production_starting_interval) -
-        new Date(b.production_starting_interval),
+      sorter: {
+        compare: (a, b) => new Date(a.production_starting_interval) - new Date(b.production_starting_interval),
+        multiple: 4
+      },
     },
     {
       title: <span style={{ color: "#80868B" }}>Certificate Period End</span>,
       dataIndex: "production_ending_interval",
       key: "production_ending_interval",
       render: (text) => <span style={{ color: "#5F6368" }}>{text}</span>,
-
-      sorter: (a, b) =>
-        new Date(a.production_ending_interval) -
-        new Date(b.production_ending_interval),
+      sorter: {
+        compare: (a, b) => new Date(a.production_ending_interval) - new Date(b.production_ending_interval),
+        multiple: 5
+      },
     },
     {
       title: <span style={{ color: "#80868B" }}>Production (MWh)</span>,
       dataIndex: "bundle_quantity",
       key: "bundle_quantity",
-      render: (value) => (value / 1e6).toFixed(3), // Divides by 1,000,000 and shows 3 decimal places
-      sorter: (a, b) => a.bundle_quantity - b.bundle_quantity,
+      render: (value) => (value / 1e6).toFixed(3),
+      sorter: {
+        compare: (a, b) => a.bundle_quantity - b.bundle_quantity,
+        multiple: 6
+      },
     },
     {
       title: <span style={{ color: "#80868B" }}>Status</span>,
       dataIndex: "certificate_bundle_status",
       key: "certificate_bundle_status",
-      render: (status) => <StatusTag status={String(status || "")} />, // Ensure status is a string
-      sorter: (a, b) =>
-        String(a.certificate_bundle_status).localeCompare(
-          String(b.certificate_bundle_status)
-        ),
+      render: (status) => <StatusTag status={String(status || "")} />,
+      sorter: {
+        compare: (a, b) => String(a.certificate_bundle_status).localeCompare(String(b.certificate_bundle_status)),
+        multiple: 7
+      },
     },
     {
       title: "",
@@ -370,17 +379,24 @@ const Certificate = () => {
     },
   ];
 
+  // Add this memoized sorted certificates array
+  const sortedCertificates = useMemo(() => {
+    return [...certificates].sort((a, b) => 
+      a.issuance_id.toString().localeCompare(b.issuance_id.toString())
+    );
+  }, [certificates]);
+
   return (
     <>
       <FilterTable
         summary={<Summary />}
-        tableName="Transfer history"
+        tableName="Granular Certificate Bundles "
         columns={columns}
         filterComponents={filterComponents}
         tableActionBtns={btnList}
         defaultFilters={defaultFilters}
         filters={filters}
-        dataSource={certificates}
+        dataSource={sortedCertificates}
         fetchTableData={fetchCertificatesData}
         onRowsSelected={onSelectChange}
         handleApplyFilter={handleApplyFilter}
