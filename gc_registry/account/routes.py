@@ -282,6 +282,11 @@ def get_all_devices_by_account_id(
 ):
     validate_user_role(current_user, required_role=UserRoles.AUDIT_USER)
 
+    # check the account exists
+    account = Account.by_id(account_id, read_session)
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+
     devices = device_services.get_devices_by_account_id(account_id, read_session)
 
     if not devices:
