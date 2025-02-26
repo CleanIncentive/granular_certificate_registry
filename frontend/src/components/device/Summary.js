@@ -28,14 +28,16 @@ ChartJS.register(
   RadialLinearScale
 );
 
-const backgroundColor = [
-  "#9CB4FC",
-  "#FDB022",
-  "#F04438",
-  "#1D53F7",
-  "#34C759",
-  "#BDC1C6",
-];
+// Update color mapping to use DEVICE_TECHNOLOGY_TYPE keys
+const deviceTypeColors = {
+  WIND_TURBINE: "#9CB4FC",
+  SOLAR_PV: "#FDB022",
+  BATTERY_STORAGE: "#F04438",
+  HYDRO: "#1D53F7",
+  OTHER_STORAGE: "#34C759",
+  CHP: "#BDC1C6",
+  OTHER: "#BDC1C6",
+};
 
 const Summary = () => {
   const { currentAccount, saveAccountDetail } = useAccount();
@@ -64,13 +66,16 @@ const Summary = () => {
     0
   );
 
-  // Data for Total Devices Pie chart
+  // Update the totalDevicesData to use mapped colors
   const totalDevicesData = {
     labels: numDevicesLabels,
     datasets: [
       {
         data: numDevicesData,
-        backgroundColor,
+        backgroundColor: numDevicesLabels.map(label => 
+          deviceTypeColors[Object.keys(DEVICE_TECHNOLOGY_TYPE)
+            .find(key => DEVICE_TECHNOLOGY_TYPE[key] === label)] || deviceTypeColors.OTHER
+        ),
       },
     ],
   };
@@ -81,7 +86,10 @@ const Summary = () => {
     datasets: [
       {
         data: deviceCapacityData,
-        backgroundColor,
+        backgroundColor: deviceCapacityLabels.map(label => 
+          deviceTypeColors[Object.keys(DEVICE_TECHNOLOGY_TYPE)
+            .find(key => DEVICE_TECHNOLOGY_TYPE[key] === label)] || deviceTypeColors.OTHER
+        ),
       },
     ],
   };
@@ -182,7 +190,10 @@ const Summary = () => {
             <div style={{ width: "90%" }}>
               <CustomLegend
                 labels={numDevicesLabels}
-                colors={backgroundColor}
+                colors={numDevicesLabels.map(label => 
+                  deviceTypeColors[Object.keys(DEVICE_TECHNOLOGY_TYPE)
+                    .find(key => DEVICE_TECHNOLOGY_TYPE[key] === label)] || deviceTypeColors.OTHER
+                )}
                 data={numDevicesData}
                 title={`${totalNumDevices} Total Devices`}
               />
@@ -203,7 +214,10 @@ const Summary = () => {
             <div style={{ width: "90%" }}>
               <CustomLegend
                 labels={deviceCapacityLabels}
-                colors={backgroundColor}
+                colors={deviceCapacityLabels.map(label => 
+                  deviceTypeColors[Object.keys(DEVICE_TECHNOLOGY_TYPE)
+                    .find(key => DEVICE_TECHNOLOGY_TYPE[key] === label)] || deviceTypeColors.OTHER
+                )}
                 data={deviceCapacityData}
                 title={`${totalCapacityDevices} MW Total Capacity`}
                 isCapacity={true}
