@@ -52,6 +52,16 @@ baseAPI.interceptors.response.use(
   async (error) => {
     console.error(error);
 
+    // Check for a network error
+    if (
+      (error.code === "ERR_NETWORK" || !error.response) &&
+      window.location.pathname !== "/login"
+    ) {
+      // Redirect to login on network error
+      window.location.href = "/login";
+      return Promise.reject(error);
+    }
+
     if (
       error.response?.status === 403 &&
       error.response?.data?.detail?.includes("CSRF")
@@ -61,10 +71,6 @@ baseAPI.interceptors.response.use(
         error.config.headers["X-CSRF-Token"] = newToken;
         return baseAPI(error.config);
       }
-    }
-
-    if (error.response?.status === 422) {
-      return Promise.reject(error);
     }
 
     const status = error.response?.status || 500;

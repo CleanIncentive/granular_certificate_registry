@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { readUserAPI, readCurrentUserAPI } from "../../api/userAPI";
-import { saveDataToCookies } from "../../util";
+import { saveDataToCookies } from "../../utils";
 
 export const readUser = createAsyncThunk(
   "user/readUser",
@@ -47,8 +47,8 @@ export const readCurrentUser = createAsyncThunk(
       saveDataToCookies("user_data", JSON.stringify(userData));
 
       return userData;
-    } catch (error) {
-      return rejectWithValue(error.response.data);
+    } catch ({ message, status }) {
+      return rejectWithValue({ message, status });
     }
   }
 );

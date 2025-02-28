@@ -1,6 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import {
   getAccountAPI,
+  getAccountSummaryAPI,
   getAccountDevicesAPI,
   getAccountWhitelistInverseAPI,
   getAccountCertificatesDevicesAPI,

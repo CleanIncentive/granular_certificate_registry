@@ -2,13 +2,11 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import dayjs from "dayjs";
 import Cookies from "js-cookie";
 
-import { Button, Card, Col, Space, message, Select, DatePicker } from "antd";
+import { Button, message, Select, DatePicker } from "antd";
 
 import {
-  AppstoreOutlined,
   SwapOutlined,
   CloseOutlined,
-  CloseCircleOutlined,
   DownloadOutlined,
   LaptopOutlined,
   ThunderboltOutlined,
@@ -28,14 +26,15 @@ import {
 
 import CertificateActionDialog from "./CertificateActionDialog";
 import CertificateDetailDialog from "./CertificateDetailDialog";
+import Summary from "./Summary";
 
-import StatusTag from "../common/StatusTag";
+import StatusTag from "../Common/StatusTag";
 
-import FilterTable from "../common/FilterTable";
+import FilterTable from "../Common/FilterTable";
 
 import { CERTIFICATE_STATUS, ENERGY_SOURCE } from "../../enum";
 
-import { isEmpty } from "../../util";
+import { isEmpty } from "../../utils";
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -114,13 +113,14 @@ const Certificate = () => {
   const pageSize = 10;
 
   useEffect(() => {
-    if (!currentAccount?.id) return;
-
+    if (!currentAccount?.detail.id) return;
     fetchCertificatesData();
   }, [currentAccount, dispatch]);
 
   useEffect(() => {
-    if (isEmpty(filters) && !currentAccount?.id) fetchCertificatesData();
+    if (isEmpty(filters) && currentAccount?.detail.id) {
+      fetchCertificatesData();
+    }
   }, [filters]);
 
   useEffect(() => {
@@ -139,7 +139,7 @@ const Certificate = () => {
   const fetchCertificatesData = async () => {
     const fetchBody = {
       user_id: userInfo.userID,
-      source_id: currentAccount?.id,
+      source_id: currentAccount?.detail.id,
       device_id: filters.device_id,
       certificate_bundle_status:
         CERTIFICATE_STATUS[filters.certificate_bundle_status],
@@ -230,7 +230,7 @@ const Certificate = () => {
         icon: <DownloadOutlined />,
         btnType: "primary",
         type: "reserve",
-        disabled: !isCertificatesSelected,
+        disabled: true,
         style: { height: "40px" },
         name: "Reserve",
         handle: () => openDialog("reserve"),
@@ -280,6 +280,7 @@ const Certificate = () => {
       value={[filters.certificate_period_start, filters.certificate_period_end]}
       onChange={(dates) => handleDateChange(dates)}
       allowClear={false}
+      format="YYYY-MM-DD"
     />,
     <Select
       // mode="multiple"
@@ -305,12 +306,23 @@ const Certificate = () => {
       title: <span style={{ color: "#80868B" }}>Issuance ID</span>,
       dataIndex: "issuance_id",
       key: "issuance_id",
+      defaultSortOrder: "ascend",
+      sorter: {
+        compare: (a, b) =>
+          a.issuance_id.toString().localeCompare(b.issuance_id.toString()),
+        multiple: 1,
+      },
     },
     {
       title: <span style={{ color: "#80868B" }}>Device Name</span>,
       dataIndex: "device_id",
       key: "device_id",
       render: (id) => <span>{getDeviceName(id)}</span>,
+      sorter: {
+        compare: (a, b) =>
+          getDeviceName(a.device_id).localeCompare(getDeviceName(b.device_id)),
+        multiple: 2,
+      },
     },
     {
       title: <span style={{ color: "#80868B" }}>Energy Source</span>,
@@ -321,30 +333,60 @@ const Certificate = () => {
           {text.charAt(0).toUpperCase() + text.slice(1)}
         </span>
       ),
+      sorter: {
+        compare: (a, b) =>
+          a.energy_source
+            .toLowerCase()
+            .localeCompare(b.energy_source.toLowerCase()),
+        multiple: 3,
+      },
     },
     {
       title: <span style={{ color: "#80868B" }}>Certificate Period Start</span>,
       dataIndex: "production_starting_interval",
       key: "production_starting_interval",
       render: (text) => <span style={{ color: "#5F6368" }}>{text}</span>,
+      sorter: {
+        compare: (a, b) =>
+          new Date(a.production_starting_interval) -
+          new Date(b.production_starting_interval),
+        multiple: 4,
+      },
     },
     {
       title: <span style={{ color: "#80868B" }}>Certificate Period End</span>,
       dataIndex: "production_ending_interval",
       key: "production_ending_interval",
       render: (text) => <span style={{ color: "#5F6368" }}>{text}</span>,
+      sorter: {
+        compare: (a, b) =>
+          new Date(a.production_ending_interval) -
+          new Date(b.production_ending_interval),
+        multiple: 5,
+      },
     },
     {
       title: <span style={{ color: "#80868B" }}>Production (MWh)</span>,
       dataIndex: "bundle_quantity",
       key: "bundle_quantity",
-      render: (value) => (value / 1e6).toFixed(3), // Divides by 1,000,000 and shows 3 decimal places
+      render: (value) => (value / 1e6).toFixed(3),
+      sorter: {
+        compare: (a, b) => a.bundle_quantity - b.bundle_quantity,
+        multiple: 6,
+      },
     },
     {
       title: <span style={{ color: "#80868B" }}>Status</span>,
       dataIndex: "certificate_bundle_status",
       key: "certificate_bundle_status",
-      render: (status) => <StatusTag status={String(status || "")} />, // Ensure status is a string
+      render: (status) => <StatusTag status={String(status || "")} />,
+      sorter: {
+        compare: (a, b) =>
+          String(a.certificate_bundle_status).localeCompare(
+            String(b.certificate_bundle_status)
+          ),
+        multiple: 7,
+      },
     },
     {
       title: "",
@@ -362,96 +404,24 @@ const Certificate = () => {
     },
   ];
 
-  const summary = (
-    <>
-      {" "}
-      <Col span={8}>
-        <Card>
-          <Space align="start" size={16}>
-            <AppstoreOutlined
-              style={{
-                fontSize: "32px",
-                color: "#0057FF",
-                marginTop: "4px",
-              }}
-            />
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "4px",
-              }}
-            >
-              <h3 style={{ margin: 0, fontSize: "24px" }}>10293</h3>
-              <p style={{ margin: 0, color: "#5F6368" }}>Total Certificates</p>
-            </div>
-          </Space>
-        </Card>
-      </Col>
-      <Col span={8}>
-        <Card>
-          <Space align="start" size={16}>
-            <SwapOutlined
-              style={{
-                fontSize: "32px",
-                color: "#1890ff",
-                marginTop: "4px",
-              }}
-            />
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "4px",
-              }}
-            >
-              <h3 style={{ margin: 0, fontSize: "24px" }}>89</h3>
-              <p style={{ margin: 0, color: "#5F6368" }}>
-                Certificates Transferred
-              </p>
-            </div>
-          </Space>
-        </Card>
-      </Col>
-      <Col span={8}>
-        <Card>
-          <Space align="start" size={16}>
-            <CloseCircleOutlined
-              style={{
-                fontSize: "32px",
-                color: "#1890ff",
-                marginTop: "4px",
-              }}
-            />
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "4px",
-              }}
-            >
-              <h3 style={{ margin: 0, fontSize: "24px" }}>204</h3>
-              <p style={{ margin: 0, color: "#5F6368" }}>
-                Certificates Cancelled
-              </p>
-            </div>
-          </Space>
-        </Card>
-      </Col>
-    </>
-  );
+  // Add this memoized sorted certificates array
+  const sortedCertificates = useMemo(() => {
+    return [...certificates].sort((a, b) =>
+      a.issuance_id.toString().localeCompare(b.issuance_id.toString())
+    );
+  }, [certificates]);
 
   return (
     <>
       <FilterTable
-        summary={summary}
-        tableName="Transfer history"
+        summary={<Summary />}
+        tableName="Granular Certificate Bundles "
         columns={columns}
         filterComponents={filterComponents}
         tableActionBtns={btnList}
         defaultFilters={defaultFilters}
         filters={filters}
-        dataSource={certificates}
+        dataSource={sortedCertificates}
         fetchTableData={fetchCertificatesData}
         onRowsSelected={onSelectChange}
         handleApplyFilter={handleApplyFilter}

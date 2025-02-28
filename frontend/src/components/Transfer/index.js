@@ -1,14 +1,13 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import dayjs from "dayjs";
 import Cookies from "js-cookie";
+import * as styles from "../Certificate/Certificate.module.css";
 
-import { Button, Card, Col, Space, message, Select, DatePicker } from "antd";
+import { Button, Card, Col, Divider, message, Select, DatePicker } from "antd";
 
 import {
-  AppstoreOutlined,
   SwapOutlined,
   CloseOutlined,
-  CloseCircleOutlined,
   DownloadOutlined,
   LaptopOutlined,
   ThunderboltOutlined,
@@ -17,6 +16,9 @@ import {
 
 import "../../assets/styles/pagination.css";
 import "../../assets/styles/filter.css";
+import certificateTotal from "../../assets/images/certificate-total.png";
+import certificateTransferred from "../../assets/images/certificate-transferred.png";
+import certificateCancelled from "../../assets/images/certificate-cancelled.png";
 
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -29,18 +31,22 @@ import {
 import CertificateActionDialog from "../Certificate/CertificateActionDialog";
 import CertificateDetailDialog from "../Certificate/CertificateDetailDialog";
 
-import StatusTag from "../common/StatusTag";
+import StatusTag from "../Common/StatusTag";
 
-import FilterTable from "../common/FilterTable";
+import FilterTable from "../Common/FilterTable";
 
-import { CERTIFICATE_STATUS, ENERGY_SOURCE } from "../../enum";
+import {
+  CERTIFICATE_STATUS,
+  ENERGY_SOURCE,
+  DEVICE_TECHNOLOGY_TYPE,
+} from "../../enum";
 
-import { isEmpty } from "../../util";
+import { isEmpty } from "../../utils";
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
-const Certificate = () => {
+const Transfer = () => {
   const { currentAccount } = useAccount();
 
   const dispatch = useDispatch();
@@ -105,22 +111,22 @@ const Certificate = () => {
   }, [dialogAction]);
 
   useEffect(() => {
-    if (!currentAccount?.id) {
+    if (currentAccount && !currentAccount?.detail.id) {
       navigate("/login");
       return;
     }
   }, [currentAccount, navigate]);
 
-  const pageSize = 10;
-
   useEffect(() => {
-    if (!currentAccount?.id) return;
+    if (!currentAccount?.detail.id) return;
 
     fetchCertificatesData();
   }, [currentAccount, dispatch]);
 
   useEffect(() => {
-    if (isEmpty(filters) && !currentAccount?.id) fetchCertificatesData();
+    if (isEmpty(filters) && currentAccount?.detail.id) {
+      fetchCertificatesData();
+    }
   }, [filters]);
 
   useEffect(() => {
@@ -136,10 +142,19 @@ const Certificate = () => {
     setSelectedDevices(devices);
   }, [selectedRecords]);
 
+  // Get top 3 devices with the highest quantity in summary
+  // Convert object to array of [key, value] pairs, sort by value, and get top 3
+  const topThreeDevices = Object.entries(
+    currentAccount?.summary.num_devices_by_type || {}
+  )
+    .sort((a, b) => b[1] - a[1]) // Sort by value (second element of the array)
+    .slice(0, 3) // Get the top 3
+    .map(([type, count]) => ({ type, count })); // Convert back to an array of object
+
   const fetchCertificatesData = async () => {
     const fetchBody = {
       user_id: userInfo.userID,
-      source_id: currentAccount?.id,
+      source_id: currentAccount?.detail.id,
       device_id: filters.device_id,
       certificate_bundle_status:
         CERTIFICATE_STATUS[filters.certificate_bundle_status], // Transform status to match API expectations
@@ -181,11 +196,9 @@ const Certificate = () => {
     setFilters({});
   };
 
-  const totalPages = Math.ceil(certificates?.length / pageSize);
-
   const getDeviceName = (deviceID) => {
     return (
-      currentAccount?.devices.find((device) => deviceID === device.id)
+      currentAccount?.detail.devices.find((device) => deviceID === device.id)
         ?.device_name || `Device ${deviceID}`
     );
   };
@@ -228,7 +241,7 @@ const Certificate = () => {
         icon: <DownloadOutlined />,
         btnType: "primary",
         type: "reserve",
-        disabled: !isCertificatesSelected,
+        disabled: true,
         style: { height: "40px" },
         name: "Reserve",
         handle: () => openDialog("reserve"),
@@ -278,6 +291,7 @@ const Certificate = () => {
       value={[filters.certificate_period_start, filters.certificate_period_end]}
       onChange={(dates) => handleDateChange(dates)}
       allowClear={false}
+      format="YYYY-MM-DD"
     />,
     <Select
       // mode="multiple"
@@ -363,77 +377,62 @@ const Certificate = () => {
   const summary = (
     <>
       {" "}
-      <Col span={8}>
-        <Card>
-          <Space align="start" size={16}>
-            <AppstoreOutlined
-              style={{
-                fontSize: "32px",
-                color: "#0057FF",
-                marginTop: "4px",
-              }}
-            />
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "4px",
-              }}
-            >
-              <h3 style={{ margin: 0, fontSize: "24px" }}>10293</h3>
-              <p style={{ margin: 0, color: "#5F6368" }}>Total Certificates</p>
+      <Col span={12}>
+        <Card className={styles["card-wrapper"]}>
+          <div className={styles["card-body"]}>
+            <img className={styles["icon-img"]} src={certificateTotal} />
+            <div className={styles["information-container"]}>
+              <h3 className={styles["summary-value"]}>
+                {currentAccount?.summary.num_granular_certificate_bundles ||
+                  "0"}
+              </h3>
+              <p className={styles["summary-text"]}>Total Certificates</p>
             </div>
-          </Space>
+            <Divider
+              type="vertical"
+              style={{ height: "50px", margin: "0", color: "#DADCE0" }}
+            />
+            {topThreeDevices.map((deviceQuantity) => (
+              <div className={styles["top-device-container"]}>
+                <h3 className={styles["summary-value"]}>
+                  {deviceQuantity.count || "0"}
+                </h3>
+                <p className={styles["summary-text"]}>
+                  {DEVICE_TECHNOLOGY_TYPE[deviceQuantity.type.toUpperCase()]}
+                </p>
+              </div>
+            ))}
+          </div>
         </Card>
       </Col>
-      <Col span={8}>
-        <Card>
-          <Space align="start" size={16}>
-            <SwapOutlined
-              style={{
-                fontSize: "32px",
-                color: "#1890ff",
-                marginTop: "4px",
-              }}
-            />
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "4px",
-              }}
-            >
-              <h3 style={{ margin: 0, fontSize: "24px" }}>89</h3>
-              <p style={{ margin: 0, color: "#5F6368" }}>
-                Certificates Transferred
-              </p>
+      <Col span={6}>
+        <Card className={styles["card-wrapper"]}>
+          <div className={styles["card-body"]}>
+            <img className={styles["icon-img"]} src={certificateTransferred} />
+            <div className={styles["information-container"]}>
+              <h3 className={styles["summary-value"]}>
+                {Math.floor(
+                  currentAccount?.summary.num_granular_certificate_bundles *
+                    0.25
+                ) || "0"}
+              </h3>
+              <p className={styles["summary-text"]}>Certificates Transferred</p>
             </div>
-          </Space>
+          </div>
         </Card>
       </Col>
-      <Col span={8}>
-        <Card>
-          <Space align="start" size={16}>
-            <CloseCircleOutlined
-              style={{
-                fontSize: "32px",
-                color: "#1890ff",
-                marginTop: "4px",
-              }}
-            />
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "4px",
-              }}
-            >
-              <h3 style={{ margin: 0, fontSize: "24px" }}>204</h3>
-              <p style={{ margin: 0, color: "#5F6368" }}>
-                Certificates Cancelled
-              </p>
+      <Col span={6}>
+        <Card className={styles["card-wrapper"]}>
+          <div className={styles["card-body"]}>
+            <img className={styles["icon-img"]} src={certificateCancelled} />
+            <div className={styles["information-container"]}>
+              <h3 className={styles["summary-value"]}>
+                {currentAccount?.summary
+                  .num_cancelled_granular_certificate_bundles || "0"}
+              </h3>
+              <p className={styles["summary-text"]}>Certificates Cancelled</p>
             </div>
-          </Space>
+          </div>
         </Card>
       </Col>
     </>
@@ -478,4 +477,4 @@ const Certificate = () => {
   );
 };
 
-export default Certificate;
+export default Transfer;

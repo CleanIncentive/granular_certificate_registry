@@ -23,8 +23,9 @@ import { useNavigate } from "react-router-dom";
 
 import DeviceRegisterDialog from "./DeviceRegisterForm";
 import DeviceUploadDialog from "./DeviceUploadDataForm";
+import Summary from "./Summary";
 
-import FilterTable from "../common/FilterTable";
+import FilterTable from "../Common/FilterTable";
 
 const { Option } = Select;
 const { Search } = Input;
@@ -36,7 +37,7 @@ const Device = () => {
 
   const { userInfo } = useSelector((state) => state.user);
   const { currentAccount } = useAccount();
-  const devices = currentAccount?.devices || [];
+  const devices = currentAccount?.detail.devices || [];
 
   const interactAllowed =
     userInfo.role !== "TRADING_USER" && userInfo.role !== "AUDIT_USER";
@@ -46,8 +47,7 @@ const Device = () => {
     technology_type: null,
   };
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [filters, setFilters] = useState(defaultFilters);
+  const [filters, setFilters] = useState({});
   const [filteredDevices, setFiltersDevices] = useState(devices);
   const [searchKey, setSearchKey] = useState("");
 
@@ -71,10 +71,12 @@ const Device = () => {
       return;
     }
 
-    if (!currentAccount?.id) {
-      navigate("/login");
-      return;
-    }
+    // if (currentAccount && !currentAccount?.id) {
+    //   navigate("/login");
+    //   return;
+    // }
+
+    setFiltersDevices(devices)
   }, [currentAccount, devices, navigate]);
 
   const pageSize = 10;
@@ -108,37 +110,9 @@ const Device = () => {
   };
 
   const handleClearFilter = async () => {
-    setFilters(defaultFilters);
+    setFilters({});
     setSearchKey("");
     setFiltersDevices(devices);
-  };
-
-  const isEqual = (obj1, obj2) => {
-    return JSON.stringify(obj1) === JSON.stringify(obj2);
-  };
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const handlePrev = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleNext = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const handleNewDevice = (accountID) => {
-    console.log(`Creating new device for account ID ${accountID}`);
-  };
-
-  const handleDeviceDataUpload = (deviceID) => {
-    console.log(`Uploading data for device ${deviceID}`);
   };
 
   const openDialog = () => {
@@ -154,6 +128,7 @@ const Device = () => {
       title: <span style={{ color: "#80868B" }}>Device name & ID</span>,
       dataIndex: "device_name",
       key: "device_name",
+      sorter: (a, b) => a.device_name.localeCompare(b.device_name),
     },
     {
       title: <span style={{ color: "#80868B" }}>Technology type</span>,
@@ -163,18 +138,27 @@ const Device = () => {
         const upperKey = type?.toUpperCase().replace(/ /g, "_");
         return DEVICE_TECHNOLOGY_TYPE[upperKey] || type;
       },
+      sorter: (a, b) => {
+        // Sorting based on the raw value; adjust if needed
+        return a.technology_type?.localeCompare(b.technology_type) || 0;
+      },
     },
     {
       title: <span style={{ color: "#80868B" }}>Production start date</span>,
       dataIndex: "operational_date",
       key: "operational_date",
       render: (date) => (date ? dayjs(date).format("YYYY-MM-DD") : "-"),
+      sorter: (a, b) => {
+        // Convert dates to timestamps for comparison
+        return new Date(a.operational_date) - new Date(b.operational_date);
+      },
     },
     {
       title: <span style={{ color: "#80868B" }}>Device capacity (MW)</span>,
       dataIndex: "capacity",
       key: "capacity",
       render: (text) => <span style={{ color: "#5F6368" }}>{text}</span>,
+      sorter: (a, b) => a.capacity - b.capacity,
     },
     {
       title: <span style={{ color: "#80868B" }}>Location</span>,
@@ -239,86 +223,6 @@ const Device = () => {
     </Select>,
   ];
 
-  const summary = (
-    <>
-      <Col span={8}>
-        <Card>
-          <Space align="start" size={16}>
-            <AppstoreOutlined
-              style={{
-                fontSize: "32px",
-                color: "#0057FF",
-                marginTop: "4px",
-              }}
-            />
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "4px",
-              }}
-            >
-              <h3 style={{ margin: 0, fontSize: "24px" }}>7</h3>
-              <p style={{ margin: 0, color: "#5F6368" }}>Number of Devices</p>
-            </div>
-          </Space>
-        </Card>
-      </Col>
-      <Col span={8}>
-        <Card>
-          <Space align="start" size={16}>
-            <SwapOutlined
-              style={{
-                fontSize: "32px",
-                color: "#1890ff",
-                marginTop: "4px",
-              }}
-            />
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "4px",
-              }}
-            >
-              <h3 style={{ margin: 0, fontSize: "24px" }}>
-                Wind: 5, Solar PV: 2
-              </h3>
-              <p style={{ margin: 0, color: "#5F6368" }}>
-                Devices by Technology Type
-              </p>
-            </div>
-          </Space>
-        </Card>
-      </Col>
-      <Col span={8}>
-        <Card>
-          <Space align="start" size={16}>
-            <CloseCircleOutlined
-              style={{
-                fontSize: "32px",
-                color: "#1890ff",
-                marginTop: "4px",
-              }}
-            />
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "4px",
-              }}
-            >
-              <h3 style={{ margin: 0, fontSize: "24px" }}>600 MW</h3>
-              <p style={{ margin: 0, color: "#5F6368" }}>
-                Total Device Capacity
-              </p>
-            </div>
-          </Space>
-        </Card>
-      </Col>
-    </>
-  );
-
   const btnList = [
     {
       icon: <PlusCircleOutlined />,
@@ -334,7 +238,7 @@ const Device = () => {
     <>
       <Layout>
         <FilterTable
-          summary={summary}
+          summary={<Summary />}
           tableName="Device management"
           columns={columns}
           filterComponents={filterComponents}
@@ -344,6 +248,7 @@ const Device = () => {
           dataSource={filteredDevices}
           handleClearFilter={handleClearFilter}
           handleApplyFilter={handleApplyFilter}
+          isShowSelection={false}
         />
       </Layout>
       <DeviceRegisterDialog ref={deviceRegisterDialogRef} />

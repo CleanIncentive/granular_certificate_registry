@@ -81,7 +81,7 @@ const userSlice = createSlice({
       })
       .addCase(readCurrentUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error = action.payload;
         state.accounts = [];
         state.selectedAccount = null;
         state.userInfo = {

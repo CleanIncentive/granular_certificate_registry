@@ -12,7 +12,7 @@ import {
   transferCertificates,
   cancelCertificates,
 } from "../../store/certificate/certificateThunk.js";
-import { getCookies } from "../../util/index.js";
+import { getCookies } from "../../utils/index.js";
 
 const { Option } = Select;
 
@@ -30,7 +30,6 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
   const { userInfo } = useSelector((state) => state.user);
 
   const { currentAccount } = useAccount();
-  // const currentAccount = JSON.parse(getCookies("account_detail"));
   // Expose methods to the parent component
   useImperativeHandle(ref, () => ({
     openDialog: () => setVisible(true),
@@ -69,7 +68,7 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
               }}
               status={accountError ? "error" : undefined}
             >
-              {currentAccount?.whiteListInverse.map((account) => (
+              {currentAccount?.detail.whiteListInverse.map((account) => (
                 <Option value={account.id} key={account.id}>
                   {account.account_name}
                 </Option>
@@ -133,7 +132,7 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
 
     try {
       let apiBody = {
-        source_id: currentAccount?.id,
+        source_id: currentAccount?.detail.id,
         user_id: userInfo.userID,
         granular_certificate_bundle_ids: props.selectedRowKeys,
         localise_time: true,
