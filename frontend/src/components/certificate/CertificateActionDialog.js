@@ -25,6 +25,7 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
   const [quantity, setQuantity] = useState("");
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [beneficiary, setBeneficiary] = useState("");
+  const [accountError, setAccountError] = useState(false);
 
   const { userInfo } = useSelector((state) => state.user);
 
@@ -53,11 +54,20 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
       default:
         return (
           <div style={{ marginTop: "24px", marginBottom: "48px" }}>
-            <label>Destination account</label>
+            <label>
+              Destination account <span style={{ color: "red" }}>*</span>
+            </label>
             <Select
               value={selectedAccount}
-              onChange={(value) => setSelectedAccount(value)}
-              style={{ width: "100%" }}
+              onChange={(value) => {
+                setSelectedAccount(value);
+                setAccountError(false);
+              }}
+              style={{
+                width: "100%",
+                borderColor: accountError ? "red" : undefined,
+              }}
+              status={accountError ? "error" : undefined}
             >
               {currentAccount?.whiteListInverse.map((account) => (
                 <Option value={account.id} key={account.id}>
@@ -65,6 +75,11 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
                 </Option>
               ))}{" "}
             </Select>
+            {accountError && (
+              <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>
+                Please select a destination account
+              </div>
+            )}
           </div>
         );
         return;
@@ -73,10 +88,17 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
 
   const handleCancel = () => {
     setVisible(false);
+    setAccountError(false);
     props.updateCertificateActionDialog(null);
   };
 
   const handleOk = async () => {
+    // Check if destination account is selected for transfer action
+    if (props.dialogAction !== "cancel" && !selectedAccount) {
+      setAccountError(true);
+      return;
+    }
+
     // Parse the quantity and percentage values as float or return none
     const quantity_float_mwh = quantity ? parseFloat(quantity) : null;
     const percentage_float = percentage ? parseFloat(percentage) : null;
@@ -146,6 +168,7 @@ const TransferCertificatesDialog = forwardRef((props, ref) => {
       }
 
       setVisible(false); // Close the dialog after confirming
+      setAccountError(false);
       props.updateCertificateActionDialog(null);
       props.setSelectedRowKeys([]);
       message.success(

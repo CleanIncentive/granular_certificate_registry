@@ -42,8 +42,6 @@ baseAPI.interceptors.request.use(
         config.headers["X-CSRF-Token"] = csrfToken;
       }
     }
-
-    console.log(config.url, "Request Headers:", config.method, config.headers);
     return config;
   },
   (error) => Promise.reject(error)
