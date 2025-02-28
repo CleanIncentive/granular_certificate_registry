@@ -1,18 +1,11 @@
-import React, {
-  useState,
-  forwardRef,
-  useImperativeHandle,
-  useEffect,
-  useRef,
-} from "react";
-import { Modal, Button, Input, Select, Radio, message } from "antd";
+import React, { useState, forwardRef, useImperativeHandle } from "react";
+import { Modal, Input, Select, Radio, message } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { useAccount } from "../../context/AccountContext.js";
 import {
   transferCertificates,
   cancelCertificates,
 } from "../../store/certificate/certificateThunk.js";
-import { getCookies } from "../../utils/index.js";
 
 const { Option } = Select;
 

@@ -24,6 +24,7 @@ from gc_registry.core.models.base import CertificateActionType, UserRoles
 from gc_registry.core.services import create_bundle_hash
 from gc_registry.device.models import Device
 from gc_registry.device.services import map_device_to_certificate_read
+from gc_registry.logging_config import logger
 from gc_registry.user.models import User
 from gc_registry.user.validation import validate_user_access, validate_user_role
 
@@ -137,23 +138,28 @@ def query_certificate_bundles_route(
     validate_user_role(current_user, required_role=UserRoles.AUDIT_USER)
     validate_user_access(current_user, certificate_bundle_query.source_id, read_session)
 
-    certificate_bundles_from_query = services.query_certificate_bundles(
-        certificate_bundle_query, read_session
-    )
+    try:
+        certificate_bundles_from_query = services.query_certificate_bundles(
+            certificate_bundle_query, read_session
+        )
 
-    if not certificate_bundles_from_query:
-        raise HTTPException(status_code=404, detail="No certificates found")
+        if not certificate_bundles_from_query:
+            raise HTTPException(status_code=404, detail="No certificates found")
 
-    query_dict = certificate_bundle_query.model_dump()
+        query_dict = certificate_bundle_query.model_dump()
 
-    granular_certificate_bundles_read = [
-        GranularCertificateBundleRead.model_validate(certificate.model_dump())
-        for certificate in certificate_bundles_from_query
-    ]
+        granular_certificate_bundles_read = [
+            GranularCertificateBundleRead.model_validate(certificate.model_dump())
+            for certificate in certificate_bundles_from_query
+        ]
 
-    query_dict["granular_certificate_bundles"] = granular_certificate_bundles_read
+        query_dict["granular_certificate_bundles"] = granular_certificate_bundles_read
 
-    certificate_query = GranularCertificateQueryRead.model_validate(query_dict)
+        certificate_query = GranularCertificateQueryRead.model_validate(query_dict)
+
+    except Exception as e:
+        logger.error(f"Error querying GCs: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
 
     return certificate_query
 

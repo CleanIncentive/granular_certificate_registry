@@ -9,18 +9,22 @@ from fastapi.responses import FileResponse
 from sqlmodel import Session
 
 from gc_registry.authentication.services import get_current_user
-from gc_registry.certificate.models import IssuanceMetaData
-from gc_registry.certificate.services import issue_certificates_by_device_in_date_range
+from gc_registry.certificate.services import (
+    get_latest_issuance_metadata,
+    issue_certificates_by_device_in_date_range,
+)
 from gc_registry.core.database import db, events
 from gc_registry.core.models.base import UserRoles
 from gc_registry.device.meter_data.manual_submission import ManualSubmissionMeterClient
 from gc_registry.device.models import Device
+from gc_registry.logging_config import logger
 from gc_registry.measurement import models
 from gc_registry.user.models import User
 from gc_registry.user.validation import validate_user_access, validate_user_role
 
 # Router initialisation
 router = APIRouter(tags=["Measurements"])
+
 
 ### Device Meter Readings ###
 
@@ -63,8 +67,6 @@ async def submit_readings(
     a dialogue box that presents the user with the default metadata values, and allow
     them to edit them if desired at the point of issuance.
 
-    TODO: Implement issuance metadata workflow on front end.
-
     Args:
         file (UploadFile): The CSV file containing meter readings
         deviceID (int): The ID of the device the readings are for
@@ -84,6 +86,8 @@ async def submit_readings(
 
     # Check that the device ID is associated with an account that the user has access to
     device = Device.by_id(deviceID, read_session)
+
+    logger.info(f"Device: {device}")
 
     if not device:
         raise HTTPException(
@@ -110,51 +114,41 @@ async def submit_readings(
     # if no issuance metadata is in the database, create a default entry and link
     # issuance to that. This is where the values passed by the user will be attached
     # following an upstream process on the front end.
+
+    # TODO: Implement issuance metadata creation process linked to device
+    issuance_metadata = get_latest_issuance_metadata(read_session)
+
+    if not issuance_metadata:
+        raise HTTPException(status_code=404, detail="Could not find issuance metadata.")
+
     try:
-        issuance_metadata = IssuanceMetaData.by_id(1, read_session)
-    except HTTPException:
-        issuance_metadata_list = IssuanceMetaData.create(
-            {
-                "issue_market_zone": "UK",
-                "country_of_issuance": "UK",
-                "issuing_body": "OFGEM",
-                "connected_grid_identification": "UK",
-            },
-            write_session,
-            read_session,
-            esdb_client,
+        measurement_response = models.MeasurementSubmissionResponse(
+            message="Readings submitted successfully.",
+            total_device_usage=measurement_df["interval_usage"].astype(int).sum(),
+            first_reading_datetime=pd.to_datetime(
+                measurement_df["interval_start_datetime"].min(), utc=True
+            ),
+            last_reading_datetime=pd.to_datetime(
+                measurement_df["interval_start_datetime"].max(), utc=True
+            ),
         )
-        if not issuance_metadata_list:
-            raise HTTPException(
-                status_code=500, detail="Could not create issuance metadata."
-            )
-        issuance_metadata = issuance_metadata_list[0]  # type: ignore
-
-    issue_certificates_by_device_in_date_range(
-        device=device,
-        from_datetime=pd.to_datetime(
-            measurement_df["interval_start_datetime"].min(), utc=True
-        ),
-        to_datetime=pd.to_datetime(
-            measurement_df["interval_end_datetime"].max(), utc=True
-        ),
-        write_session=write_session,
-        read_session=read_session,
-        esdb_client=esdb_client,
-        issuance_metadata_id=issuance_metadata.id,
-        meter_data_client=meter_data_client,
-    )
-
-    measurement_response = models.MeasurementSubmissionResponse(
-        message="Readings submitted successfully.",
-        total_device_usage=measurement_df["interval_usage"].astype(int).sum(),
-        first_reading_datetime=pd.to_datetime(
-            measurement_df["interval_start_datetime"].min(), utc=True
-        ),
-        last_reading_datetime=pd.to_datetime(
-            measurement_df["interval_start_datetime"].max(), utc=True
-        ),
-    )
+        issue_certificates_by_device_in_date_range(
+            device=device,
+            from_datetime=pd.to_datetime(
+                measurement_df["interval_start_datetime"].min(), utc=True
+            ),
+            to_datetime=pd.to_datetime(
+                measurement_df["interval_end_datetime"].max(), utc=True
+            ),
+            write_session=write_session,
+            read_session=read_session,
+            esdb_client=esdb_client,
+            issuance_metadata_id=issuance_metadata.id,
+            meter_data_client=meter_data_client,
+        )
+    except Exception as e:
+        logger.error(f"Error issuing GCs: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Error issuing GCs: {str(e)}")
 
     return measurement_response
 

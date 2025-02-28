@@ -216,7 +216,7 @@ const Device = () => {
       allowClear
     >
       {Object.entries(DEVICE_TECHNOLOGY_TYPE).map(([key, value]) => (
-        <Option key={key} value={key}>
+        <Option key={key} value={key.toLocaleLowerCase()}>
           {value}
         </Option>
       ))}

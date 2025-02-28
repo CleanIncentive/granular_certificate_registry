@@ -12,6 +12,7 @@ from gc_registry.certificate.models import (
     GranularCertificateAction,
     GranularCertificateBundle,
     GranularCertificateBundleUpdate,
+    IssuanceMetaData,
 )
 from gc_registry.certificate.schemas import (
     CertificateStatus,
@@ -994,3 +995,23 @@ def reserve_certificates(
         certificate.update(certificate_update, write_session, read_session, esdb_client)
 
     return
+
+
+def get_latest_issuance_metadata(db_session: Session) -> IssuanceMetaData | None:
+    """Get the latest IssuanceMetaData based on created_at.
+
+    Args:
+        db_session (Session): The database session
+    Returns:
+        int: The latest issuance metadata object
+
+    """
+    stmt: SelectOfScalar = (
+        select(IssuanceMetaData).order_by(desc(IssuanceMetaData.created_at)).limit(1)
+    )
+    latest_issuance_metadata = db_session.exec(stmt).first()
+
+    if not latest_issuance_metadata:
+        return None
+    else:
+        return latest_issuance_metadata

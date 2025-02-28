@@ -30,7 +30,11 @@ from gc_registry.certificate.services import (
     split_certificate_bundle,
 )
 from gc_registry.certificate.validation import validate_granular_certificate_bundle
-from gc_registry.core.models.base import CertificateStatus
+from gc_registry.core.models.base import (
+    CertificateStatus,
+    DeviceTechnologyType,
+    EnergySourceType,
+)
 from gc_registry.device.meter_data.elexon.elexon import ElexonClient
 from gc_registry.device.meter_data.manual_submission import ManualSubmissionMeterClient
 from gc_registry.device.models import Device
@@ -217,8 +221,8 @@ class TestCertificateServices:
             "device_name": "Ratcliffe on Soar",
             "local_device_identifier": local_device_identifier,
             "grid": "National Grid",
-            "energy_source": "wind",
-            "technology_type": "wind",
+            "energy_source": EnergySourceType.wind,
+            "technology_type": DeviceTechnologyType.wind_turbine,
             "operational_date": str(datetime.datetime(2015, 1, 1, 0, 0, 0)),
             "capacity": device_capacities[local_device_identifier],
             "peak_demand": 100,
@@ -635,17 +639,17 @@ class TestCertificateServices:
 
         # create a new device
         device_dict: dict[Hashable, Any] = {
-            "device_name": "Ratcliffe on Soar",
+            "device_name": f"Generator {local_device_identifier}",
             "local_device_identifier": local_device_identifier,
-            "grid": "National Grid",
-            "energy_source": "wind",
-            "technology_type": "wind",
+            "energy_source": EnergySourceType.wind,
+            "technology_type": DeviceTechnologyType.wind_turbine,
             "operational_date": str(datetime.datetime(2015, 1, 1, 0, 0, 0)),
             "capacity": device_capacities[local_device_identifier] * W_IN_MW,
             "peak_demand": 100,
             "location": "Some Location",
             "account_id": fake_db_account.id,
             "is_storage": False,
+            "grid": "GB National Grid",
         }
         devices = Device.create(device_dict, write_session, read_session, esdb_client)
 

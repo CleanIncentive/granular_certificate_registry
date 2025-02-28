@@ -9,7 +9,11 @@ from gc_registry.core.database.cqrs import (
     update_database_entity,
     write_to_database,
 )
-from gc_registry.core.models.base import UserRoles
+from gc_registry.core.models.base import (
+    DeviceTechnologyType,
+    EnergySourceType,
+    UserRoles,
+)
 from gc_registry.device.models import Device, DeviceUpdate
 from gc_registry.user.models import User
 
@@ -28,8 +32,8 @@ class TestCQRS:
             "device_name": "fake_wind_device_2",
             "local_device_identifier": "XYZ-123",
             "grid": "fake_grid",
-            "energy_source": "wind",
-            "technology_type": "wind",
+            "energy_source": EnergySourceType.wind,
+            "technology_type": DeviceTechnologyType.wind_turbine,
             "capacity": 3000,
             "account_id": fake_db_account.id,
             "device_type": "wind",

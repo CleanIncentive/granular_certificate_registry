@@ -270,7 +270,7 @@ const Certificate = () => {
       allowClear
     >
       {Object.entries(ENERGY_SOURCE).map(([key, value]) => (
-        <Option key={key} value={key}>
+        <Option key={key} value={key.toLocaleLowerCase()}>
           {value}
         </Option>
       ))}
