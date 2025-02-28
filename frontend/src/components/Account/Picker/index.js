@@ -18,12 +18,10 @@ const AccountPicker = () => {
 
   const handleAccountSelection = async (account) => {
     try {
-      // Get account details and store them
       const accountDetail = await dispatch(
         getAccountDetails(account.id)
       ).unwrap();
       saveAccountDetail(accountDetail);
-      // Navigate based on account type or default to certificates
       navigate("/certificates");
     } catch (error) {
       console.error("Error selecting account:", error);

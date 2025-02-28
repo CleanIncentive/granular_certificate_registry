@@ -60,14 +60,21 @@ const Certificate = () => {
 
   const userInfo = JSON.parse(Cookies.get("user_data")).userInfo;
 
-  const deviceOptions = useMemo(
-    () =>
-      currentAccount?.detail.devices?.map((device) => ({
-        value: device.id,
-        label: device.device_name || `Device ${device.id}`,
-      })),
-    [currentAccount?.detail.devices]
-  );
+  const deviceOptions = useMemo(() => {
+    const allDevices = [
+      ...(currentAccount?.devices || []),
+      ...(currentAccount?.certificateDevices || []),
+    ];
+
+    const uniqueDevices = Array.from(
+      new Map(allDevices.map((device) => [device.id, device])).values()
+    );
+
+    return uniqueDevices.map((device) => ({
+      value: device.id,
+      label: device.device_name || `Device ${device.id}`,
+    }));
+  }, [currentAccount?.devices, currentAccount?.certificateDevices]);
 
   const today = dayjs();
   const one_week_ago = dayjs().subtract(30, "days");
@@ -96,12 +103,14 @@ const Certificate = () => {
     dialogRef.current.openDialog(); // Open the dialog from the parent component
   }, [dialogAction]);
 
-  // useEffect(() => {
-  //   if (!currentAccount?.id) {
-  //     navigate("/login");
-  //     return;
-  //   }
-  // }, [currentAccount, navigate]);
+  useEffect(() => {
+    if (!currentAccount?.id) {
+      navigate("/login");
+      return;
+    }
+  }, [currentAccount, navigate]);
+
+  const pageSize = 10;
 
   useEffect(() => {
     if (!currentAccount?.detail.id) return;
@@ -133,7 +142,7 @@ const Certificate = () => {
       source_id: currentAccount?.detail.id,
       device_id: filters.device_id,
       certificate_bundle_status:
-        CERTIFICATE_STATUS[filters.certificate_bundle_status], // Transform status to match API expectations
+        CERTIFICATE_STATUS[filters.certificate_bundle_status],
       certificate_period_start:
         filters.certificate_period_start?.format("YYYY-MM-DD"),
       certificate_period_end:
@@ -173,10 +182,14 @@ const Certificate = () => {
   };
 
   const getDeviceName = (deviceID) => {
-    return (
-      currentAccount?.detail.devices.find((device) => deviceID === device.id)
-        ?.device_name || `Device ${deviceID}`
-    );
+    const allDevices = [
+      ...(currentAccount?.devices || []),
+      ...(currentAccount?.certificateDevices || []),
+    ];
+
+    const device = allDevices.find((device) => deviceID === device.id);
+
+    return device?.device_name || `Device ${deviceID}`;
   };
 
   const handleDateChange = (dates) => {
@@ -293,10 +306,11 @@ const Certificate = () => {
       title: <span style={{ color: "#80868B" }}>Issuance ID</span>,
       dataIndex: "issuance_id",
       key: "issuance_id",
-      defaultSortOrder: 'ascend',
+      defaultSortOrder: "ascend",
       sorter: {
-        compare: (a, b) => a.issuance_id.toString().localeCompare(b.issuance_id.toString()),
-        multiple: 1
+        compare: (a, b) =>
+          a.issuance_id.toString().localeCompare(b.issuance_id.toString()),
+        multiple: 1,
       },
     },
     {
@@ -305,8 +319,9 @@ const Certificate = () => {
       key: "device_id",
       render: (id) => <span>{getDeviceName(id)}</span>,
       sorter: {
-        compare: (a, b) => getDeviceName(a.device_id).localeCompare(getDeviceName(b.device_id)),
-        multiple: 2
+        compare: (a, b) =>
+          getDeviceName(a.device_id).localeCompare(getDeviceName(b.device_id)),
+        multiple: 2,
       },
     },
     {
@@ -319,8 +334,11 @@ const Certificate = () => {
         </span>
       ),
       sorter: {
-        compare: (a, b) => a.energy_source.toLowerCase().localeCompare(b.energy_source.toLowerCase()),
-        multiple: 3
+        compare: (a, b) =>
+          a.energy_source
+            .toLowerCase()
+            .localeCompare(b.energy_source.toLowerCase()),
+        multiple: 3,
       },
     },
     {
@@ -329,8 +347,10 @@ const Certificate = () => {
       key: "production_starting_interval",
       render: (text) => <span style={{ color: "#5F6368" }}>{text}</span>,
       sorter: {
-        compare: (a, b) => new Date(a.production_starting_interval) - new Date(b.production_starting_interval),
-        multiple: 4
+        compare: (a, b) =>
+          new Date(a.production_starting_interval) -
+          new Date(b.production_starting_interval),
+        multiple: 4,
       },
     },
     {
@@ -339,8 +359,10 @@ const Certificate = () => {
       key: "production_ending_interval",
       render: (text) => <span style={{ color: "#5F6368" }}>{text}</span>,
       sorter: {
-        compare: (a, b) => new Date(a.production_ending_interval) - new Date(b.production_ending_interval),
-        multiple: 5
+        compare: (a, b) =>
+          new Date(a.production_ending_interval) -
+          new Date(b.production_ending_interval),
+        multiple: 5,
       },
     },
     {
@@ -350,7 +372,7 @@ const Certificate = () => {
       render: (value) => (value / 1e6).toFixed(3),
       sorter: {
         compare: (a, b) => a.bundle_quantity - b.bundle_quantity,
-        multiple: 6
+        multiple: 6,
       },
     },
     {
@@ -359,8 +381,11 @@ const Certificate = () => {
       key: "certificate_bundle_status",
       render: (status) => <StatusTag status={String(status || "")} />,
       sorter: {
-        compare: (a, b) => String(a.certificate_bundle_status).localeCompare(String(b.certificate_bundle_status)),
-        multiple: 7
+        compare: (a, b) =>
+          String(a.certificate_bundle_status).localeCompare(
+            String(b.certificate_bundle_status)
+          ),
+        multiple: 7,
       },
     },
     {
@@ -381,7 +406,7 @@ const Certificate = () => {
 
   // Add this memoized sorted certificates array
   const sortedCertificates = useMemo(() => {
-    return [...certificates].sort((a, b) => 
+    return [...certificates].sort((a, b) =>
       a.issuance_id.toString().localeCompare(b.issuance_id.toString())
     );
   }, [certificates]);

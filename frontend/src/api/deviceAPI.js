@@ -1,7 +1,8 @@
 import baseAPI from "./baseAPI";
 
-export const createDeviceAPI = (deviceData) =>
-  baseAPI.post("/device/create", deviceData);
+export const createDeviceAPI = (deviceData) => {
+  return baseAPI.post("/device/create", deviceData);
+};
 
 export const submitMeterReadingsAPI = (formData) => {
   return baseAPI.post("/measurement/submit_readings", formData, {
