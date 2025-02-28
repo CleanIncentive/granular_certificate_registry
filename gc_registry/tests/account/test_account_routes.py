@@ -114,12 +114,14 @@ class TestAccountRoutes:
         assert wind_device["local_device_identifier"] == "BMU-XYZ"
 
         # Test getting all devices by account ID that does not exist
+        incorrect_id = 999
         response = api_client.get(
-            "/account/999/devices",
+            f"/account/{incorrect_id}/devices",
             headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 404
-        assert response.json()["detail"] == "No devices found for account"
+        print(response.json())
+        assert response.json()["detail"] == f"Account with id {incorrect_id} not found"
 
     def test_get_account_summary(
         self,
