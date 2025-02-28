@@ -12,10 +12,7 @@ import {
   Typography,
 } from "antd";
 
-import {
-  LeftOutlined,
-  RightOutlined,
-} from "@ant-design/icons";
+import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 
 import { useDispatch } from "react-redux";
 
@@ -36,6 +33,7 @@ const FilterTable = ({
   onRowsSelected,
   handleApplyFilter,
   handleClearFilter,
+  isShowSelection = true,
 }) => {
   const dispatch = useDispatch();
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -143,7 +141,10 @@ const FilterTable = ({
         }}
         split={<Divider type="vertical" />}
       >
-        {filterComponents && filterComponents.map((component) => component)}
+        {filterComponents &&
+          filterComponents.map((component, index) => (
+            <div key={index}>{component}</div>
+          ))}
         {/* Apply Filter Button */}
         <Button
           type="link"
@@ -172,7 +173,7 @@ const FilterTable = ({
           fontWeight: "500",
           color: "#F9FAFB",
         }}
-        rowSelection={rowSelection}
+        rowSelection={isShowSelection && rowSelection}
         columns={columns}
         dataSource={dataSource?.slice(
           (currentPage - 1) * pageSize,

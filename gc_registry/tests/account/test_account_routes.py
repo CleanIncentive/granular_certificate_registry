@@ -114,12 +114,14 @@ class TestAccountRoutes:
         assert wind_device["local_device_identifier"] == "BMU-XYZ"
 
         # Test getting all devices by account ID that does not exist
+        incorrect_id = 999
         response = api_client.get(
-            "/account/999/devices",
+            f"/account/{incorrect_id}/devices",
             headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 404
-        assert response.json()["detail"] == "No devices found for account"
+        print(response.json())
+        assert response.json()["detail"] == f"Account with id {incorrect_id} not found"
 
     def test_get_account_summary(
         self,
@@ -221,6 +223,25 @@ class TestAccountRoutes:
 
         assert response.status_code == 200
         assert len(response.json()["granular_certificate_bundles"]) == 1
+
+    def test_list_all_account_certificate_devices(
+        self,
+        api_client: TestClient,
+        token: str,
+        fake_db_granular_certificate_bundle: GranularCertificateBundle,
+        fake_db_wind_device: Device,
+        fake_db_user: User,
+        fake_db_account: Account,
+    ):
+        response = api_client.get(
+            f"/account/{fake_db_account.id}/certificates/devices",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        print(response.json())
+        assert response.status_code == 200
+        assert len(response.json()) == 1
+        assert response.json()[0]["device_name"] == "fake_wind_device"
 
     def test_update_account_users(
         self,

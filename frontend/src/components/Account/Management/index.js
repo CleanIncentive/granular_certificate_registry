@@ -1,16 +1,29 @@
-import React from "react";
-import { Upload, Input, Select, Typography, Layout, Form, Avatar } from "antd";
+import React, { useEffect } from "react";
+import {
+  Layout,
+  Form,
+  Row,
+  Col,
+  Input,
+  Select,
+  Avatar,
+  Upload,
+  Typography,
+  Divider,
+} from "antd";
 import { UploadOutlined, UserOutlined } from "@ant-design/icons";
-import SideMenu from "../../common/SideMenu";
 import sampleAvatar from "../../../assets/images/sample-avatar.jpeg";
-import { useSelector } from "react-redux";
+import { useUser } from "../../../context/UserContext";
 
-const { Content, Header, Sider } = Layout;
-const { Title, Text } = Typography;
+const { Content } = Layout;
+const { Text } = Typography;
 const { Option } = Select;
 
 const AccountManagement = () => {
-  const { userInfo } = useSelector((state) => state.user);
+  const { userData } = useUser();
+  const [form] = Form.useForm();
+
+  // Helper to format user role (example)
   const formatUserRole = (userRole) => {
     switch (userRole) {
       case "TRADING":
@@ -22,72 +35,146 @@ const AccountManagement = () => {
     }
   };
 
+  useEffect(() => {
+    if (userData) {
+      const { username = "", email = "", role = "" } = userData.userInfo;
+      const nameParts = username.split(" ");
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts[1] || "";
+
+      form.setFieldsValue({
+        firstName,
+        lastName,
+        email,
+        role: formatUserRole(role),
+      });
+    }
+  }, [userData, form]);
+
   return (
-    <>
-        <Content style={{ margin: "24px" }}>
-          <Form
-            layout="vertical"
-            style={{ maxWidth: "100%" }}
-            initialValues={{
-              username: userInfo.username,
-              email: userInfo.email,
-              role: formatUserRole(userInfo.role),
-            }}
+    <Layout>
+      <Content
+        style={{
+          width: "100%",
+          padding: "24px",
+        }}
+      >
+        {/* FIRST NAME AND LAST NAME */}
+        <Form
+          form={form}
+          layout="horizontal"
+          labelCol={{
+            span: 8,
+            style: {
+              paddingRight: "16px",
+              display: "flex",
+              justifyContent: "flexStart",
+              color: "#3C4043",
+            },
+          }}
+          wrapperCol={{ span: 8 }}
+          colon={false} // This removes the colon after the label
+        >
+          <Form.Item label={<Text strong>Name</Text>} required>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="firstName"
+                  noStyle
+                  rules={[
+                    { required: true, message: "Please enter your first name" },
+                  ]}
+                >
+                  <Input placeholder="Olivia" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="lastName"
+                  noStyle
+                  rules={[
+                    { required: true, message: "Please enter your last name" },
+                  ]}
+                >
+                  <Input placeholder="Olivia" />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form.Item>
+          <Divider />
+
+          {/* EMAIL ADDRESS */}
+          <Form.Item
+            label={<Text strong>Email address</Text>}
+            name="email"
+            rules={[{ required: true, message: "Please enter your email" }]}
           >
-            {/* Name Fields */}
-            <Form.Item label="Name" name="username">
-              <Input placeholder="Olivia" />
-            </Form.Item>
+            <Input
+              prefix={<UserOutlined />}
+              placeholder="olivia@untitledui.com"
+            />
+          </Form.Item>
+          <Divider />
+          {/* PHOTO UPLOAD */}
+          <Form.Item
+            label={<Text strong>Your photo</Text>}
+            extra="This will be displayed on your profile."
+          >
+            <Row gutter={16} align="middle">
+              {/* Avatar Preview */}
+              <Col>
+                <Avatar
+                  size={64}
+                  src={sampleAvatar}
+                  style={{
+                    border: "2px solid #d9d9d9",
+                  }}
+                />
+              </Col>
 
-            {/* Email Address */}
-            <Form.Item label="Email address" name="email">
-              <Input
-                placeholder="olivia@untitledui.com"
-                prefix={<UserOutlined />}
-              />
-            </Form.Item>
-
-            {/* Profile Picture Upload */}
-            <Form.Item label="Your photo">
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "16px" }}
-              >
-                <Avatar size={64} src={sampleAvatar} />
-                <Upload showUploadList={false}>
-                  <div
-                    style={{
-                      border: "1px dashed #1890ff",
-                      padding: "20px",
-                      textAlign: "center",
-                      cursor: "pointer",
-                      width: "250px",
-                    }}
-                  >
-                    <UploadOutlined
-                      style={{ fontSize: "20px", color: "#1890ff" }}
-                    />
-                    <p style={{ marginBottom: "4px", color: "#1890ff" }}>
-                      Click to upload
-                    </p>
-                    <Text type="secondary">
-                      SVG, PNG, JPG, or GIF (max. 800×400px)
-                    </Text>
-                  </div>
-                </Upload>
-              </div>
-            </Form.Item>
-            {/* Role Selection */}
-            <Form.Item label="Role" name="role">
-              <Select>
-                <Option value="ADMIN">Admin</Option>
-                <Option value="PRODUCTION_USER">Production User</Option>
-                <Option value="TRADING_USER">Trading User</Option>
-                <Option value="AUDIT_USER">Audit User</Option>
-              </Select>
-            </Form.Item>
-          </Form>
-        </Content>
-      </>
+              {/* Upload Area (Drag and Drop) */}
+              <Col flex="auto">
+                <Upload.Dragger
+                  name="avatar"
+                  multiple={false}
+                  showUploadList={false}
+                  style={{
+                    borderRadius: 8,
+                    border: "1px dashed #d9d9d9",
+                    background: "#fafafa",
+                    padding: 20,
+                  }}
+                >
+                  <p className="ant-upload-drag-icon">
+                    <UploadOutlined style={{ fontSize: 24 }} />
+                  </p>
+                  <p className="ant-upload-text">
+                    Click to upload or drag and drop
+                  </p>
+                  <p className="ant-upload-hint">
+                    SVG, PNG, JPG, or GIF (max. 800×400px)
+                  </p>
+                </Upload.Dragger>
+              </Col>
+            </Row>
+          </Form.Item>
+          <Divider />
+          {/* ROLE SELECTION */}
+          <Form.Item
+            label={<Text strong>Role</Text>}
+            name="role"
+            rules={[{ required: true, message: "Please select a role" }]}
+          >
+            <Select placeholder="Select a role">
+              <Option value="Admin">Admin</Option>
+              <Option value="Production User">Production User</Option>
+              <Option value="Trading User">Trading User</Option>
+              <Option value="Audit User">Audit User</Option>
+            </Select>
+          </Form.Item>
+        </Form>
+      </Content>
+    </Layout>
   );
 };
 

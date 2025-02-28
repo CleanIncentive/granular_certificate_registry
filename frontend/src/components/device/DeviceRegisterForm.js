@@ -16,7 +16,7 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
   const [visible, setVisible] = useState(false);
   const [form] = Form.useForm();
 
-  const { currentAccount } = useAccount();
+  const { currentAccount, saveAccountDetail } = useAccount();
 
   useImperativeHandle(ref, () => ({
     openDialog: () => setVisible(true),
@@ -33,11 +33,14 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
       const values = await form.validateFields();
       values.location = `${values.location.latitude}, ${values.location.longitude}`;
       console.log("Device registration values:", values);
-      const resonse = await dispatch(
-        createDevice({ ...values, account_id: currentAccount.id })
+      const response = await dispatch(
+        createDevice({ ...values, account_id: currentAccount.detail.id })
       ).unwrap();
-      console.log("Create Device Response: ", resonse);
-      await dispatch(getAccountDetails(currentAccount.id)).unwrap();
+      console.log("Create Device Response: ", response);
+      const account = await dispatch(
+        getAccountDetails(currentAccount.detail.id)
+      ).unwrap();
+      saveAccountDetail(account);
       setVisible(false);
     } catch (error) {
       console.error("Validation failed:", error);
@@ -87,7 +90,7 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
         >
           <Select placeholder="Select...">
             {Object.entries(DEVICE_TECHNOLOGY_TYPE).map(([key, value]) => (
-              <Option key={key} value={key.toLocaleLowerCase()}>
+              <Option key={key} value={key}>
                 {value}
               </Option>
             ))}
@@ -101,7 +104,7 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
         >
           <Select placeholder="Select...">
             {Object.entries(ENERGY_SOURCE).map(([key, value]) => (
-              <Option key={key} value={key.toLocaleLowerCase()}>
+              <Option key={key} value={key}>
                 {value}
               </Option>
             ))}

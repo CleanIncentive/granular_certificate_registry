@@ -6,6 +6,7 @@ from sqlmodel.sql.expression import SelectOfScalar
 from gc_registry.account.models import Account
 from gc_registry.account.schemas import AccountRead, AccountUpdate
 from gc_registry.certificate.models import GranularCertificateBundle
+from gc_registry.certificate.schemas import CertificateStatus
 from gc_registry.user.models import UserAccountLink
 from gc_registry.user.services import get_users_by_account_id
 
@@ -52,6 +53,16 @@ def get_account_summary(account: Account, read_session: Session) -> dict:
     if not num_granular_certificate_bundles:
         num_granular_certificate_bundles = 0
 
+    num_cancelled_granular_certificate_bundles = read_session.exec(
+        select(func.count(GranularCertificateBundle.id)).where(
+            GranularCertificateBundle.account_id == account.id,
+            GranularCertificateBundle.certificate_bundle_status == CertificateStatus.CANCELLED
+        )
+    ).first()
+
+    if not num_cancelled_granular_certificate_bundles:
+        num_cancelled_granular_certificate_bundles = 0
+
     total_certificate_energy = read_session.exec(
         select(func.sum(GranularCertificateBundle.bundle_quantity)).where(
             GranularCertificateBundle.account_id == account.id
@@ -78,6 +89,7 @@ def get_account_summary(account: Account, read_session: Session) -> dict:
         "num_devices_by_type": num_devices_by_type,
         "device_capacity_by_type": device_capacity_by_type,
         "num_granular_certificate_bundles": num_granular_certificate_bundles,
+        "num_cancelled_granular_certificate_bundles": num_cancelled_granular_certificate_bundles,
         "total_certificate_energy": total_certificate_energy,
         "energy_by_fuel_type": energy_by_fuel_type,
     }

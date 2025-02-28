@@ -32,7 +32,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.(js|jsx)$/,
         exclude: /node_modules/,
         use: {
           loader: "babel-loader",
@@ -76,6 +76,10 @@ module.exports = {
         test: /\.(png|jpe?g|gif|svg)$/,
         type: "asset/resource",
       },
+      {
+        test: /\.svg$/,
+        use: ['@svgr/webpack'],
+      }
     ],
   },
 
@@ -106,12 +110,14 @@ module.exports = {
     },
     historyApiFallback: true,
     compress: true,
-    port: 9000,
+    port: 8080,
+    host: '0.0.0.0',
     open: true,
     hot: true,
   },
 
   resolve: {
     extensions: [".js", ".jsx"],
+    mainFiles: ['index'],
   },
 };

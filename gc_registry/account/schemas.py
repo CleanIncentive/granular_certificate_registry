@@ -32,6 +32,7 @@ class AccountSummary(BaseModel):
     num_devices_by_type: dict[str, int] | None = None
     device_capacity_by_type: dict[str, int] | None = None
     num_granular_certificate_bundles: int
+    num_cancelled_granular_certificate_bundles: int
     total_certificate_energy: int
     energy_by_fuel_type: dict[str, int] | None = None
 

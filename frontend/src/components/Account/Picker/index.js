@@ -3,7 +3,7 @@ import { Typography, Space, Divider } from "antd";
 import * as styles from "./AccountPicker.module.css";
 import addUserBtn from "../../../assets/images/add-user-btn.png";
 import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useAccount } from "../../../context/AccountContext";
 import { getAccountDetails } from "../../../store/account/accountThunk";
 import Cookies from "js-cookie";
@@ -18,12 +18,10 @@ const AccountPicker = () => {
 
   const handleAccountSelection = async (account) => {
     try {
-      // Get account details and store them
       const accountDetail = await dispatch(
         getAccountDetails(account.id)
       ).unwrap();
       saveAccountDetail(accountDetail);
-      // Navigate based on account type or default to certificates
       navigate("/certificates");
     } catch (error) {
       console.error("Error selecting account:", error);

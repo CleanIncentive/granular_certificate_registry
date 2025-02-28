@@ -22,27 +22,23 @@ import { login } from "../../store/auth/authThunk";
 import { readCurrentUser } from "../../store/user/userThunk";
 
 import { useNavigate } from "react-router-dom";
-import { useAccount } from "../../context/AccountContext";
+import { useUser } from "../../context/UserContext";
 
 const Login = () => {
   const [username, setUsername] = useState("");
-  const [role, setRole] = useState("");
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { saveUserData } = useUser();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await dispatch(login({ username, password })).unwrap();
       const userData = await dispatch(readCurrentUser()).unwrap();
-
+      saveUserData(userData);
       message.success("Login successful 🎉", 2);
-      if (userData.accounts.length > 1) {
-        navigate("/account-picker");
-      } else {
-        navigate("/certificates");
-      }
+      navigate("/account-picker");
     } catch (error) {
       message.error(`Login failed: ${error}`, 3);
     }
