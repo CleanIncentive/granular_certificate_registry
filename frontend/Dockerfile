@@ -2,28 +2,19 @@ FROM node:20-bullseye-slim
 
 WORKDIR /app
 
-# ENV REACT_APP_API_URL=https://api-dot-rich-store-445612-c6.ew.r.appspot.com
+ENV REACT_APP_API_URL=https://api-dot-rich-store-445612-c6.ew.r.appspot.com
 
-# Accept build argument for NODE_ENV
-ARG NODE_ENV
-ENV NODE_ENV=$NODE_ENV
-
-# Copy only package files first
-COPY package*.json ./                   
-
-# Install ALL dependencies (including dev) when in development mode
-RUN if [ "$NODE_ENV" = "development" ] ; then \
-        npm install --include=dev ; \
-    else \
-        npm install --omit=dev ; \
-    fi
-
-RUN npm install -g webpack webpack-cli webpack-dev-server
-
+COPY ./package.json ./package.json 
+COPY ./package-lock.json ./package-lock.json 
 COPY ./webpack.config.js ./webpack.config.js
-COPY ./src ./src   
+COPY ./src ./src                      
 
-# Add volume mounting point
-VOLUME ["/app/src"]
+RUN npm install
+
+RUN npm run build
 
 EXPOSE 8080
+
+RUN npm install -g serve
+
+CMD ["serve", "-s", "dist", "-l", "8080"]
