@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 from sqlmodel.sql.expression import SelectOfScalar
 
-from gc_registry.certificate.models import GranularCertificateBundle
+from gc_registry.certificate.models import GranularCertificateBundle, IssuanceMetaData
 from gc_registry.device.models import Device
 
 
@@ -25,6 +25,7 @@ def test_submit_readings_success(
     token: str,
     valid_measurement_csv: str,
     fake_db_solar_device: Device,
+    fake_db_issuance_metadata: IssuanceMetaData,
     read_session: Session,
 ):
     """Test successful submission of readings."""

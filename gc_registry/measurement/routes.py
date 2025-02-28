@@ -9,8 +9,10 @@ from fastapi.responses import FileResponse
 from sqlmodel import Session
 
 from gc_registry.authentication.services import get_current_user
-from gc_registry.certificate.models import IssuanceMetaData
-from gc_registry.certificate.services import issue_certificates_by_device_in_date_range
+from gc_registry.certificate.services import (
+    get_latest_issuance_metadata,
+    issue_certificates_by_device_in_date_range,
+)
 from gc_registry.core.database import db, events
 from gc_registry.core.models.base import UserRoles
 from gc_registry.device.meter_data.manual_submission import ManualSubmissionMeterClient
@@ -114,7 +116,7 @@ async def submit_readings(
     # following an upstream process on the front end.
 
     # TODO: Implement issuance metadata creation process linked to device
-    issuance_metadata = IssuanceMetaData.by_id(1, read_session)
+    issuance_metadata = get_latest_issuance_metadata(read_session)
 
     if not issuance_metadata:
         raise HTTPException(status_code=404, detail="Could not find issuance metadata.")

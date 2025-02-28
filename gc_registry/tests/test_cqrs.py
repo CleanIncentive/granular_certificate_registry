@@ -9,7 +9,11 @@ from gc_registry.core.database.cqrs import (
     update_database_entity,
     write_to_database,
 )
-from gc_registry.core.models.base import DeviceTechnologyType, EnergySourceType, UserRoles
+from gc_registry.core.models.base import (
+    DeviceTechnologyType,
+    EnergySourceType,
+    UserRoles,
+)
 from gc_registry.device.models import Device, DeviceUpdate
 from gc_registry.user.models import User
 
