@@ -14,21 +14,26 @@ export const getAccountDetails = createAsyncThunk(
     try {
       const [
         accountResponse,
+        accountSummaryResponse,
         devicesResponse,
         certificatesDevicesResponse,
         whiteListResponse,
       ] = await Promise.all([
         getAccountAPI(accountId),
+        getAccountSummaryAPI(accountId),
         getAccountDevicesAPI(accountId),
         getAccountCertificatesDevicesAPI(accountId),
         getAccountWhitelistInverseAPI(accountId),
       ]);
 
       const accountDetail = {
-        ...accountResponse.data,
-        devices: devicesResponse.data,
-        certificateDevices: certificatesDevicesResponse.data,
-        whiteListInverse: whiteListResponse.data,
+        detail: {
+          ...accountResponse.data,
+          devices: devicesResponse.data,
+          certificateDevices: certificatesDevicesResponse.data,
+          whiteListInverse: whiteListResponse.data,
+        },
+        summary: accountSummaryResponse.data,
       };
       return accountDetail;
     } catch (error) {

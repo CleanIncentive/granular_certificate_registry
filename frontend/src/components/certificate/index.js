@@ -28,9 +28,9 @@ import CertificateActionDialog from "./CertificateActionDialog";
 import CertificateDetailDialog from "./CertificateDetailDialog";
 import Summary from "./Summary";
 
-import StatusTag from "../Common/StatusTag";
+import StatusTag from "../common/StatusTag";
 
-import FilterTable from "../Common/FilterTable";
+import FilterTable from "../common/FilterTable";
 
 import { CERTIFICATE_STATUS, ENERGY_SOURCE } from "../../enum";
 
@@ -104,13 +104,11 @@ const Certificate = () => {
   }, [dialogAction]);
 
   useEffect(() => {
-    if (!currentAccount?.id) {
+    if (!currentAccount?.detail?.id) {
       navigate("/login");
       return;
     }
   }, [currentAccount, navigate]);
-
-  const pageSize = 10;
 
   useEffect(() => {
     if (!currentAccount?.detail.id) return;

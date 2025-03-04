@@ -25,7 +25,7 @@ import DeviceRegisterDialog from "./DeviceRegisterForm";
 import DeviceUploadDialog from "./DeviceUploadDataForm";
 import Summary from "./Summary";
 
-import FilterTable from "../Common/FilterTable";
+import FilterTable from "../common/FilterTable";
 
 const { Option } = Select;
 const { Search } = Input;
@@ -76,7 +76,7 @@ const Device = () => {
     //   return;
     // }
 
-    setFiltersDevices(devices)
+    setFiltersDevices(devices);
   }, [currentAccount, devices, navigate]);
 
   const pageSize = 10;
