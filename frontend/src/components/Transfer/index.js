@@ -69,9 +69,11 @@ const Transfer = () => {
 
   const deviceOptions = useMemo(() => {
     const allDevices = [
-      ...(currentAccount?.devices || []),
-      ...(currentAccount?.certificateDevices || []),
+      ...(currentAccount?.detail?.devices || []),
+      ...(currentAccount?.detail?.certificateDevices || []),
     ];
+
+    console.log("all DEVICES", allDevices);
 
     const uniqueDevices = Array.from(
       new Map(allDevices.map((device) => [device.id, device])).values()
@@ -81,7 +83,10 @@ const Transfer = () => {
       value: device.id,
       label: device.device_name || `Device ${device.id}`,
     }));
-  }, [currentAccount?.devices, currentAccount?.certificateDevices]);
+  }, [
+    currentAccount?.detail?.devices,
+    currentAccount?.detail?.certificateDevices,
+  ]);
 
   const today = dayjs();
   const one_week_ago = dayjs().subtract(30, "days");
