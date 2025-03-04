@@ -104,8 +104,8 @@ const Certificate = () => {
   useEffect(() => {
     setFilters((prevFilters) => ({
       ...prevFilters,
-      certificate_period_start: one_week_ago,
-      certificate_period_end: today,
+      certificate_period_start: one_month_ago,
+      certificate_period_end: maxBundlePeriodStart,
     }));
   }, []);
 

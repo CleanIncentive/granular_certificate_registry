@@ -89,13 +89,13 @@ const Transfer = () => {
   ]);
 
   const today = dayjs();
-  const one_week_ago = dayjs().subtract(30, "days");
+  const one_month_ago = dayjs().subtract(30, "days");
 
   const defaultFilters = {
     device_id: null,
     energy_source: null,
     certificate_bundle_status: CERTIFICATE_STATUS.active,
-    certificate_period_start: dayjs(one_week_ago),
+    certificate_period_start: dayjs(one_month_ago),
     certificate_period_end: dayjs(today),
   };
 
@@ -104,7 +104,7 @@ const Transfer = () => {
   useEffect(() => {
     setFilters((prevFilters) => ({
       ...prevFilters,
-      certificate_period_start: one_week_ago,
+      certificate_period_start: one_month_ago,
       certificate_period_end: today,
     }));
   }, []);
