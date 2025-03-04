@@ -31,8 +31,17 @@ export const saveDataToSessionStorage = (key, data) => {
 
 // Get data from sessionStorage
 export const getSessionStorage = (key) => {
-  const data = sessionStorage.getItem(key);
-  return data ? JSON.parse(data) : null; // Parse the JSON data back to object
+  try {
+    const data = sessionStorage.getItem(key);
+    // Only parse if data exists and isn't the string "undefined"
+    if (data && data !== "undefined") {
+      return JSON.parse(data);
+    }
+    return null;
+  } catch (error) {
+    console.error(`Error parsing session storage for key ${key}:`, error);
+    return null;
+  }
 };
 
 // Remove data from sessionStorage

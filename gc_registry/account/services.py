@@ -56,7 +56,8 @@ def get_account_summary(account: Account, read_session: Session) -> dict:
     num_cancelled_granular_certificate_bundles = read_session.exec(
         select(func.count(GranularCertificateBundle.id)).where(
             GranularCertificateBundle.account_id == account.id,
-            GranularCertificateBundle.certificate_bundle_status == CertificateStatus.CANCELLED
+            GranularCertificateBundle.certificate_bundle_status
+            == CertificateStatus.CANCELLED,
         )
     ).first()
 

@@ -31,9 +31,9 @@ import {
 import CertificateActionDialog from "../Certificate/CertificateActionDialog";
 import CertificateDetailDialog from "../Certificate/CertificateDetailDialog";
 
-import StatusTag from "../Common/StatusTag";
+import StatusTag from "../common/StatusTag";
 
-import FilterTable from "../Common/FilterTable";
+import FilterTable from "../common/FilterTable";
 
 import {
   CERTIFICATE_STATUS,
@@ -69,9 +69,11 @@ const Transfer = () => {
 
   const deviceOptions = useMemo(() => {
     const allDevices = [
-      ...(currentAccount?.devices || []),
-      ...(currentAccount?.certificateDevices || []),
+      ...(currentAccount?.detail?.devices || []),
+      ...(currentAccount?.detail?.certificateDevices || []),
     ];
+
+    console.log("all DEVICES", allDevices);
 
     const uniqueDevices = Array.from(
       new Map(allDevices.map((device) => [device.id, device])).values()
@@ -81,16 +83,19 @@ const Transfer = () => {
       value: device.id,
       label: device.device_name || `Device ${device.id}`,
     }));
-  }, [currentAccount?.devices, currentAccount?.certificateDevices]);
+  }, [
+    currentAccount?.detail?.devices,
+    currentAccount?.detail?.certificateDevices,
+  ]);
 
   const today = dayjs();
-  const one_week_ago = dayjs().subtract(30, "days");
+  const one_month_ago = dayjs().subtract(30, "days");
 
   const defaultFilters = {
     device_id: null,
     energy_source: null,
     certificate_bundle_status: CERTIFICATE_STATUS.active,
-    certificate_period_start: dayjs(one_week_ago),
+    certificate_period_start: dayjs(one_month_ago),
     certificate_period_end: dayjs(today),
   };
 
@@ -99,7 +104,7 @@ const Transfer = () => {
   useEffect(() => {
     setFilters((prevFilters) => ({
       ...prevFilters,
-      certificate_period_start: one_week_ago,
+      certificate_period_start: one_month_ago,
       certificate_period_end: today,
     }));
   }, []);

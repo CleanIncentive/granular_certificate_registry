@@ -7,7 +7,7 @@ import Cookies from "js-cookie";
 
 import { Layout, Typography } from "antd";
 
-import SideMenu from "../../components/Common/SideMenu";
+import SideMenu from "../../components/common/SideMenu";
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;

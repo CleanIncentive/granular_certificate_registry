@@ -90,7 +90,7 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
         >
           <Select placeholder="Select...">
             {Object.entries(DEVICE_TECHNOLOGY_TYPE).map(([key, value]) => (
-              <Option key={key} value={key}>
+              <Option key={key} value={key.toLocaleLowerCase()}>
                 {value}
               </Option>
             ))}
@@ -104,7 +104,7 @@ const DeviceRegisterDialog = forwardRef((props, ref) => {
         >
           <Select placeholder="Select...">
             {Object.entries(ENERGY_SOURCE).map(([key, value]) => (
-              <Option key={key} value={key}>
+              <Option key={key} value={key.toLocaleLowerCase()}>
                 {value}
               </Option>
             ))}

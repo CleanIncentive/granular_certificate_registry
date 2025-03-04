@@ -28,9 +28,9 @@ import CertificateActionDialog from "./CertificateActionDialog";
 import CertificateDetailDialog from "./CertificateDetailDialog";
 import Summary from "./Summary";
 
-import StatusTag from "../Common/StatusTag";
+import StatusTag from "../common/StatusTag";
 
-import FilterTable from "../Common/FilterTable";
+import FilterTable from "../common/FilterTable";
 
 import { CERTIFICATE_STATUS, ENERGY_SOURCE } from "../../enum";
 
@@ -62,8 +62,8 @@ const Certificate = () => {
 
   const deviceOptions = useMemo(() => {
     const allDevices = [
-      ...(currentAccount?.devices || []),
-      ...(currentAccount?.certificateDevices || []),
+      ...(currentAccount?.detail?.devices || []),
+      ...(currentAccount?.detail?.certificateDevices || []),
     ];
 
     const uniqueDevices = Array.from(
@@ -74,17 +74,29 @@ const Certificate = () => {
       value: device.id,
       label: device.device_name || `Device ${device.id}`,
     }));
-  }, [currentAccount?.devices, currentAccount?.certificateDevices]);
+  }, [
+    currentAccount?.detail?.devices,
+    currentAccount?.detail?.certificateDevices,
+  ]);
 
-  const today = dayjs();
-  const one_week_ago = dayjs().subtract(30, "days");
+  // get max bundle period start from the certificates
+  const maxBundlePeriodStart = useMemo(() => {
+    return certificates.reduce((max, certificate) => {
+      const certificatePeriodStart = dayjs(
+        certificate.production_starting_interval
+      );
+      return certificatePeriodStart.isAfter(max) ? certificatePeriodStart : max;
+    }, dayjs().subtract(30, "days"));
+  }, [certificates]);
+
+  const one_month_ago = maxBundlePeriodStart.subtract(30, "days");
 
   const defaultFilters = {
     device_id: null,
     energy_source: null,
     certificate_bundle_status: CERTIFICATE_STATUS.active,
-    certificate_period_start: dayjs(one_week_ago),
-    certificate_period_end: dayjs(today),
+    certificate_period_start: dayjs(one_month_ago),
+    certificate_period_end: dayjs(maxBundlePeriodStart),
   };
 
   const [filters, setFilters] = useState(defaultFilters);
@@ -92,8 +104,8 @@ const Certificate = () => {
   useEffect(() => {
     setFilters((prevFilters) => ({
       ...prevFilters,
-      certificate_period_start: one_week_ago,
-      certificate_period_end: today,
+      certificate_period_start: one_month_ago,
+      certificate_period_end: maxBundlePeriodStart,
     }));
   }, []);
 
@@ -104,13 +116,11 @@ const Certificate = () => {
   }, [dialogAction]);
 
   useEffect(() => {
-    if (!currentAccount?.id) {
+    if (!currentAccount?.detail?.id) {
       navigate("/login");
       return;
     }
   }, [currentAccount, navigate]);
-
-  const pageSize = 10;
 
   useEffect(() => {
     if (!currentAccount?.detail.id) return;
@@ -183,8 +193,8 @@ const Certificate = () => {
 
   const getDeviceName = (deviceID) => {
     const allDevices = [
-      ...(currentAccount?.devices || []),
-      ...(currentAccount?.certificateDevices || []),
+      ...(currentAccount?.detail?.devices || []),
+      ...(currentAccount?.detail?.certificateDevices || []),
     ];
 
     const device = allDevices.find((device) => deviceID === device.id);
