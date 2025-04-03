@@ -23,6 +23,7 @@ import { readCurrentUser } from "../../store/user/userThunk";
 
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
+import baseAPI from "../../api/baseAPI";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -34,13 +35,19 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Fetch CSRF token first
+      await baseAPI.get("/csrf-token");
+      
+      // Then attempt login
       await dispatch(login({ username, password })).unwrap();
       const userData = await dispatch(readCurrentUser()).unwrap();
       saveUserData(userData);
       message.success("Login successful 🎉", 2);
       navigate("/account-picker");
     } catch (error) {
-      message.error(`Login failed: ${error}`, 3);
+      console.error("Login error:", error);
+      const errorMessage = error?.message || error?.detail || "An unexpected error occurred";
+      message.error(`Login failed: ${errorMessage}`, 3);
     }
   };
   return (
@@ -133,7 +140,7 @@ const Login = () => {
                     color: "#5F6368",
                   }}
                 >
-                  Don’t have an account?
+                  Don't have an account?
                 </Divider>
                 <Text>
                   <Link

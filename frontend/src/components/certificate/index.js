@@ -81,33 +81,41 @@ const Certificate = () => {
 
   // get max bundle period start from the certificates
   const maxBundlePeriodStart = useMemo(() => {
+    if (certificates.length === 0) {
+      return dayjs(); // Use current date if no certificates
+    }
     return certificates.reduce((max, certificate) => {
       const certificatePeriodStart = dayjs(
         certificate.production_starting_interval
       );
       return certificatePeriodStart.isAfter(max) ? certificatePeriodStart : max;
-    }, dayjs().subtract(30, "days"));
+    }, dayjs().subtract(1, "year")); // Default to 1 year ago if no certificates
   }, [certificates]);
 
+  // Calculate the start date to be 30 days before the max period start
   const one_month_ago = maxBundlePeriodStart.subtract(30, "days");
 
   const defaultFilters = {
     device_id: null,
     energy_source: null,
     certificate_bundle_status: CERTIFICATE_STATUS.active,
-    certificate_period_start: dayjs(one_month_ago),
-    certificate_period_end: dayjs(maxBundlePeriodStart),
+    certificate_period_start: one_month_ago,
+    certificate_period_end: maxBundlePeriodStart,
   };
 
   const [filters, setFilters] = useState(defaultFilters);
 
   useEffect(() => {
+    // Ensure the initial date range is within 30 days
+    const startDate = one_month_ago;
+    const endDate = maxBundlePeriodStart;
+    
     setFilters((prevFilters) => ({
       ...prevFilters,
-      certificate_period_start: one_month_ago,
-      certificate_period_end: maxBundlePeriodStart,
+      certificate_period_start: startDate,
+      certificate_period_end: endDate,
     }));
-  }, []);
+  }, [one_month_ago, maxBundlePeriodStart]);
 
   useEffect(() => {
     if (!dialogAction) return;
@@ -203,11 +211,33 @@ const Certificate = () => {
   };
 
   const handleDateChange = (dates) => {
-    setFilters((prev) => ({
-      ...prev,
-      certificate_period_start: dates[0],
-      certificate_period_end: dates[1],
-    }));
+    if (!dates) {
+      setFilters((prev) => ({
+        ...prev,
+        certificate_period_start: null,
+        certificate_period_end: null,
+      }));
+      return;
+    }
+
+    const [start, end] = dates;
+    const daysDiff = end.diff(start, 'days');
+
+    if (daysDiff > 30) {
+      // If more than 30 days, adjust the end date to be 30 days from start
+      const adjustedEnd = start.add(30, 'days');
+      setFilters((prev) => ({
+        ...prev,
+        certificate_period_start: start,
+        certificate_period_end: adjustedEnd,
+      }));
+    } else {
+      setFilters((prev) => ({
+        ...prev,
+        certificate_period_start: start,
+        certificate_period_end: end,
+      }));
+    }
   };
 
   const onSelectChange = (newSelectedRowKeys, newSelectedRows) => {

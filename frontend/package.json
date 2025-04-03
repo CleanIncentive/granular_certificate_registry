@@ -1,7 +1,7 @@
 {
   "name": "gc_registry",
   "version": "1.0.0",
-  "description": "Open source, granular certificate registry demo created by Future Energy Associates.",
+  "description": "Open source, granular certificate registry demo created by Future Energy Associates. Fork maintained by Clean Incentive.",
   "main": "index.js",
   "scripts": {
     "test": "test",
@@ -9,8 +9,12 @@
     "dev": "cross-env NODE_ENV=development webpack serve",
     "build": "cross-env NODE_ENV=production webpack"
   },
-  "author": "Connor Galbraith",
-  "license": "MIT",
+  "author": "Connor Galbraith (Original) | Clean Incentive (Fork)",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CleanIncentive/clean-casey-granular_certificate_registry.git"
+  },
   "dependencies": {
     "@reduxjs/toolkit": "^2.5.0",
     "antd": "^5.17.3",
@@ -23,7 +27,7 @@
     "react-router-dom": "^7.1.1",
     "react-scripts": "^5.0.1",
     "redux": "^5.0.1",
-    "redux-thunk": "^3.1.0",
+    "redux-thunk": "^5.0.1",
     "chart.js": "^4.4.6",
     "react-chartjs-2": "^5.2.0"
   },
@@ -34,6 +38,7 @@
     "@babel/preset-react": "^7.26.3",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.15",
     "babel-loader": "^9.2.1",
+    "babel-plugin-module-resolver": "^5.0.0",
     "cross-env": "^7.0.3",
     "css-loader": "^7.1.2",
     "css-minimizer-webpack-plugin": "^7.0.0",

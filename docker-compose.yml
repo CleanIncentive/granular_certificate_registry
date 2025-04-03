@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  db_write:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-registry}
+    ports:
+      - "5436:5432"
+    volumes:
+      - db_write_data:/var/lib/postgresql/data
+
+  db_read:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-registry}
+    ports:
+      - "5438:5432"
+    volumes:
+      - db_read_data:/var/lib/postgresql/data
+
+  eventstore.db:
+    image: eventstore/eventstore:23.10.2-bookworm-slim
+    ports:
+      - "2113:2113"
+    environment:
+      - EVENTSTORE_CLUSTER_SIZE=1
+      - EVENTSTORE_RUN_PROJECTIONS=All
+      - EVENTSTORE_START_STANDARD_PROJECTIONS=true
+      - EVENTSTORE_EXT_TCP_PORT=1113
+      - EVENTSTORE_EXT_HTTP_PORT=2113
+      - EVENTSTORE_INSECURE=true
+      - EVENTSTORE_ENABLE_EXTERNAL_TCP=true
+      - EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP=true
+    volumes:
+      - eventstore_data:/var/lib/eventstore
+
+  gc_registry:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+      - "8080:8080"
+    environment:
+      - DATABASE_HOST_READ=db_read
+      - DATABASE_HOST_WRITE=db_write
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-registry}
+      - ESDB_CONNECTION_STRING=esdb://eventstore.db:2113?tls=false
+    depends_on:
+      - db_write
+      - db_read
+      - eventstore.db
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "9000:8080"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+    depends_on:
+      - gc_registry
+
+volumes:
+  db_write_data:
+  db_read_data:
+  eventstore_data: 

@@ -1,5 +1,13 @@
-# FEA Granular Certificate Demonstration Registry
+# Granular Certificate Registry
+> This is a fork of the [FEA Granular Certificate Demonstration Registry](https://github.com/Future-Energy-Associates/granular_certificate_registry) created by Future Energy Associates.
+
 An open-source platform to demonstrate the capabilities of a Granular Certificate registry that conforms to the EnergyTag Standards and API specification.
+
+### Original Project
+This project is a fork of the FEA Granular Certificate Demonstration Registry, originally created by Future Energy Associates. The original project can be found at: https://github.com/Future-Energy-Associates/granular_certificate_registry
+
+### Fork Information
+This fork is maintained by Clean Incentive. While we maintain the core functionality of the original project, we may include additional features, bug fixes, or modifications to suit our specific needs.
 
 ### Operation
 The GC Registry is designed to be downloaded and operated locally either through a Docker container, or through manual package loading for development purposes.

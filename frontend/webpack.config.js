@@ -119,5 +119,14 @@ module.exports = {
   resolve: {
     extensions: [".js", ".jsx"],
     mainFiles: ['index'],
+    alias: {
+      '@components': path.resolve(__dirname, 'src/components'),
+      '@pages': path.resolve(__dirname, 'src/pages'),
+      '@store': path.resolve(__dirname, 'src/store'),
+      '@api': path.resolve(__dirname, 'src/api'),
+      '@utils': path.resolve(__dirname, 'src/utils'),
+      '@context': path.resolve(__dirname, 'src/context'),
+      '@assets': path.resolve(__dirname, 'src/assets'),
+    },
   },
 };

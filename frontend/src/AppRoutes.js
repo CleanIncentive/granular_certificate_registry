@@ -1,23 +1,5 @@
 import React, { useEffect } from "react";
 import Cookies from "js-cookie";
-
-// Import pages
-const Login = React.lazy(() => import("./pages/Login"));
-
-const Main = React.lazy(() => import("./pages/Main"));
-
-const Certificate = React.lazy(() => import("./components/certificate"));
-
-const Device = React.lazy(() => import("./components/device"));
-
-// const Transfer = React.lazy(() => import("./components/Transfer"));
-
-const AccountPicker = React.lazy(() => import("./components/account/Picker"));
-
-const AccountManagement = React.lazy(() =>
-  import("./components/account/Management")
-);
-
 import {
   BrowserRouter as Router,
   Routes,
@@ -26,12 +8,20 @@ import {
   useNavigate,
   useLocation,
 } from "react-router-dom";
-
 import { message } from "antd";
-
 import { useDispatch } from "react-redux";
-import { readCurrentUser } from "./store/user/userThunk";
-import { useUser } from "./context/UserContext";
+import { readCurrentUser } from "@store/user/userThunk";
+import { useUser } from "@context/UserContext";
+
+// Import pages
+const Login = React.lazy(() => import("@pages/Login/index"));
+const Main = React.lazy(() => import("@pages/Main/index"));
+const Certificate = React.lazy(() => import("@components/certificate/index"));
+const Device = React.lazy(() => import("@components/device/index"));
+const AccountPicker = React.lazy(() => import("@components/Account/Picker/index"));
+const AccountManagement = React.lazy(() => import("@components/Account/Management/index"));
+
+// const Transfer = React.lazy(() => import("./components/Transfer"));
 
 const isAuthenticated = () => {
   const token = Cookies.get("access_token");
