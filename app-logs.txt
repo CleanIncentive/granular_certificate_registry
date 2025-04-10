@@ -1,0 +1,105 @@
+----------------------------------------
+/var/log/eb-engine.log
+----------------------------------------
+2025/04/10 17:34:02.333013 [INFO] Skipping Install Process Manager
+2025/04/10 17:34:02.333017 [INFO] Skipping install syslog
+2025/04/10 17:34:02.333021 [INFO] Skipping install cron
+2025/04/10 17:34:02.333025 [INFO] Skipping install proxy
+2025/04/10 17:34:02.333029 [INFO] Skipping installhealthd
+2025/04/10 17:34:02.333032 [INFO] Skipping Install Log Streaming Manager
+2025/04/10 17:34:02.333036 [INFO] Skipping install X-Ray
+2025/04/10 17:34:02.333040 [INFO] Skipping install Third Party License
+2025/04/10 17:34:02.333050 [INFO] Skipping installSqsd
+2025/04/10 17:34:02.333054 [INFO] Skipping bootstraphealthd
+2025/04/10 17:34:02.333058 [INFO] Skipping Install yum packages
+2025/04/10 17:34:02.333062 [INFO] Skipping install docker-compose
+2025/04/10 17:34:02.333066 [INFO] Skipping Configure Docker Daemon
+2025/04/10 17:34:02.333069 [INFO] Skipping MarkBaked
+2025/04/10 17:34:02.333073 [INFO] Skipping TuneSystemSettings
+2025/04/10 17:34:02.333075 [INFO] Executing instruction: GetSetupLogRotate
+2025/04/10 17:34:02.333078 [INFO] Initialize LogRotate files and directories
+2025/04/10 17:34:02.346229 [INFO] Skipping BootstrapCFNHup
+2025/04/10 17:34:02.346236 [INFO] Executing instruction: StartCFNHup
+2025/04/10 17:34:02.346239 [INFO] Start cfn-hup
+2025/04/10 17:34:02.346250 [INFO] Running command: systemctl show -p PartOf cfn-hup.service
+2025/04/10 17:34:02.355224 [INFO] Running command: systemctl is-active cfn-hup.service
+2025/04/10 17:34:02.362120 [INFO] cfn-hup process is already registered and up running, skip installation
+2025/04/10 17:34:02.362135 [INFO] Skipping SetupPublishLogCronjob
+2025/04/10 17:34:02.362138 [INFO] Executing instruction: Start Docker
+2025/04/10 17:34:02.362141 [INFO] Starting Docker...
+2025/04/10 17:34:02.362175 [INFO] Copying file /opt/elasticbeanstalk/config/private/docker-log.conf to /etc/systemd/system/docker.service.d/docker-log.conf
+2025/04/10 17:34:02.363736 [INFO] Copying file /opt/elasticbeanstalk/config/private/docker-rsyslog.conf to /etc/rsyslog.d/docker-log.conf
+2025/04/10 17:34:02.365170 [INFO] Running command: systemctl restart rsyslog.service
+2025/04/10 17:34:02.877197 [INFO] Running command: systemctl show -p PartOf docker.service
+2025/04/10 17:34:02.888651 [WARN] Warning: process docker is already registered...
+Deregistering the process ...
+2025/04/10 17:34:02.888667 [INFO] Running command: systemctl show -p PartOf docker.service
+2025/04/10 17:34:02.897091 [INFO] Running command: systemctl is-active docker.service
+2025/04/10 17:34:02.903769 [INFO] Running command: systemctl show -p PartOf docker.service
+2025/04/10 17:34:02.911865 [INFO] Running command: systemctl stop docker.service
+2025/04/10 17:34:02.982454 [INFO] Warning: The unit file, source configuration file or drop-ins of docker.service changed on disk. Run 'systemctl daemon-reload' to reload units.
+Warning: Stopping docker.service, but it can still be activated by:
+  docker.socket
+
+2025/04/10 17:34:02.982473 [INFO] Running command: systemctl disable docker.service
+2025/04/10 17:34:03.273451 [INFO] Running command: systemctl daemon-reload
+2025/04/10 17:34:03.559062 [INFO] Running command: systemctl reset-failed
+2025/04/10 17:34:03.570057 [INFO] Running command: systemctl daemon-reload
+2025/04/10 17:34:03.853570 [INFO] Running command: systemctl reset-failed
+2025/04/10 17:34:03.861122 [INFO] Running command: systemctl show -p PartOf docker.service
+2025/04/10 17:34:03.871202 [INFO] Running command: systemctl is-active docker.service
+2025/04/10 17:34:03.877929 [INFO] Running command: systemctl start docker.service
+2025/04/10 17:34:04.745879 [INFO] Skipping Setup Docker Options
+2025/04/10 17:34:04.745898 [INFO] Skipping MarkBootstrapped
+2025/04/10 17:34:04.745901 [INFO] Executing instruction: Save CFN Stack Info
+2025/04/10 17:34:04.747168 [INFO] Executing instruction: stopSqsd
+2025/04/10 17:34:04.747175 [INFO] This is a web server environment instance, skip stop sqsd daemon ...
+2025/04/10 17:34:04.747179 [INFO] Executing instruction: PreBuildEbExtension
+2025/04/10 17:34:04.747182 [INFO] Starting executing the config set Infra-EmbeddedPreBuild.
+2025/04/10 17:34:04.747195 [INFO] Running command: /opt/aws/bin/cfn-init -s arn:aws:cloudformation:us-east-1:996119908566:stack/awseb-e-ipprhqtkyb-stack/9eb21b50-162c-11f0-aac2-0e4919b43775 -r AWSEBAutoScalingGroup --region us-east-1 --configsets Infra-EmbeddedPreBuild
+2025/04/10 17:34:05.084105 [INFO] Finished executing the config set Infra-EmbeddedPreBuild.
+
+2025/04/10 17:34:05.084137 [INFO] Executing instruction: StagedockerApplication
+2025/04/10 17:34:05.084149 [INFO] Running command: docker ps -a -q -f status=running
+2025/04/10 17:34:05.097663 [INFO] Pruning containers ...
+2025/04/10 17:34:05.097714 [INFO] Running command: docker ps -a
+2025/04/10 17:34:05.111902 [INFO] CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+
+2025/04/10 17:34:05.111947 [INFO] Running command: docker container prune -f
+2025/04/10 17:34:05.124174 [INFO] Total reclaimed space: 0B
+
+2025/04/10 17:34:05.124213 [INFO] Running command: docker ps -a
+2025/04/10 17:34:05.136483 [INFO] CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+
+2025/04/10 17:34:05.136517 [INFO] Recreating /var/app/staging/
+2025/04/10 17:34:05.144678 [INFO] Recreating /var/log/eb-docker/containers/eb-current-app
+2025/04/10 17:34:05.144740 [INFO] Running command: /bin/file -m /opt/elasticbeanstalk/config/private/beanstalk-magic -b --mime-type /opt/elasticbeanstalk/deployment/app_source_bundle
+2025/04/10 17:34:05.148964 [INFO] application/zip
+
+2025/04/10 17:34:05.148971 [INFO] app source bundle is zip file ...
+2025/04/10 17:34:05.148975 [INFO] extracting /opt/elasticbeanstalk/deployment/app_source_bundle to /var/app/staging/
+2025/04/10 17:34:05.148981 [INFO] Running command: /usr/bin/unzip -q -o /opt/elasticbeanstalk/deployment/app_source_bundle -d /var/app/staging/
+2025/04/10 17:34:05.210079 [INFO] warning:  /opt/elasticbeanstalk/deployment/app_source_bundle appears to use backslashes as path separators
+
+2025/04/10 17:34:05.210103 [ERROR] An error occurred during execution of command [self-startup] - [StagedockerApplication]. Stop running the command. Error: Command /usr/bin/unzip -q -o /opt/elasticbeanstalk/deployment/app_source_bundle -d /var/app/staging/ failed with error exit status 1. Stderr:warning:  /opt/elasticbeanstalk/deployment/app_source_bundle appears to use backslashes as path separators
+ 
+
+2025/04/10 17:34:05.210129 [INFO] Executing cleanup logic
+2025/04/10 17:34:05.210381 [INFO] Platform Engine finished execution on command: self-startup
+
+2025/04/10 17:42:25.041656 [INFO] Starting...
+2025/04/10 17:42:25.041694 [INFO] Starting EBPlatform-PlatformEngine
+2025/04/10 17:42:25.041713 [INFO] reading event message file
+2025/04/10 17:42:25.041945 [INFO] Engine received EB command cfn-hup-exec
+
+2025/04/10 17:42:25.109212 [INFO] Running command: /opt/aws/bin/cfn-get-metadata -s arn:aws:cloudformation:us-east-1:996119908566:stack/awseb-e-ipprhqtkyb-stack/9eb21b50-162c-11f0-aac2-0e4919b43775 -r AWSEBAutoScalingGroup --region us-east-1
+2025/04/10 17:42:25.408934 [INFO] Running command: /opt/aws/bin/cfn-get-metadata -s arn:aws:cloudformation:us-east-1:996119908566:stack/awseb-e-ipprhqtkyb-stack/9eb21b50-162c-11f0-aac2-0e4919b43775 -r AWSEBBeanstalkMetadata --region us-east-1
+2025/04/10 17:42:25.699240 [INFO] checking whether command tail-log is applicable to this instance...
+2025/04/10 17:42:25.699251 [INFO] this command is applicable to the instance, thus instance should execute command
+2025/04/10 17:42:25.699254 [INFO] Engine command: (tail-log)
+
+2025/04/10 17:42:25.699304 [INFO] Executing instruction: GetTailLogs
+2025/04/10 17:42:25.699308 [INFO] Tail Logs...
+2025/04/10 17:42:25.699621 [INFO] Running command: tail -n 100 /var/log/eb-engine.log
+
+

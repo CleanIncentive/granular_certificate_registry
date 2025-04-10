@@ -15,34 +15,9 @@ services:
     env_file:
       - .env
     depends_on:
-      - db_write
-      - db_read
       - eventstore.db
     ports:
       - "8000:8000"
-
-  db_write:
-    image: postgres:13
-    volumes:
-      - postgres_data_write:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    ports:
-      - "5436:5432"
-
-
-  db_read:
-    image: postgres:13
-    volumes:
-      - postgres_data_read:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    ports:
-      - "5438:5432"
 
   eventstore.db:
     image: eventstore/eventstore:23.10.2-bookworm-slim
@@ -75,7 +50,5 @@ services:
 
 volumes:
   gc_registry:
-  postgres_data_write:
-  postgres_data_read:
   eventstore-volume-data:
   eventstore-volume-logs:

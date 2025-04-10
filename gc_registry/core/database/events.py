@@ -10,7 +10,7 @@ from gc_registry.settings import settings
 
 def yield_esdb_client() -> Generator[EventStoreDBClient, None, None]:
     with EventStoreDBClient(
-        uri=f"esdb://{settings.ESDB_CONNECTION_STRING}:2113?tls=false"
+        uri="esdb://eventstore.db:2114?tls=false"
     ) as esdb_client:
         try:
             yield esdb_client
@@ -100,6 +100,6 @@ def batch_create_events(
 
 def reset_eventstore():
     with EventStoreDBClient(
-        uri=f"esdb://{settings.ESDB_CONNECTION_STRING}:2113?tls=false"
+        uri="esdb://eventstore.db:2114?tls=false"
     ) as esdb_client:
         esdb_client.delete_stream(stream_name="events", current_version=StreamState.ANY)

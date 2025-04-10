@@ -1,0 +1,118 @@
+{
+  "AWSEBDockerrunVersion": "2",
+  "volumes": [],
+  "containerDefinitions": [
+    {
+      "name": "eventstore",
+      "image": "eventstore/eventstore:23.10.2-bookworm-slim",
+      "essential": true,
+      "memory": 512,
+      "portMappings": [
+        {
+          "hostPort": 2113,
+          "containerPort": 2113
+        }
+      ],
+      "environment": [
+        {
+          "name": "EVENTSTORE_CLUSTER_SIZE",
+          "value": "1"
+        },
+        {
+          "name": "EVENTSTORE_RUN_PROJECTIONS",
+          "value": "All"
+        },
+        {
+          "name": "EVENTSTORE_START_STANDARD_PROJECTIONS",
+          "value": "true"
+        },
+        {
+          "name": "EVENTSTORE_EXT_TCP_PORT",
+          "value": "1113"
+        },
+        {
+          "name": "EVENTSTORE_EXT_HTTP_PORT",
+          "value": "2113"
+        },
+        {
+          "name": "EVENTSTORE_INSECURE",
+          "value": "true"
+        },
+        {
+          "name": "EVENTSTORE_ENABLE_EXTERNAL_TCP",
+          "value": "true"
+        },
+        {
+          "name": "EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP",
+          "value": "true"
+        }
+      ]
+    },
+    {
+      "name": "gc_registry",
+      "image": "996119908566.dkr.ecr.us-east-1.amazonaws.com/gc-registry:latest",
+      "essential": true,
+      "memory": 512,
+      "portMappings": [
+        {
+          "hostPort": 8000,
+          "containerPort": 8000
+        },
+        {
+          "hostPort": 8080,
+          "containerPort": 8080
+        }
+      ],
+      "environment": [
+        {
+          "name": "ESDB_CONNECTION_STRING",
+          "value": "esdb://eventstore:2113?tls=false"
+        },
+        {
+          "name": "POSTGRES_USER",
+          "value": "postgres"
+        },
+        {
+          "name": "POSTGRES_PASSWORD",
+          "value": "lQT7qQxpCqMEWeOz9y05"
+        },
+        {
+          "name": "POSTGRES_DB",
+          "value": "registry"
+        },
+        {
+          "name": "DATABASE_HOST_READ",
+          "value": "granular-registry-db-dev-read.cdaotyxbrday.us-east-1.rds.amazonaws.com"
+        },
+        {
+          "name": "DATABASE_HOST_WRITE",
+          "value": "granular-registry-db-dev-write.cdaotyxbrday.us-east-1.rds.amazonaws.com"
+        },
+        {
+          "name": "DATABASE_PORT",
+          "value": "5432"
+        }
+      ],
+      "links": ["eventstore"]
+    },
+    {
+      "name": "frontend",
+      "image": "996119908566.dkr.ecr.us-east-1.amazonaws.com/gc-registry-frontend:latest",
+      "essential": true,
+      "memory": 512,
+      "portMappings": [
+        {
+          "hostPort": 9000,
+          "containerPort": 8080
+        }
+      ],
+      "environment": [
+        {
+          "name": "REACT_APP_API_URL",
+          "value": "http://localhost:8000"
+        }
+      ],
+      "links": ["gc_registry"]
+    }
+  ]
+} 
