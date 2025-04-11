@@ -40,7 +40,6 @@ module.exports = {
             presets: ["@babel/preset-env", "@babel/preset-react"],
             plugins: [
               "@babel/plugin-transform-runtime",
-              isDevelopment && require.resolve("react-refresh/babel"),
             ].filter(Boolean),
           },
         },
@@ -91,7 +90,6 @@ module.exports = {
         removeComments: true,
       },
     }),
-    isDevelopment && new ReactRefreshWebpackPlugin(),
     !isDevelopment &&
       new BundleAnalyzerPlugin({
         analyzerMode: "static",
@@ -110,10 +108,17 @@ module.exports = {
     },
     historyApiFallback: true,
     compress: true,
-    port: 8080,
+    port: 3000,
     host: '0.0.0.0',
-    open: true,
-    hot: true,
+    open: false,
+    hot: false,
+    liveReload: false,
+    allowedHosts: ['dev.gc-registry.com', 'localhost'],
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+    },
+    client: false,
+    webSocketServer: false,
   },
 
   resolve: {

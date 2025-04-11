@@ -2,7 +2,7 @@ FROM node:20-bullseye-slim
 
 WORKDIR /app
 
-ENV REACT_APP_API_URL=https://api-dot-rich-store-445612-c6.ew.r.appspot.com
+ENV REACT_APP_API_URL=https://dev.gc-registry.com/api
 
 COPY ./package.json ./package.json
 COPY ./package-lock.json ./package-lock.json
@@ -15,6 +15,7 @@ RUN npm install react-refresh --legacy-peer-deps
 
 RUN npm run build
 
+ENV PORT=3000
 EXPOSE 3000
 
 CMD ["npm", "run", "start"]

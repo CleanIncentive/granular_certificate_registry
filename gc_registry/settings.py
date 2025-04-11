@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Optional, Union
 
 from google.cloud import secretmanager
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -22,12 +23,12 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "CI")
 
     # Define all secrets as optional initially
-    DATABASE_HOST_READ: str | None = None
-    DATABASE_HOST_WRITE: str | None = None
-    POSTGRES_USER: str | None = None
-    POSTGRES_PASSWORD: str | None = None
-    ESDB_CONNECTION_STRING: str | None = None
-    FRONTEND_URL: str | None = "localhost:9000"
+    DATABASE_HOST_READ: Optional[str] = None
+    DATABASE_HOST_WRITE: Optional[str] = None
+    POSTGRES_USER: Optional[str] = None
+    POSTGRES_PASSWORD: Optional[str] = None
+    ESDB_CONNECTION_STRING: Optional[str] = None
+    FRONTEND_URL: Optional[str] = "localhost:9000"
 
     JWT_SECRET_KEY: str = "secret_key"
     JWT_ALGORITHM: str = "HS256"

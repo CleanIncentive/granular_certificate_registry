@@ -1,6 +1,21 @@
 version: '3.8'
 
 services:
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - /etc/letsencrypt/archive/dev.gc-registry.com:/etc/nginx/ssl
+    depends_on:
+      - frontend
+      - gc_registry
+    restart: unless-stopped
+
   eventstore.db:
     image: eventstore/eventstore:23.10.2-bookworm-slim
     ports:
@@ -52,9 +67,9 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "9000:8080"
+      - "3000:3000"
     environment:
-      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_API_URL=https://dev.gc-registry.com/api
     depends_on:
       - gc_registry
 

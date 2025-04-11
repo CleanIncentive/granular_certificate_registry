@@ -76,6 +76,8 @@ def batch_create_events(
             entity_name=entity_name,
             attributes_before=attributes_before,
             attributes_after=attributes_after,
+            event_type=event_type,
+            event_data={"entity_id": entity_id, "entity_name": entity_name}
         )
         for entity_id, entity_name, attributes_before, attributes_after in zip(
             entity_ids, entity_names, attributes_before, attributes_after

@@ -1,25 +1,40 @@
-import sys
-from gc_registry.core.database.db import get_db_name_to_client, get_write_session
-from gc_registry.settings import settings
+import os
+import psycopg2
+from dotenv import load_dotenv
 
-def test_connection():
-    print("Database settings:")
-    print(f"Host (write): {settings.DATABASE_HOST_WRITE}")
-    print(f"Port: {settings.DATABASE_PORT}")
-    print(f"Database: {settings.POSTGRES_DB}")
-    print(f"Username: {settings.POSTGRES_USER}")
-    print("\nTesting connection...")
-    
+# Load environment variables from .env file
+load_dotenv()
+
+def test_db_connection():
     try:
-        _ = get_db_name_to_client()
-        session = get_write_session()
-        print("\nConnection successful!")
-        session.close()
+        # Get database connection parameters from environment variables
+        db_params = {
+            'host': os.getenv('DATABASE_HOST_WRITE'),
+            'port': os.getenv('DATABASE_PORT'),
+            'database': os.getenv('POSTGRES_DB'),
+            'user': os.getenv('POSTGRES_USER'),
+            'password': os.getenv('POSTGRES_PASSWORD')
+        }
+        
+        # Attempt to connect to the database
+        conn = psycopg2.connect(**db_params)
+        
+        # Create a cursor
+        cur = conn.cursor()
+        
+        # Execute a simple query to test the connection
+        cur.execute('SELECT version();')
+        version = cur.fetchone()
+        
+        print("Successfully connected to the database!")
+        print(f"PostgreSQL version: {version[0]}")
+        
+        # Close the cursor and connection
+        cur.close()
+        conn.close()
+        
     except Exception as e:
-        print("\nConnection failed!")
-        print(f"Error type: {type(e).__name__}")
-        print(f"Error message: {str(e)}")
-        sys.exit(1)
+        print(f"Error connecting to the database: {e}")
 
 if __name__ == "__main__":
-    test_connection() 
+    test_db_connection() 

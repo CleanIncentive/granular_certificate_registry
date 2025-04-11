@@ -75,6 +75,14 @@ app = FastAPI(
     dependencies=[Depends(get_db_name_to_client)],
 )
 
+# Add session middleware
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.MIDDLEWARE_SECRET_KEY,
+    session_cookie="session",
+    max_age=3600,
+)
+
 FRONTEND_URL = os.getenv("FRONTEND_URL", "localhost:9000")
 
 
@@ -120,11 +128,9 @@ class CSRFMiddleware:
 
 
 origins = [
-    "http://localhost:9000",
-    "http://127.0.0.1:9000",
-    "http://localhost:8000",
-    "https://frontend-dot-rich-store-445612-c6.ew.r.appspot.com",
-    "https://api-dot-rich-store-445612-c6.ew.r.appspot.com",
+    "https://dev.gc-registry.com",
+    "http://localhost:9000",  # Keep local development URL
+    "http://127.0.0.1:9000",  # Keep local development URL
 ]
 
 app.add_middleware(
