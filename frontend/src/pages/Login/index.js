@@ -9,12 +9,10 @@ import {
   message,
 } from "antd";
 import * as styles from "./Login.module.css";
-import pepLogo from "../../assets/images/pep-logo.png";
-import googleLogo from "../../assets/images/google-logo.png";
-import energyTagLogo from "../../assets/images/energy-tag-logo.png";
+import { Link } from "react-router-dom";
 
 const { Content } = Layout;
-const { Title, Text, Link } = Typography;
+const { Title, Text, Link: TypographyLink } = Typography;
 const { Option } = Select;
 
 import { useDispatch } from "react-redux";
@@ -97,13 +95,12 @@ const Login = () => {
                   className={`${styles["login-form-title"]} ${styles["font-color"]}`}
                 >
                   <Text>Password</Text>
-
-                  <Link
-                    href="https://docs.google.com/forms/d/e/1FAIpQLSdSkHMAYSu43VJFevngfVT5hvnWRZvwkelIf9QaPtpLVrIlxA/viewform?usp=sf_link"
+                  <TypographyLink
+                    href="#"
                     style={{ color: "#202224" }}
                   >
                     Forgot password
-                  </Link>
+                  </TypographyLink>
                 </div>
                 <Input.Password
                   placeholder="Password"
@@ -144,68 +141,78 @@ const Login = () => {
                 </Divider>
                 <Text>
                   <Link
-                    href="https://docs.google.com/forms/d/e/1FAIpQLSdSkHMAYSu43VJFevngfVT5hvnWRZvwkelIf9QaPtpLVrIlxA/viewform?usp=sf_link"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    to="/create-account"
                     style={{ fontWeight: "500", color: "#043DDC" }}
                   >
-                    Request account
+                    Create account
                   </Link>
                 </Text>
               </div>
 
               <div style={{ marginTop: 64, color: "#5F6368" }}>
-                <Text>Sponsored by:</Text>
+                <Text>Powered by:</Text>
               </div>
 
               <div className={styles["sponsors"]}>
-                <img src={pepLogo} alt="Private Energy Partners" />
-                <img src={googleLogo} alt="Google" />
-                <img src={energyTagLogo} alt="Energy tag" />
+                <img 
+                  src={require("../../assets/images/clean-incentive-logo-h.png")}
+                  alt="Clean Incentive"
+                  style={{
+                    height: "36px",
+                    marginRight: "16px"
+                  }}
+                />
+                <Text
+                  style={{
+                    fontWeight: "500",
+                    color: "#202224",
+                    fontSize: "24px",
+                    fontFamily: "Outfit",
+                    margin: 0
+                  }}
+                >
+                  Granular
+                </Text>
+                <Text
+                  style={{
+                    fontWeight: "500",
+                    color: "#202224",
+                    fontSize: "24px",
+                    fontFamily: "Outfit",
+                    margin: 0
+                  }}
+                >
+                  Cert
+                </Text>
+                <Text
+                  style={{
+                    fontWeight: "900",
+                    color: "#202224",
+                    fontSize: "24px",
+                    fontFamily: "Outfit",
+                    margin: 0
+                  }}
+                >
+                  OS
+                </Text>
               </div>
             </div>
           </div>
         </div>
         <div className={styles["login-right"]}>
-          <Text
+          <img 
+            src={require("../../assets/images/login-background.png")} 
+            alt="Background"
             style={{
-              fontWeight: "500",
               position: "absolute",
-              top: "32px",
-              right: "83px",
-              color: "#fff",
-              fontSize: "30px",
-              fontFamily: "Outfit",
+              right: 0,
+              top: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: "center"
             }}
-          >
-            Granular
-          </Text>
-          <Text
-            style={{
-              fontWeight: "500",
-              position: "absolute",
-              top: "64px",
-              right: "83px",
-              color: "#fff",
-              fontSize: "30px",
-              fontFamily: "Outfit",
-            }}
-          >
-            Cert
-          </Text>
-          <Text
-            style={{
-              fontWeight: "900",
-              position: "absolute",
-              top: "64px",
-              right: "40px",
-              color: "#fff",
-              fontSize: "30px",
-              fontFamily: "Outfit",
-            }}
-          >
-            OS
-          </Text>
+          />
         </div>
       </Content>
     </Layout>

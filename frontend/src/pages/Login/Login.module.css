@@ -33,14 +33,8 @@
   width: 50%;
   height: 100%;
   background-color: #f0f2f5;
-  background-image: url(../../assets/images/login-background.png);
-  background-size: cover; /* Scales the image to cover the entire element */
-  background-position: center; /* Centers the image */
-  background-repeat: no-repeat; /* Prevents tiling of the image */
-  /* display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center; */
+  overflow: hidden;
+  z-index: 0;
 }
 
 .login-image {
@@ -53,13 +47,9 @@
   margin-top: 20px;
   width: 720px;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-}
-
-.sponsors img {
-  max-height: 40px;
-  margin: 0 10px;
+  gap: 8px;
 }
 
 .login-form {
