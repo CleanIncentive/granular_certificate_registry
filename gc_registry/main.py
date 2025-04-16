@@ -7,7 +7,7 @@ from typing import Callable
 
 from fastapi import Depends, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.security import HTTPBearer
 from fastapi.templating import Jinja2Templates
 from markdown import markdown
@@ -193,6 +193,12 @@ app.include_router(
 openapi_data = app.openapi()
 
 templates = Jinja2Templates(directory=STATIC_DIR_FP / "templates")
+
+
+@app.get("/redoc", include_in_schema=False)
+async def redoc_redirect():
+    """Redirect /redoc to /docs to fix the issue where redoc redirects to main certificates page."""
+    return RedirectResponse(url="/docs")
 
 
 @app.get("/", response_class=HTMLResponse, tags=["Core"])

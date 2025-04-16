@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Layout,
   Form,
@@ -10,21 +10,30 @@ import {
   Upload,
   Typography,
   Divider,
+  Spin,
+  message,
 } from "antd";
 import { UploadOutlined, UserOutlined } from "@ant-design/icons";
 import sampleAvatar from "../../../assets/images/sample-avatar.jpeg";
 import { useUser } from "../../../context/UserContext";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { readCurrentUser } from "../../../store/user/userThunk";
 
 const { Content } = Layout;
 const { Text } = Typography;
 const { Option } = Select;
 
 const AccountManagement = () => {
-  const { userData } = useUser();
+  const { userData, saveUserData } = useUser();
   const [form] = Form.useForm();
-
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  
   // Helper to format user role (example)
   const formatUserRole = (userRole) => {
+    console.log("Formatting user role:", userRole);
     switch (userRole) {
       case "TRADING":
         return "Trading User";
@@ -36,9 +45,31 @@ const AccountManagement = () => {
   };
 
   useEffect(() => {
-    if (userData) {
+    const fetchUserData = async () => {
+      if (!userData || !userData.userInfo) {
+        try {
+          console.log("Account Management - Fetching user data as it's missing");
+          const result = await dispatch(readCurrentUser()).unwrap();
+          console.log("Account Management - Fetched user data:", result);
+          saveUserData(result);
+        } catch (error) {
+          console.error("Failed to fetch user data:", error);
+          message.error("Failed to load user information", 3);
+          navigate("/login");
+        }
+      } else {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [userData, dispatch, navigate, saveUserData]);
+
+  useEffect(() => {
+    if (userData && userData.userInfo) {
+      console.log("Setting form values with user data:", userData.userInfo);
       const { username = "", email = "", role = "" } = userData.userInfo;
-      const nameParts = username.split(" ");
+      const nameParts = username ? username.split(" ") : ["", ""];
       const firstName = nameParts[0] || "";
       const lastName = nameParts[1] || "";
 
@@ -48,8 +79,28 @@ const AccountManagement = () => {
         email,
         role: formatUserRole(role),
       });
+      setLoading(false);
     }
   }, [userData, form]);
+
+  if (loading) {
+    return (
+      <Layout>
+        <Content
+          style={{
+            width: "100%",
+            padding: "24px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "400px"
+          }}
+        >
+          <Spin size="large" tip="Loading user information..." />
+        </Content>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -85,7 +136,7 @@ const AccountManagement = () => {
                     { required: true, message: "Please enter your first name" },
                   ]}
                 >
-                  <Input placeholder="Olivia" />
+                  <Input placeholder="First Name" />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -96,7 +147,7 @@ const AccountManagement = () => {
                     { required: true, message: "Please enter your last name" },
                   ]}
                 >
-                  <Input placeholder="Olivia" />
+                  <Input placeholder="Last Name" />
                 </Form.Item>
               </Col>
             </Row>
@@ -111,7 +162,7 @@ const AccountManagement = () => {
           >
             <Input
               prefix={<UserOutlined />}
-              placeholder="olivia@untitledui.com"
+              placeholder="email@example.com"
             />
           </Form.Item>
           <Divider />

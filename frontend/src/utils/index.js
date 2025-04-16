@@ -26,20 +26,36 @@ export const removeAllCookies = () => {
 
 // Save data to sessionStorage with size check
 export const saveDataToSessionStorage = (key, data) => {
-  sessionStorage.setItem(key, JSON.stringify(data));
+  try {
+    console.log(`Saving data to sessionStorage for key ${key}:`, data);
+    sessionStorage.setItem(key, JSON.stringify(data));
+    console.log(`Successfully saved data to sessionStorage for key ${key}`);
+  } catch (error) {
+    console.error(`Error saving to sessionStorage for key ${key}:`, error);
+  }
 };
 
 // Get data from sessionStorage
 export const getSessionStorage = (key) => {
   try {
+    console.log(`Retrieving data from sessionStorage for key ${key}`);
     const data = sessionStorage.getItem(key);
+    console.log(`Raw data from sessionStorage for key ${key}:`, data);
+    
     // Only parse if data exists and isn't the string "undefined"
     if (data && data !== "undefined") {
-      return JSON.parse(data);
+      try {
+        const parsedData = JSON.parse(data);
+        console.log(`Parsed data from sessionStorage for key ${key}:`, parsedData);
+        return parsedData;
+      } catch (parseError) {
+        console.error(`Error parsing data from sessionStorage for key ${key}:`, parseError);
+        return data; // Return raw data if parsing fails
+      }
     }
     return null;
   } catch (error) {
-    console.error(`Error parsing session storage for key ${key}:`, error);
+    console.error(`Error retrieving from sessionStorage for key ${key}:`, error);
     return null;
   }
 };

@@ -31,7 +31,14 @@ export const readCurrentUser = createAsyncThunk(
   "user/readCurrentUser",
   async (_, { rejectWithValue }) => {
     try {
+      console.log("Fetching current user data from API");
       const response = await readCurrentUserAPI();
+      console.log("API response for current user:", response);
+
+      if (!response.data) {
+        console.error("No data returned from current user API");
+        return rejectWithValue({ message: "No user data returned from API", status: 404 });
+      }
 
       const userData = {
         accounts: response?.data?.accounts || [],
@@ -44,10 +51,14 @@ export const readCurrentUser = createAsyncThunk(
         },
       };
 
+      console.log("Processed user data:", userData);
       saveDataToCookies("user_data", JSON.stringify(userData));
 
       return userData;
-    } catch ({ message, status }) {
+    } catch (error) {
+      console.error("Error fetching current user:", error);
+      const message = error.message || "Failed to fetch user data";
+      const status = error.status || 500;
       return rejectWithValue({ message, status });
     }
   }

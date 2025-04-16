@@ -158,43 +158,18 @@ const Login = () => {
                   src={require("../../assets/images/clean-incentive-logo-h.png")}
                   alt="Clean Incentive"
                   style={{
-                    height: "36px",
+                    height: "108px",
                     marginRight: "16px"
                   }}
                 />
-                <Text
+                <img 
+                  src={require("../../assets/images/FEA-logo.png")}
+                  alt="FEA Logo"
                   style={{
-                    fontWeight: "500",
-                    color: "#202224",
-                    fontSize: "24px",
-                    fontFamily: "Outfit",
-                    margin: 0
+                    height: "108px",
+                    marginLeft: "8px"
                   }}
-                >
-                  Granular
-                </Text>
-                <Text
-                  style={{
-                    fontWeight: "500",
-                    color: "#202224",
-                    fontSize: "24px",
-                    fontFamily: "Outfit",
-                    margin: 0
-                  }}
-                >
-                  Cert
-                </Text>
-                <Text
-                  style={{
-                    fontWeight: "900",
-                    color: "#202224",
-                    fontSize: "24px",
-                    fontFamily: "Outfit",
-                    margin: 0
-                  }}
-                >
-                  OS
-                </Text>
+                />
               </div>
             </div>
           </div>

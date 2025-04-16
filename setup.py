@@ -4,7 +4,7 @@ setup(
     name="gc_registry",
     version="0.0.1",
     python_requires=">=3.11,<4",
-    description="FEA EnergyTag Granular Certificate Demonstration Registry Platform",
+    description="Granular Registry",
     author="Connor Galbraith",
     author_email="connor@futureenergy.associates",
     packages=find_packages(where="gc_registry"),

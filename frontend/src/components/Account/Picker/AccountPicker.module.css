@@ -19,6 +19,10 @@
 
 .header {
   margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .account-card {
@@ -29,6 +33,7 @@
   border: none;
   border-radius: 8px;
   display: flex;
+  align-items: center;
   padding-left: 12px;
 }
 

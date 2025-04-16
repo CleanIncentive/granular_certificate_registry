@@ -7,19 +7,17 @@ export const UserProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
 
   useEffect(() => {
-    const userData = getSessionStorage("user_data");
+    const storedUserData = getSessionStorage("user_data");
+    console.log("UserContext - retrieved from session storage:", storedUserData);
 
-    if (!!userData) {
-      const parsedData = JSON.parse(userData);
-      try {
-        setUserData(parsedData);
-      } catch (err) {
-        console.log(err);
-      }
+    if (storedUserData) {
+      console.log("UserContext - setting user data:", storedUserData);
+      setUserData(storedUserData);
     }
   }, []);
 
   const saveUserData = (userData) => {
+    console.log("UserContext - saving user data:", userData);
     setUserData(userData);
     saveDataToSessionStorage("user_data", JSON.stringify(userData));
   };

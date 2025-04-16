@@ -2,6 +2,7 @@ import React from "react";
 import { Typography, Space, Divider } from "antd";
 import * as styles from "./AccountPicker.module.css";
 import addUserBtn from "../../../assets/images/add-user-btn.png";
+import registryLogo from "../../../assets/images/registry-logo.png";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { useAccount } from "../../../context/AccountContext";
@@ -40,9 +41,17 @@ const AccountPicker = () => {
     <div className={styles["account-picker-container"]}>
       <div className={styles["account-picker"]}>
         <div className={styles["header"]}>
-          <Title level={3}>GranularCertOS</Title>
-          <Text type="secondary">
-            Choose an account to continue to GranularCertOS
+          <img 
+            src={registryLogo} 
+            alt="Registry Logo" 
+            style={{
+              maxWidth: "180px",
+              height: "auto",
+              marginBottom: "16px"
+            }}
+          />
+          <Text type="secondary" style={{ textAlign: "center" }}>
+            Choose an account to continue
           </Text>
         </div>
 
@@ -53,7 +62,7 @@ const AccountPicker = () => {
               className={styles["account-card"]}
               onClick={() => handleAccountSelection(account)}
             >
-              <Space>
+              <Space align="center" style={{ width: "100%" }}>
                 <div className={styles["account-initial"]}>
                   {account.account_name.charAt(0).toUpperCase()}
                 </div>
@@ -73,7 +82,7 @@ const AccountPicker = () => {
         {/* Request Account Card */}
         <Divider className={styles["account-card-divider"]} />
         <div className={styles["account-card"]} onClick={handleRequestAccount}>
-          <Space>
+          <Space align="center" style={{ width: "100%" }}>
             <img
               src={addUserBtn}
               alt="Request Account"

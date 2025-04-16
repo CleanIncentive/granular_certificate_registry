@@ -12,6 +12,7 @@ import { TransferIcon } from "../../assets/icon/TransferIcon";
 import "../../assets/styles/sidemenu.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import sampleAvatar from "../../assets/images/sample-avatar.jpeg";
+import registryLogo from "../../assets/images/registry-logo.png";
 import Cookies from "js-cookie";
 import { useUser } from "../../context/UserContext";
 
@@ -130,11 +131,16 @@ const SideMenu = () => {
         style={{
           padding: "16px",
           textAlign: "center",
-          fontSize: "20px",
-          fontWeight: "bold",
         }}
       >
-        Granular <span style={{ color: "#0057FF" }}>CertOS</span>
+        <img 
+          src={registryLogo} 
+          alt="Registry Logo" 
+          style={{
+            maxWidth: "100%",
+            height: "auto"
+          }}
+        />
       </div>
       <Menu
         mode="vertical"

@@ -25,11 +25,14 @@ const AccountManagement = React.lazy(() => import("@components/Account/Managemen
 
 const isAuthenticated = () => {
   const token = Cookies.get("access_token");
+  console.log("Checking authentication - token exists:", !!token);
   return !!token;
 };
 
 const PrivateRoute = ({ element: Element, ...rest }) => {
-  return isAuthenticated() ? <Element {...rest} /> : <Navigate to="/login" />;
+  const isAuth = isAuthenticated();
+  console.log("PrivateRoute - isAuthenticated:", isAuth);
+  return isAuth ? <Element {...rest} /> : <Navigate to="/login" />;
 };
 
 const AppRoutes = () => {
@@ -41,7 +44,9 @@ const AppRoutes = () => {
   useEffect(() => {
     const validateCredentials = async () => {
       try {
+        console.log("Validating credentials for path:", location.pathname);
         const userData = await dispatch(readCurrentUser()).unwrap();
+        console.log("User data received:", userData);
         saveUserData(userData);
       } catch (err) {
         console.error("Failed to validate credentials:", err);
@@ -53,7 +58,7 @@ const AppRoutes = () => {
     if (location.pathname !== "/login") {
       validateCredentials();
     }
-  }, [dispatch]);
+  }, [dispatch, location.pathname, navigate, saveUserData]);
 
   return (
     <Routes>
