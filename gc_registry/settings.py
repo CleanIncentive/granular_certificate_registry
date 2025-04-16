@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     POSTGRES_USER: Optional[str] = None
     POSTGRES_PASSWORD: Optional[str] = None
     ESDB_CONNECTION_STRING: Optional[str] = None
-    FRONTEND_URL: Optional[str] = "localhost:9000"
+    FRONTEND_URL: Optional[str] = "localhost:3000"
 
     JWT_SECRET_KEY: str = "secret_key"
     JWT_ALGORITHM: str = "HS256"

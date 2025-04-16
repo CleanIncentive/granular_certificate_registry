@@ -102,7 +102,7 @@
       "memory": 512,
       "portMappings": [
         {
-          "hostPort": 9000,
+          "hostPort": 3000,
           "containerPort": 8080
         }
       ],

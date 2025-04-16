@@ -1,0 +1,425 @@
+PROJECT DESCRIPTION
+This application is designed to track and manage granular energy certificates with hourly granularity, supporting operations like issuing, transferring, and canceling certificates.
+
+TECHNOLOGY STACK
+
+Backend (Python)
+Framework: FastAPI for RESTful API development
+Port: 8000
+Database:
+PostgreSQL (via AWS RDS) for relational data
+EventStore DB for event sourcing
+SQLAlchemy + SQLModel for ORM
+Alembic for database migrations
+Authentication: JWT-based authentication with Passlib and Python-Jose
+Dependency Management: Poetry
+Testing: Pytest
+Infrastructure:
+Google Cloud Secret Manager for secrets
+Docker containers
+AWS EC2 for hosting
+
+Frontend (JavaScript/React)
+Framework: React 18
+Port: 3000
+State Management: Redux + Redux Toolkit
+UI Components: Ant Design (antd)
+HTTP Client: Axios
+Routing: React Router DOM
+Build Tools: Webpack, Babel
+Data Visualization: Chart.js with React-ChartJS-2
+
+Infrastructure/DevOps
+Containerization: Docker + Docker Compose
+Web Server: Nginx for reverse proxy and SSL termination
+Cloud Services:
+AWS EC2 for hosting
+AWS RDS for PostgreSQL database
+CI/CD: GitHub Actions (suggested by presence of .github directory)
+
+Architecture
+Event-sourcing pattern with CQRS (Command Query Responsibility Segregation)
+RESTful API design
+Containerized microservices
+Separate read/write database connections for scalability
+
+------------------------------------------------------------------------------
+
+<<<<<<< HEAD
+Authentication System Overview
+Backend (FastAPI)
+Authentication Framework:
+Uses FastAPI's security features with JWT (JSON Web Tokens)
+Implements OAuth2PasswordBearer for token validation
+Password handling via Passlib with bcrypt hashing
+
+Key Components:
+Routes (gc_registry/authentication/routes.py): Defines authentication endpoints
+Services (gc_registry/authentication/services.py): Implements authentication logic
+Models/Schemas: Defines data structures for authentication
+
+Authentication Flow:
+User credentials are submitted to /auth/login endpoint
+Passwords are verified against bcrypt-hashed versions stored in the database
+JWT tokens are generated with configurable expiration
+Tokens are stored in the database with user information
+Authenticated requests use Bearer token authentication
+
+User Roles:
+System implements a role-based access control system:
+ADMIN (4)
+PRODUCTION_USER (3)
+TRADING_USER (2)
+AUDIT_USER (1)
+Roles determine permissions for various operations
+
+Security Measures:
+CSRF protection middleware
+Session middleware
+CORS configuration with allowed origins
+HTTP-only, secure cookies for CSRF tokens
+Configurable JWT secret key and algorithm
+
+Frontend (React)
+Authentication State Management:
+Redux for state management
+Redux Toolkit's createAsyncThunk for async operations
+Authentication slice for login/logout operations
+Cookie-based token storage with js-cookie
+
+Login Flow:
+User submits credentials via login form
+Frontend fetches CSRF token for protection
+Credentials sent to backend API
+On success, token stored in cookie
+User data loaded and stored in context/state
+
+Request Handling:
+Axios interceptors automatically inject JWT token
+CSRF token fetched and included for non-GET requests
+Automatic error handling for authentication failures
+Network errors redirect to login page
+
+Protection Mechanisms:
+Protected routes require authentication
+Token stored in secure cookie with expiration
+CSRF token validation for state-changing operations
+
+Configuration
+Settings:
+JWT secret key and algorithm configurable
+Token expiration time configurable
+In production, sensitive values are fetched from Google Cloud Secret Manager
+Multiple environment support (PROD, CI)
+
+Security Settings:
+CORS origins are explicitly listed
+Session middleware with secret key
+CSRF protection with token validation
+Exempt paths for public endpoints
+Database Integration
+
+User Storage:
+Users stored in "registry_user" table (avoiding PostgreSQL keyword conflicts)
+Passwords stored as bcrypt hashes
+User-Account linking via junction table
+
+Token Storage:
+Active tokens tracked in database
+Includes expiration time
+Event sourcing pattern used (EventStoreDB)
+
+The system follows industry standards for authentication with JWT tokens, proper password hashing, and security considerations like CSRF protection and secure cookies. It integrates well with the FastAPI backend and React frontend, providing a secure and robust authentication system for the application.
+--------------------------------------------------
+
+=======
+>>>>>>> a439950 (updated login page)
+REDUX RULES
+
+// Prefer functional components with hooks
+
+const preferFunctionalComponents = true;
+
+// Use TypeScript for type safety
+
+const useTypeScript = true;
+
+// Redux best practices
+
+const reduxBestPractices = [
+  "Use Redux Toolkit for efficient Redux development",
+  "Implement slice pattern for organizing Redux code",
+  "Utilize createAsyncThunk for handling async actions",
+  "Use selectors for accessing state in components",
+];
+
+// Folder structure
+
+const folderStructure = `
+src/
+  components/
+  features/
+  store/
+    slices/
+    hooks.ts
+    store.ts
+  types/
+  utils/
+`;
+
+// Additional instructions
+
+const additionalInstructions = `
+1. Use React.FC for functional components with props
+2. Implement strict TypeScript checks
+3. Use Redux hooks (useSelector, useDispatch) in components
+4. Create reusable typed hooks for Redux operations
+5. Implement proper error handling in async operations
+6. Use Redux DevTools for debugging
+7. Follow Redux style guide for naming conventions
+`;
+
+REACT RULES
+## Whenever you need a React component
+
+1. Carefully consider the component's purpose, functionality, and design
+
+2. Think slowly, step by step, and outline your reasoning
+
+3. Check if a similar component already exists in any of the following locations
+   1. packages/ui/src/components
+   2. apps/spa/src/components
+
+4. If it doesn't exist, generate a detailed prompt for the component, including:
+   - Component name and purpose
+   - Desired props and their types
+   - Any specific styling or behavior requirements
+   - Mention of using Tailwind CSS for styling
+   - Request for TypeScript usage
+
+5. URL encode the prompt.
+
+6. Create a clickable link in this format:
+   [ComponentName](https://v0.dev/chat?q={encoded_prompt})
+
+7. After generating, adapt the component to fit our project structure:
+   - Import
+     - common shadcn/ui components from <ui_package_alias>@repo/ui/components/ui/</ui_package_alias>
+     - app specific components from <app_package_alias>@/components</app_package_alias>
+   - Ensure it follows our existing component patterns
+   - Add any necessary custom logic or state management
+
+Example prompt template:
+"Create a React component named {ComponentName} using TypeScript and Tailwind CSS. It should {description of functionality}. Props should include {list of props with types}. The component should {any specific styling or behavior notes}. Please provide the full component code."
+
+Remember to replace placeholders like <ui_package_path> and <app_package_alias> with the actual values used in your project.
+
+API RULES
+Here are some best practices and rules you must follow:
+
+- You use Python 3.12
+- Frameworks:
+  - pydantic
+  - fastapi
+  - sqlalchemy
+- You use poetry for dependency management
+- You use alembic for database migrations
+- You use fastapi-users for user management
+- You use fastapi-jwt-auth for authentication
+- You use fastapi-mail for email sending
+- You use fastapi-cache for caching
+- You use fastapi-limiter for rate limiting
+- You use fastapi-pagination for pagination
+
+1. **Use Meaningful Names**: Choose descriptive variable, function, and class names.
+2. **Follow PEP 8**: Adhere to the Python Enhancement Proposal 8 style guide for formatting.
+3. **Use Docstrings**: Document functions and classes with docstrings to explain their purpose.
+4. **Keep It Simple**: Write simple and clear code; avoid unnecessary complexity.
+5. **Use List Comprehensions**: Prefer list comprehensions for creating lists over traditional loops when appropriate.
+6. **Handle Exceptions**: Use try-except blocks to handle exceptions gracefully.
+7. **Use Virtual Environments**: Isolate project dependencies using virtual environments (e.g., `venv`).
+8. **Write Tests**: Implement unit tests to ensure code reliability.
+9. **Use Type Hints**: Utilize type hints for better code clarity and type checking.
+10. **Avoid Global Variables**: Limit the use of global variables to reduce side effects.
+
+These rules will help you write clean, efficient, and maintainable Python code.
+
+GITHUB RULES
+Use the Conventional Commit Messages specification to generate commit messages
+
+The commit message should be structured as follows:
+
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+``` 
+--------------------------------
+
+The commit contains the following structural elements, to communicate intent to the consumers of your library:
+
+  - fix: a commit of the type fix patches a bug in your codebase (this correlates with PATCH in Semantic Versioning).
+  - feat: a commit of the type feat introduces a new feature to the codebase (this correlates with MINOR in Semantic Versioning).
+  - BREAKING CHANGE: a commit that has a footer BREAKING CHANGE:, or appends a ! after the type/scope, introduces a breaking API change (correlating with MAJOR in Semantic Versioning). A BREAKING CHANGE can be part of commits of any type.
+  - types other than fix: and feat: are allowed, for example @commitlint/config-conventional (based on the Angular convention) recommends build:, chore:, ci:, docs:, style:, refactor:, perf:, test:, and others.
+  - footers other than BREAKING CHANGE: <description> may be provided and follow a convention similar to git trailer format.
+  - Additional types are not mandated by the Conventional Commits specification, and have no implicit effect in Semantic Versioning (unless they include a BREAKING CHANGE). A scope may be provided to a commit's type, to provide additional contextual information and is contained within parenthesis, e.g., feat(parser): add ability to parse arrays.
+
+
+
+### Specification Details
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in RFC 2119.
+
+Commits MUST be prefixed with a type, which consists of a noun, feat, fix, etc., followed by the OPTIONAL scope, OPTIONAL !, and REQUIRED terminal colon and space.
+The type feat MUST be used when a commit adds a new feature to your application or library.
+The type fix MUST be used when a commit represents a bug fix for your application.
+A scope MAY be provided after a type. A scope MUST consist of a noun describing a section of the codebase surrounded by parenthesis, e.g., fix(parser):
+A description MUST immediately follow the colon and space after the type/scope prefix. The description is a short summary of the code changes, e.g., fix: array parsing issue when multiple spaces were contained in string.
+A longer commit body MAY be provided after the short description, providing additional contextual information about the code changes. The body MUST begin one blank line after the description.
+A commit body is free-form and MAY consist of any number of newline separated paragraphs.
+One or more footers MAY be provided one blank line after the body. Each footer MUST consist of a word token, followed by either a :<space> or <space># separator, followed by a string value (this is inspired by the git trailer convention).
+A footer's token MUST use - in place of whitespace characters, e.g., Acked-by (this helps differentiate the footer section from a multi-paragraph body). An exception is made for BREAKING CHANGE, which MAY also be used as a token.
+A footer's value MAY contain spaces and newlines, and parsing MUST terminate when the next valid footer token/separator pair is observed.
+Breaking changes MUST be indicated in the type/scope prefix of a commit, or as an entry in the footer.
+If included as a footer, a breaking change MUST consist of the uppercase text BREAKING CHANGE, followed by a colon, space, and description, e.g., BREAKING CHANGE: environment variables now take precedence over config files.
+If included in the type/scope prefix, breaking changes MUST be indicated by a ! immediately before the :. If ! is used, BREAKING CHANGE: MAY be omitted from the footer section, and the commit description SHALL be used to describe the breaking change.
+Types other than feat and fix MAY be used in your commit messages, e.g., docs: update ref docs.
+The units of information that make up Conventional Commits MUST NOT be treated as case sensitive by implementors, with the exception of BREAKING CHANGE which MUST be uppercase.
+BREAKING-CHANGE MUST be synonymous with BREAKING CHANGE, when used as a token in a footer.
+
+PYTHON RULES
+
+You are an AI assistant specialized in Python development. Your approach emphasizes:
+
+Clear project structure with separate directories for source code, tests, docs, and config.
+
+Modular design with distinct files for models, services, controllers, and utilities.
+
+Configuration management using environment variables.
+
+Robust error handling and logging, including context capture.
+
+Comprehensive testing with pytest.
+
+Detailed documentation using docstrings and README files.
+
+Dependency management via https://github.com/astral-sh/uv and virtual environments.
+
+Code style consistency using Ruff.
+
+CI/CD implementation with GitHub Actions or GitLab CI.
+
+AI-friendly coding practices:
+
+You provide code snippets and explanations tailored to these principles, optimizing for clarity and AI-assisted development.
+
+Follow the following rules:
+
+For any python file, be sure to ALWAYS add typing annotations to each function or class. Be sure to include return types when necessary. Add descriptive docstrings to all python functions and classes as well. Please use pep257 convention. Update existing docstrings if need be.
+
+Make sure you keep any comments that exist in a file.
+
+When writing tests, make sure that you ONLY use pytest or pytest plugins, do NOT use the unittest module. All tests should have typing annotations as well. All tests should be in ./tests. Be sure to create all necessary files and folders. If you are creating files inside of ./tests or ./src/goob_ai, be sure to make a init.py file if one does not exist.
+
+All tests should be fully annotated and should contain docstrings. Be sure to import the following if TYPE_CHECKING:
+
+from _pytest.capture import CaptureFixture
+from _pytest.fixtures import FixtureRequest
+from _pytest.logging import LogCaptureFixture
+from _pytest.monkeypatch import MonkeyPatch
+from pytest_mock.plugin import MockerFixture
+
+DATABASE & DATA MANAGEMENT
+- Follow database migration workflow: create migrations for all schema changes, never modify production directly
+- Use database transactions for operations that modify multiple records
+- Implement connection pooling for efficient database access
+- Apply database indexing strategically based on query patterns
+- Validate data at application level before database operations
+- Use parameterized queries to prevent SQL injection
+- Implement soft deletion where appropriate instead of hard deletion
+
+SECURITY
+
+- Practice defense in depth with multiple security layers
+- Store secrets using a dedicated secret manager, never in code or config files
+- Implement proper input validation on all API endpoints
+- Use Content Security Policy (CSP) headers to prevent XSS attacks
+- Implement rate limiting on authentication endpoints
+- Apply the principle of least privilege for all system components
+- Follow OWASP Top 10 security guidelines
+- Set secure and HTTP-only flags for sensitive cookies
+- Implement automated security scanning in CI pipeline
+
+DEVOPS & DEPLOYMENT
+- Use Infrastructure as Code (IaC) for all environment provisioning
+- Follow immutable infrastructure patterns with containers
+- Implement blue-green deployment for zero-downtime updates
+- Use semantic versioning for all releases
+- Automate post-deployment verification tests
+- Maintain separate environments for development, testing, staging, and production
+- Implement observability through metrics, logs, and traces
+- Configure health checks and readiness probes for all services
+
+FRONTEND BEST PRACTICES
+- Implement WCAG 2.1 AA accessibility standards
+- Use code splitting to optimize bundle size
+- Implement responsive design using mobile-first approach
+- Cache API responses appropriately using RTK Query or similar
+- Apply proper error boundaries around components
+- Implement keyboard navigation support
+- Optimize images and assets for performance
+- Use frontend feature flags for incremental rollouts
+
+BACKEND API DESIGN
+- Follow RESTful API design principles consistently
+- Implement pagination for all collection endpoints
+- Use appropriate HTTP status codes and error responses
+- Version APIs in URL or using Accept headers
+- Implement proper request validation using Pydantic
+- Document all APIs using OpenAPI/Swagger
+- Design for backward compatibility when possible
+- Implement consistent error response format
+
+QUALITY ASSURANCE
+- Maintain minimum 80% code coverage for unit tests
+- Implement integration tests for critical user journeys
+- Use contract testing for service boundaries
+- Apply Test-Driven Development (TDD) for core functionality
+- Implement end-to-end testing for critical paths
+- Automate UI testing for core user flows
+- Run performance tests before major releases
+- Use property-based testing for data-intensive functions
+
+PERFORMANCE OPTIMIZATION
+- Cache expensive operations using appropriate caching strategy
+- Optimize database queries through proper indexing and query analysis
+- Implement database query timeouts to prevent long-running queries
+- Use connection pooling for database and external services
+- Apply compression for HTTP responses
+- Optimize frontend assets (bundle size, image optimization)
+- Implement lazy loading for non-critical resources
+- Configure appropriate cache headers for static assets
+
+LOGGING & MONITORING
+- Follow structured logging format (JSON preferred)
+- Include correlation IDs in logs for request tracing
+- Log all production errors with context but without sensitive data
+- Implement application metrics for key performance indicators
+- Set up alerting for critical application issues
+- Use log levels appropriately (DEBUG, INFO, WARN, ERROR)
+- Monitor application health with regular health checks
+- Implement distributed tracing for microservice communication
+
+DOCUMENTATION
+- Maintain up-to-date README with setup and development instructions
+- Document architecture decisions using Architecture Decision Records (ADRs)
+- Create and maintain entity-relationship diagrams for data models
+- Document API endpoints using OpenAPI/Swagger
+- Maintain change logs for significant updates
+- Document configuration options and environment variables
+- Create runbooks for common operational tasks
+- Document testing strategy and tools

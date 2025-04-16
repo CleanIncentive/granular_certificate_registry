@@ -83,7 +83,7 @@ app.add_middleware(
     max_age=3600,
 )
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "localhost:9000")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "localhost:3000")
 
 
 class CSRFMiddleware:
@@ -129,8 +129,8 @@ class CSRFMiddleware:
 
 origins = [
     "https://dev.gc-registry.com",
-    "http://localhost:9000",  # Keep local development URL
-    "http://127.0.0.1:9000",  # Keep local development URL
+    "http://localhost:3000",  # Keep local development URL
+    "http://127.0.0.1:3000",  # Keep local development URL
 ]
 
 app.add_middleware(
@@ -217,6 +217,12 @@ async def read_root(request: Request):
     }
 
     return templates.TemplateResponse("index.jinja", params)
+
+
+@app.get("/health", tags=["Core"])
+async def health_check():
+    """Simple health check endpoint."""
+    return {"status": "ok"}
 
 
 # Assemble fastapi loggers
