@@ -98,24 +98,12 @@ const Certificate = () => {
   const defaultFilters = {
     device_id: null,
     energy_source: null,
-    certificate_bundle_status: CERTIFICATE_STATUS.active,
-    certificate_period_start: one_month_ago,
-    certificate_period_end: maxBundlePeriodStart,
+    certificate_bundle_status: null,
+    certificate_period_start: null,
+    certificate_period_end: null,
   };
 
   const [filters, setFilters] = useState(defaultFilters);
-
-  useEffect(() => {
-    // Ensure the initial date range is within 30 days
-    const startDate = one_month_ago;
-    const endDate = maxBundlePeriodStart;
-    
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      certificate_period_start: startDate,
-      certificate_period_end: endDate,
-    }));
-  }, [one_month_ago, maxBundlePeriodStart]);
 
   useEffect(() => {
     if (!dialogAction) return;
@@ -160,11 +148,11 @@ const Certificate = () => {
       source_id: currentAccount?.detail.id,
       device_id: filters.device_id,
       certificate_bundle_status:
-        CERTIFICATE_STATUS[filters.certificate_bundle_status],
+        filters.certificate_bundle_status ? CERTIFICATE_STATUS[filters.certificate_bundle_status] : null,
       certificate_period_start:
-        filters.certificate_period_start?.format("YYYY-MM-DD"),
+        filters.certificate_period_start?.format("YYYY-MM-DD") || null,
       certificate_period_end:
-        filters.certificate_period_end?.format("YYYY-MM-DD"),
+        filters.certificate_period_end?.format("YYYY-MM-DD") || null,
       energy_source: filters.energy_source,
     };
     try {
@@ -196,7 +184,15 @@ const Certificate = () => {
   };
 
   const handleClearFilter = async () => {
-    setFilters({});
+    setFilters({
+      device_id: null,
+      energy_source: null,
+      certificate_bundle_status: null,
+      certificate_period_start: null,
+      certificate_period_end: null,
+    });
+    // Fetch after setting filters to empty
+    setTimeout(() => fetchCertificatesData(), 0);
   };
 
   const getDeviceName = (deviceID) => {
@@ -317,15 +313,16 @@ const Certificate = () => {
     </Select>,
     /* Date range Filter */
     <RangePicker
-      value={[filters.certificate_period_start, filters.certificate_period_end]}
+      value={filters.certificate_period_start && filters.certificate_period_end ? 
+        [filters.certificate_period_start, filters.certificate_period_end] : null}
       onChange={(dates) => handleDateChange(dates)}
-      allowClear={false}
+      allowClear={true}
       format="YYYY-MM-DD"
     />,
     <Select
       // mode="multiple"
       placeholder="Status"
-      value={filters.status}
+      value={filters.certificate_bundle_status}
       onChange={(value) =>
         handleFilterChange("certificate_bundle_status", value)
       }
