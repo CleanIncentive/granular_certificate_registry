@@ -158,16 +158,16 @@ const Login = () => {
                   src={require("../../assets/images/clean-incentive-logo-h.png")}
                   alt="Clean Incentive"
                   style={{
-                    height: "108px",
-                    marginRight: "16px"
+                    height: "86px",
+                    marginRight: "13px"
                   }}
                 />
                 <img 
                   src={require("../../assets/images/FEA-logo.png")}
                   alt="FEA Logo"
                   style={{
-                    height: "108px",
-                    marginLeft: "8px"
+                    height: "260px",
+                    marginLeft: "20px"
                   }}
                 />
               </div>
