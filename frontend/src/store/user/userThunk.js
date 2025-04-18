@@ -1,6 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { readUserAPI, readCurrentUserAPI } from "../../api/userAPI";
 import { saveDataToCookies } from "../../utils";
+import Cookies from "js-cookie";
 
 export const readUser = createAsyncThunk(
   "user/readUser",
@@ -57,6 +58,20 @@ export const readCurrentUser = createAsyncThunk(
       return userData;
     } catch (error) {
       console.error("Error fetching current user:", error);
+      
+      // Check if this is an authorization error
+      if (error.status === 401) {
+        console.warn("User authentication expired or invalid. Redirecting to login.");
+        // Ensure token cookie is removed
+        Cookies.remove("access_token", { path: "" });
+        // Return a specific error for auth issues
+        return rejectWithValue({ 
+          message: "Your session has expired. Please log in again.", 
+          status: 401,
+          isAuthError: true 
+        });
+      }
+      
       const message = error.message || "Failed to fetch user data";
       const status = error.status || 500;
       return rejectWithValue({ message, status });

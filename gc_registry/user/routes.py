@@ -39,10 +39,29 @@ def create_user(
 def read_current_user(
     current_user: LoggedInUser, read_session: Session = Depends(db.get_read_session)
 ) -> UserRead:
-    user_read = UserRead.model_validate(current_user.model_dump())
-    user_accounts = get_accounts_by_user_id(current_user.id, read_session)
-    user_read.accounts = user_accounts
-    return user_read
+    try:
+        from gc_registry.logging_config import logger
+        logger.debug(f"read_current_user called for user_id={current_user.id}, email={current_user.email}")
+        
+        user_read = UserRead.model_validate(current_user.model_dump())
+        logger.debug(f"User data validated: {user_read}")
+        
+        try:
+            user_accounts = get_accounts_by_user_id(current_user.id, read_session)
+            logger.debug(f"User accounts fetched: {len(user_accounts) if user_accounts else 0} accounts")
+            user_read.accounts = user_accounts
+        except Exception as account_error:
+            logger.error(f"Error fetching accounts for user {current_user.id}: {str(account_error)}")
+            # Continue even if account fetch fails - just return user without accounts
+            user_read.accounts = []
+            
+        return user_read
+    except Exception as e:
+        logger.error(f"Unexpected error in read_current_user: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve user data: {str(e)}",
+        )
 
 
 @router.get("/me/accounts", response_model=list[AccountRead] | None)

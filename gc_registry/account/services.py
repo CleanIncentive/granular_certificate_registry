@@ -9,6 +9,7 @@ from gc_registry.certificate.models import GranularCertificateBundle
 from gc_registry.certificate.schemas import CertificateStatus
 from gc_registry.user.models import UserAccountLink
 from gc_registry.user.services import get_users_by_account_id
+from gc_registry.logging_config import logger
 
 
 def get_account_by_id(account_id: int, read_session: Session):
@@ -110,24 +111,44 @@ def get_accounts_by_user_id(
     Returns:
         list[AccountRead] | None: List of accounts or None if no accounts are found.
     """
-    if not user_id:
-        raise ValueError("User ID is required")
+    try:
+        if not user_id:
+            raise ValueError("User ID is required")
 
-    stmt: SelectOfScalar = (
-        select(Account)
-        .join(UserAccountLink)
-        .where(
-            UserAccountLink.user_id == user_id,
-            UserAccountLink.is_deleted == False,  # noqa: E712
+        logger.debug(f"get_accounts_by_user_id: Finding accounts for user_id={user_id}")
+        
+        stmt: SelectOfScalar = (
+            select(Account)
+            .join(UserAccountLink)
+            .where(
+                UserAccountLink.user_id == user_id,
+                UserAccountLink.is_deleted == False,  # noqa: E712
+            )
         )
-    )
-    accounts = read_session.exec(stmt).all()
-    if not accounts:
-        return None
+        
+        try:
+            accounts = read_session.exec(stmt).all()
+            logger.debug(f"get_accounts_by_user_id: Found {len(accounts)} accounts for user_id={user_id}")
+        except Exception as db_error:
+            logger.error(f"Database error fetching accounts for user_id={user_id}: {str(db_error)}")
+            raise
+        
+        if not accounts:
+            logger.debug(f"get_accounts_by_user_id: No accounts found for user_id={user_id}")
+            return None
 
-    account_reads = [AccountRead.model_validate(a.model_dump()) for a in accounts]
-
-    return account_reads
+        try:
+            account_reads = [AccountRead.model_validate(a.model_dump()) for a in accounts]
+            logger.debug(f"get_accounts_by_user_id: Successfully created AccountRead objects for user_id={user_id}")
+            return account_reads
+        except Exception as validation_error:
+            logger.error(f"Validation error creating AccountRead objects for user_id={user_id}: {str(validation_error)}")
+            raise
+    
+    except Exception as e:
+        logger.error(f"Unexpected error in get_accounts_by_user_id for user_id={user_id}: {str(e)}", exc_info=True)
+        # Return empty list instead of None on error to avoid serialization issues
+        return []
 
 
 def update_account_user_links(

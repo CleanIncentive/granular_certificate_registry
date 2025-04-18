@@ -50,8 +50,24 @@ const AppRoutes = () => {
         saveUserData(userData);
       } catch (err) {
         console.error("Failed to validate credentials:", err);
-        message.error(err?.message || "Credentials validation failed", 3);
-        navigate("/login");
+        
+        // Check if this is an auth error requiring redirect
+        if (err?.isAuthError) {
+          // This is an authentication error (expired token, etc)
+          message.warning(err?.message || "Your session has expired. Please log in again.", 3);
+          navigate("/login");
+          return;
+        }
+        
+        // For other errors, show error message but don't automatically redirect
+        // unless server explicitly returns 401 Unauthorized
+        if (err?.status === 401) {
+          message.error(err?.message || "Authentication failed", 3);
+          navigate("/login");
+        } else {
+          // For server errors (500, etc), show error but try to continue
+          message.error(err?.message || "Failed to load user data. Please try again later.", 3);
+        }
       }
     };
 

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from esdbclient import EventStoreDBClient
 from fastapi import APIRouter, Depends, HTTPException
@@ -71,7 +71,7 @@ async def login_for_access_token(
     token_record = TokenRecords(
         email=user.email,
         token=access_token,
-        expires=datetime.now() + access_token_expires,
+        expires=datetime.now(tz=timezone.utc) + access_token_expires,
     )
     TokenRecords.create(token_record, write_session, read_session, esdb_client)
 

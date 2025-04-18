@@ -77,6 +77,19 @@ baseAPI.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // Handle authentication errors (unauthorized)
+    if (
+      error.response?.status === 401 &&
+      window.location.pathname !== "/login"
+    ) {
+      console.error("Authentication error. Token may have expired. Redirecting to login.");
+      // Clear the token cookie
+      Cookies.remove("access_token", { path: "" });
+      // Redirect to login page
+      window.location.href = "/login";
+      return Promise.reject(error);
+    }
+
     if (
       error.response?.status === 403 &&
       error.response?.data?.detail?.includes("CSRF")
@@ -90,13 +103,40 @@ baseAPI.interceptors.response.use(
       }
     }
 
+    // Extract as much error information as possible
     const status = error.response?.status || 500;
-    const message =
-      error.response?.data?.detail || "An unexpected error occurred.";
+    let message = "An unexpected error occurred.";
+    let errorDetail = null;
+    
+    // Try to get detailed error message
+    if (error.response?.data) {
+      if (typeof error.response.data === 'string') {
+        message = error.response.data;
+      } else if (error.response.data.detail) {
+        message = error.response.data.detail;
+      } else if (error.response.data.message) {
+        message = error.response.data.message;
+      }
+      
+      // Save the full error object for debugging
+      errorDetail = error.response.data;
+    } else if (error.message) {
+      message = error.message;
+    }
 
     console.error(`API Error: Status ${status}, Message: ${message}`);
+    
+    // For 500 errors, add more context to help debugging
+    if (status === 500) {
+      console.error("Server error details:", {
+        url: error.config?.url,
+        method: error.config?.method,
+        errorObject: error,
+        responseData: error.response?.data
+      });
+    }
 
-    return Promise.reject({ status, message });
+    return Promise.reject({ status, message, errorDetail });
   }
 );
 
