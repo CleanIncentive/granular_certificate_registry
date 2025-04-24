@@ -5,6 +5,8 @@ import {
   MoreOutlined,
   SettingOutlined,
   LogoutOutlined,
+  UserOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import { DeviceIcon } from "../../assets/icon/DeviceIcon";
 import { CertificateIcon } from "../../assets/icon/CertificateIcon";
@@ -24,16 +26,27 @@ const SideMenu = () => {
   const [dropDownVisible, setDropDownVisible] = useState(false);
   const [isAccountPickerAllowed, setIsAccountPickerAllowed] = useState(false);
   const [isShowDevices, setIsShowDevices] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { userData } = useUser();
 
   useEffect(() => {
-    console.log(userData);
+    console.log("User data in SideMenu:", userData);
     if (!!userData) {
       setIsAccountPickerAllowed(userData.accounts.length > 1);
       setIsShowDevices(
         userData.userInfo.role !== "TRADING_USER" &&
           userData.userInfo.role !== "AUDIT_USER"
       );
+      
+      // Improved admin role check to handle different formats
+      const role = userData.userInfo.role;
+      const isAdminUser = 
+        role === "ADMIN" || 
+        role === "admin" || 
+        role === 4; // Numeric role value
+      
+      console.log("Is admin check:", { role, isAdminUser });
+      setIsAdmin(isAdminUser);
     }
   }, [userData]);
 
@@ -77,8 +90,27 @@ const SideMenu = () => {
         className: "custom-menu-item",
         disabled: true,
       },
+      {
+        key: "admin-divider",
+        type: "divider",
+        style: { display: isAdmin ? "block" : "none" },
+      },
+      {
+        key: "admin-label",
+        type: "group",
+        label: "Administration",
+        style: { display: isAdmin ? "block" : "none", marginTop: "16px", fontWeight: "bold" },
+      },
+      {
+        key: "admin-users",
+        icon: <TeamOutlined />,
+        label: "User Management",
+        onClick: () => navigate("/admin/users"),
+        style: generateMenuStyle("/admin/users", isAdmin),
+        className: "custom-menu-item",
+      },
     ],
-    [location.pathname, isShowDevices, navigate]
+    [location.pathname, isShowDevices, isAdmin, navigate]
   );
 
   const deleteAllCookies = () => {

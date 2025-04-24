@@ -1,5 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { readUserAPI, readCurrentUserAPI } from "../../api/userAPI";
+import { readUserAPI, readCurrentUserAPI, createUserAPI } from "../../api/userAPI";
 import { saveDataToCookies } from "../../utils";
 import Cookies from "js-cookie";
 
@@ -30,9 +30,14 @@ export const readUser = createAsyncThunk(
 
 export const readCurrentUser = createAsyncThunk(
   "user/readCurrentUser",
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
       console.log("Fetching current user data from API");
+      
+      // Try to load cached user data if available
+      const currentState = getState();
+      const cachedUserData = currentState.user?.userInfo || null;
+      
       const response = await readCurrentUserAPI();
       console.log("API response for current user:", response);
 
@@ -72,9 +77,75 @@ export const readCurrentUser = createAsyncThunk(
         });
       }
       
+      // For server errors (500), try to recover with cached data
+      if (error.status === 500) {
+        console.warn("Server error when fetching user. Attempting to use cached data.");
+        
+        // Try to get user data from cookies
+        const savedUserData = Cookies.get("user_data");
+        if (savedUserData) {
+          try {
+            const parsedUserData = JSON.parse(savedUserData);
+            console.log("Using cached user data:", parsedUserData);
+            
+            // Return cached data but also include error information
+            return {
+              ...parsedUserData,
+              _error: {
+                message: "Using cached data due to server error",
+                originalError: error.message
+              }
+            };
+          } catch (parseError) {
+            console.error("Failed to parse cached user data:", parseError);
+          }
+        }
+      }
+      
       const message = error.message || "Failed to fetch user data";
       const status = error.status || 500;
       return rejectWithValue({ message, status });
+    }
+  }
+);
+
+export const createUser = createAsyncThunk(
+  "user/createUser",
+  async (userData, { rejectWithValue }) => {
+    try {
+      console.log("Creating user with data:", userData);
+      
+      // Prepare user data in the format expected by the backend
+      const userToCreate = {
+        email: userData.email,
+        name: userData.name,
+        role: userData.role,
+        organisation: userData.organisation || null,
+        password: userData.password
+      };
+
+      console.log("Sending user creation request to API:", userToCreate);
+      const response = await createUserAPI(userToCreate);
+      console.log("User creation response:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error creating user:", error);
+      
+      // Handle different error formats
+      const errorMessage = 
+        error.response?.data?.detail || 
+        error.response?.data?.message || 
+        error.message || 
+        "Failed to create user";
+        
+      const errorStatus = error.response?.status || 500;
+      
+      console.error(`User creation failed: ${errorMessage} (${errorStatus})`);
+      
+      return rejectWithValue({
+        message: errorMessage,
+        status: errorStatus
+      });
     }
   }
 );

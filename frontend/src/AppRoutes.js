@@ -20,6 +20,7 @@ const Certificate = React.lazy(() => import("@components/certificate/index"));
 const Device = React.lazy(() => import("@components/device/index"));
 const AccountPicker = React.lazy(() => import("@components/Account/Picker/index"));
 const AccountManagement = React.lazy(() => import("@components/Account/Management/index"));
+const AdminUserPage = React.lazy(() => import("@pages/Admin/AdminUserPage"));
 
 // const Transfer = React.lazy(() => import("./components/Transfer"));
 
@@ -47,6 +48,16 @@ const AppRoutes = () => {
         console.log("Validating credentials for path:", location.pathname);
         const userData = await dispatch(readCurrentUser()).unwrap();
         console.log("User data received:", userData);
+        
+        // Check if we're using fallback data from a server error
+        if (userData._error) {
+          console.warn("Using fallback user data due to server error:", userData._error);
+          message.warning(
+            "There was a problem connecting to the server. Some features may be limited.",
+            5
+          );
+        }
+        
         saveUserData(userData);
       } catch (err) {
         console.error("Failed to validate credentials:", err);
@@ -56,6 +67,18 @@ const AppRoutes = () => {
           // This is an authentication error (expired token, etc)
           message.warning(err?.message || "Your session has expired. Please log in again.", 3);
           navigate("/login");
+          return;
+        }
+        
+        // For server errors (500), show a more helpful message but try to continue
+        if (err?.status === 500) {
+          message.error("Server error. Please try again later or contact support if the problem persists.", 5);
+          
+          // Check if we're on a path that requires authentication
+          if (location.pathname !== "/certificates" && location.pathname !== "/") {
+            // Redirect to a "safe" page
+            navigate("/certificates");
+          }
           return;
         }
         
@@ -98,6 +121,10 @@ const AppRoutes = () => {
         <Route
           path="/account-management"
           element={<PrivateRoute element={AccountManagement} />}
+        />
+        <Route
+          path="/admin/users"
+          element={<PrivateRoute element={AdminUserPage} />}
         />
         {/* Catch-all route */}
         <Route path="*" element={<Navigate to="/certificates" replace />} />

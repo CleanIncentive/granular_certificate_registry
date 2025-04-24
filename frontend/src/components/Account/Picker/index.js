@@ -1,5 +1,5 @@
-import React from "react";
-import { Typography, Space, Divider } from "antd";
+import React, { useState } from "react";
+import { Typography, Space, Divider, message } from "antd";
 import * as styles from "./AccountPicker.module.css";
 import addUserBtn from "../../../assets/images/add-user-btn.png";
 import registryLogo from "../../../assets/images/registry-logo.png";
@@ -14,18 +14,55 @@ const { Title, Text } = Typography;
 const AccountPicker = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const userData = JSON.parse(Cookies.get("user_data"));
+  const [loading, setLoading] = useState({});
+  const userData = JSON.parse(Cookies.get("user_data") || '{"accounts":[]}');
   const { saveAccountDetail } = useAccount();
 
   const handleAccountSelection = async (account) => {
     try {
+      // Set loading state for this specific account
+      setLoading(prev => ({ ...prev, [account.id]: true }));
+      
+      console.log(`Selecting account: ${account.id} - ${account.account_name}`);
       const accountDetail = await dispatch(
         getAccountDetails(account.id)
       ).unwrap();
+      
+      console.log("Account details received:", accountDetail);
       saveAccountDetail(accountDetail);
+      
+      // Save selected account to cookies as fallback
+      const selectedAccountData = {
+        id: account.id,
+        account_name: account.account_name
+      };
+      Cookies.set("selected_account", JSON.stringify(selectedAccountData));
+      
       navigate("/certificates");
     } catch (error) {
       console.error("Error selecting account:", error);
+      
+      // Show error message
+      message.error(
+        error?.message || "Failed to select account. Please try again or contact support.",
+        5
+      );
+      
+      // Try to navigate anyway with minimal account info to prevent blocking the user
+      try {
+        const fallbackAccountData = {
+          id: account.id,
+          account_name: account.account_name,
+          _error: true
+        };
+        saveAccountDetail(fallbackAccountData);
+        navigate("/certificates");
+      } catch (navError) {
+        console.error("Failed to navigate with fallback account data:", navError);
+      }
+    } finally {
+      // Clear loading state
+      setLoading(prev => ({ ...prev, [account.id]: false }));
     }
   };
 
@@ -59,8 +96,12 @@ const AccountPicker = () => {
         {userData?.accounts?.map((account, index) => (
           <React.Fragment key={account.id}>
             <div
-              className={styles["account-card"]}
-              onClick={() => handleAccountSelection(account)}
+              className={`${styles["account-card"]} ${loading[account.id] ? styles["account-card-loading"] : ""}`}
+              onClick={() => !loading[account.id] && handleAccountSelection(account)}
+              style={{ 
+                cursor: loading[account.id] ? 'wait' : 'pointer',
+                opacity: loading[account.id] ? 0.7 : 1
+              }}
             >
               <Space align="center" style={{ width: "100%" }}>
                 <div className={styles["account-initial"]}>
@@ -70,6 +111,7 @@ const AccountPicker = () => {
                   <Text style={{ display: "flex" }} strong>
                     {account.account_name}
                   </Text>
+                  {loading[account.id] && <Text type="secondary">Loading...</Text>}
                 </div>
               </Space>
             </div>

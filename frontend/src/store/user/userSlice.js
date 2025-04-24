@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { readUser, readCurrentUser } from "./userThunk";
+import { readUser, readCurrentUser, createUser } from "./userThunk";
 
 const userSlice = createSlice({
   name: "user",
@@ -15,6 +15,7 @@ const userSlice = createSlice({
     },
     loading: false,
     error: null,
+    createdUser: null,
   },
   reducers: {
     clearUser: (state) => {
@@ -40,6 +41,9 @@ const userSlice = createSlice({
     },
     setSelectedAccount: (state, action) => {
       state.selectedAccount = action.payload;
+    },
+    clearCreatedUser: (state) => {
+      state.createdUser = null;
     },
   },
   extraReducers: (builder) => {
@@ -89,10 +93,22 @@ const userSlice = createSlice({
           role: null,
           userID: null,
         };
+      })
+      .addCase(createUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.createdUser = action.payload;
+      })
+      .addCase(createUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
 
-export const { clearUser, setSelectedAccount, setCurrentUserInfoState } =
+export const { clearUser, setSelectedAccount, setCurrentUserInfoState, clearCreatedUser } =
   userSlice.actions;
 export default userSlice.reducer;

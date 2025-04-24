@@ -28,6 +28,8 @@ const Main = () => {
         return "Setting";
       case "/transfer-history":
         return "Transfer history";
+      case "/admin/users":
+        return "User Administration";
     }
   };
 
