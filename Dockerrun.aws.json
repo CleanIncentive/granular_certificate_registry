@@ -1,16 +1,27 @@
 {
   "AWSEBDockerrunVersion": "2",
-  "volumes": [],
+  "volumes": [
+    {
+      "name": "eventstore-data",
+      "host": {
+        "sourcePath": "/var/app/current/eventstore-data"
+      }
+    }
+  ],
   "containerDefinitions": [
     {
       "name": "eventstore",
       "image": "eventstore/eventstore:23.10.2-bookworm-slim",
       "essential": true,
-      "memory": 512,
+      "memory": 256,
       "portMappings": [
         {
           "hostPort": 2113,
           "containerPort": 2113
+        },
+        {
+          "hostPort": 1113,
+          "containerPort": 1113
         }
       ],
       "environment": [
@@ -27,11 +38,7 @@
           "value": "true"
         },
         {
-          "name": "EVENTSTORE_EXT_TCP_PORT",
-          "value": "1113"
-        },
-        {
-          "name": "EVENTSTORE_EXT_HTTP_PORT",
+          "name": "EVENTSTORE_HTTP_PORT",
           "value": "2113"
         },
         {
@@ -39,12 +46,15 @@
           "value": "true"
         },
         {
-          "name": "EVENTSTORE_ENABLE_EXTERNAL_TCP",
-          "value": "true"
-        },
-        {
           "name": "EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP",
           "value": "true"
+        }
+      ],
+      "mountPoints": [
+        {
+          "sourceVolume": "eventstore-data",
+          "containerPath": "/var/lib/eventstore",
+          "readOnly": false
         }
       ]
     },
@@ -70,11 +80,11 @@
         },
         {
           "name": "POSTGRES_USER",
-          "value": "postgres"
+          "value": "${POSTGRES_USER}"
         },
         {
           "name": "POSTGRES_PASSWORD",
-          "value": "lQT7qQxpCqMEWeOz9y05"
+          "value": "${POSTGRES_PASSWORD}"
         },
         {
           "name": "POSTGRES_DB",
@@ -82,11 +92,11 @@
         },
         {
           "name": "DATABASE_HOST_READ",
-          "value": "granular-registry-db-dev-read.cdaotyxbrday.us-east-1.rds.amazonaws.com"
+          "value": "${DATABASE_HOST_READ}"
         },
         {
           "name": "DATABASE_HOST_WRITE",
-          "value": "granular-registry-db-dev-write.cdaotyxbrday.us-east-1.rds.amazonaws.com"
+          "value": "${DATABASE_HOST_WRITE}"
         },
         {
           "name": "DATABASE_PORT",
