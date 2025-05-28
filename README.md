@@ -87,6 +87,86 @@ Development tools:
 | [Contributing](docs/CONTRIBUTING.md) | Our processes for contributors   |
 | [Change Log](docs/CHANGELOG.md)         | Log of code changes              |
 
+# Security and Environment Setup
+
+## Environment Variables
+
+This project uses environment variables for configuration. Copy `.env.template` to `.env` and configure the following variables:
+
+```bash
+# Database Configuration
+DATABASE_HOST_READ=your_read_host
+DATABASE_HOST_WRITE=your_write_host
+POSTGRES_USER=your_db_user
+POSTGRES_PASSWORD=your_db_password
+POSTGRES_DB=registry
+DATABASE_PORT=5432
+
+# JWT Configuration
+JWT_SECRET_KEY=your_jwt_secret_key
+JWT_ALGORITHM=HS256
+MIDDLEWARE_SECRET_KEY=your_middleware_secret_key
+
+# EventStore Configuration
+ESDB_CONNECTION_STRING=your_eventstore_connection_string
+
+# Frontend Configuration
+FRONTEND_URL=your_frontend_url
+REACT_APP_API_URL=your_api_url
+
+# Environment
+ENVIRONMENT=DEV  # DEV, CI, PROD
+```
+
+## Production Deployment
+
+In production, sensitive values are managed using Google Cloud Secret Manager. Ensure the following secrets are configured:
+
+- DATABASE_HOST_READ
+- DATABASE_HOST_WRITE
+- POSTGRES_USER
+- POSTGRES_PASSWORD
+- ESDB_CONNECTION_STRING
+- FRONTEND_URL
+- JWT_SECRET_KEY
+- JWT_ALGORITHM
+- MIDDLEWARE_SECRET_KEY
+
+The application will automatically fetch these secrets in production mode.
+
+## Security Best Practices
+
+1. Never commit sensitive information to the repository
+2. Use environment variables for configuration
+3. In production, use Google Cloud Secret Manager
+4. Keep SSL private keys and certificates secure
+5. Regularly rotate secrets and credentials
+6. Use strong, unique passwords for all services
+7. Monitor application logs for security events
+8. Keep dependencies up to date
+9. Follow the principle of least privilege
+10. Use HTTPS/SSL for all connections
+
+## Local Development
+
+For local development:
+
+1. Copy `.env.template` to `.env`
+2. Fill in the required values
+3. Never commit the `.env` file
+4. Use mock values for development
+5. Keep production credentials separate
+
+## SSL Certificates
+
+SSL certificates and private keys should be stored securely and never committed to the repository. For local development, you can generate self-signed certificates:
+
+```bash
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout privkey.pem -out fullchain.pem
+```
+
+Place the certificates in the appropriate directory as specified in your nginx configuration.
+
 
 
 

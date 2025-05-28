@@ -1,0 +1,36 @@
+option_settings:
+  aws:elasticbeanstalk:application:environment:
+    ESDB_CONNECTION_STRING: your_eventstore_connection_string
+    REACT_APP_API_URL: your_api_url
+    JWT_SECRET_KEY: your_jwt_secret_key
+    MIDDLEWARE_SECRET_KEY: your_middleware_secret_key
+    POSTGRES_PASSWORD: your_postgres_password
+    POSTGRES_USER: your_postgres_user
+    POSTGRES_DB: registry
+    DATABASE_HOST_READ: your_read_host
+    DATABASE_HOST_WRITE: your_write_host
+    DATABASE_PORT: 5432
+    ENVIRONMENT: PROD
+    GOOGLE_CLOUD_PROJECT: your_project_id
+  aws:elasticbeanstalk:container:docker:run:environment:
+    ESDB_CONNECTION_STRING: your_eventstore_connection_string
+    REACT_APP_API_URL: your_api_url
+    JWT_SECRET_KEY: your_jwt_secret_key
+    MIDDLEWARE_SECRET_KEY: your_middleware_secret_key
+    POSTGRES_PASSWORD: your_postgres_password
+    POSTGRES_USER: your_postgres_user
+    POSTGRES_DB: registry
+    DATABASE_HOST_READ: your_read_host
+    DATABASE_HOST_WRITE: your_write_host
+    DATABASE_PORT: 5432
+  aws:autoscaling:launchconfiguration:
+    InstanceType: t2.medium
+  aws:autoscaling:asg:
+    MinSize: 1
+    MaxSize: 4
+  aws:elasticbeanstalk:environment:
+    EnvironmentType: LoadBalanced
+  aws:elasticbeanstalk:environment:proxy:
+    ProxyServer: nginx
+  aws:elasticbeanstalk:healthreporting:system:
+    SystemType: enhanced 
