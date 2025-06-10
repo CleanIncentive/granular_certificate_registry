@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import Cookies from "js-cookie";
 import {
   BrowserRouter as Router,
@@ -20,6 +20,7 @@ const Certificate = React.lazy(() => import("@components/certificate/index"));
 const Device = React.lazy(() => import("@components/device/index"));
 const AccountPicker = React.lazy(() => import("@components/Account/Picker/index"));
 const AccountManagement = React.lazy(() => import("@components/Account/Management/index"));
+const Settings = React.lazy(() => import("@pages/Settings/index"));
 
 // const Transfer = React.lazy(() => import("./components/Transfer"));
 
@@ -39,15 +40,35 @@ const AppRoutes = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { saveUserData } = useUser();
+  const { saveUserData, userData } = useUser();
+  const lastValidationTime = useRef(0);
+  const validationInProgress = useRef(false);
 
   useEffect(() => {
     const validateCredentials = async () => {
+      // Prevent multiple simultaneous validations
+      if (validationInProgress.current) {
+        return;
+      }
+
+      // Only validate if we haven't validated in the last 5 minutes
+      const now = Date.now();
+      const timeSinceLastValidation = now - lastValidationTime.current;
+      const fiveMinutes = 5 * 60 * 1000;
+
+      if (timeSinceLastValidation < fiveMinutes && userData) {
+        console.log("Skipping validation - recent validation exists and user data available");
+        return;
+      }
+
+      validationInProgress.current = true;
+
       try {
         console.log("Validating credentials for path:", location.pathname);
         const userData = await dispatch(readCurrentUser()).unwrap();
         console.log("User data received:", userData);
         saveUserData(userData);
+        lastValidationTime.current = now;
       } catch (err) {
         console.error("Failed to validate credentials:", err);
         
@@ -64,17 +85,23 @@ const AppRoutes = () => {
         if (err?.status === 401) {
           message.error(err?.message || "Authentication failed", 3);
           navigate("/login");
+        } else if (err?.status === 500) {
+          // For server errors, log but don't show user-facing error messages
+          // and don't redirect - let the app continue with cached data
+          console.warn("Server error during validation, continuing with cached data:", err.message);
         } else {
-          // For server errors (500, etc), show error but try to continue
+          // For other errors, show error but try to continue
           message.error(err?.message || "Failed to load user data. Please try again later.", 3);
         }
+      } finally {
+        validationInProgress.current = false;
       }
     };
 
     if (location.pathname !== "/login") {
       validateCredentials();
     }
-  }, [dispatch, location.pathname, navigate, saveUserData]);
+  }, [dispatch, location.pathname, navigate, saveUserData, userData]);
 
   return (
     <Routes>
@@ -98,6 +125,10 @@ const AppRoutes = () => {
         <Route
           path="/account-management"
           element={<PrivateRoute element={AccountManagement} />}
+        />
+        <Route
+          path="/settings"
+          element={<PrivateRoute element={Settings} />}
         />
         {/* Catch-all route */}
         <Route path="*" element={<Navigate to="/certificates" replace />} />

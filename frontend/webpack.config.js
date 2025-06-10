@@ -91,6 +91,7 @@ module.exports = {
         removeComments: true,
       },
     }),
+    isDevelopment && new ReactRefreshWebpackPlugin(),
     !isDevelopment &&
       new BundleAnalyzerPlugin({
         analyzerMode: "static",
@@ -112,14 +113,19 @@ module.exports = {
     port: 3000,
     host: '0.0.0.0',
     open: false,
-    hot: false,
-    liveReload: false,
+    hot: isDevelopment,
+    liveReload: isDevelopment,
     allowedHosts: ['dev.gc-registry.com', 'localhost'],
     headers: {
       'Access-Control-Allow-Origin': '*',
     },
-    client: false,
-    webSocketServer: false,
+    client: isDevelopment ? {
+      overlay: {
+        errors: true,
+        warnings: false,
+      },
+    } : false,
+    webSocketServer: isDevelopment ? 'ws' : false,
   },
 
   resolve: {

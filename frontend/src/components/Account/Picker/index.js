@@ -1,7 +1,6 @@
 import React from "react";
 import { Typography, Space, Divider } from "antd";
 import * as styles from "./AccountPicker.module.css";
-import addUserBtn from "../../../assets/images/add-user-btn.png";
 import registryLogo from "../../../assets/images/registry-logo.png";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -19,28 +18,53 @@ const AccountPicker = () => {
 
   const handleAccountSelection = async (account) => {
     try {
+      console.log("Account selected:", account);
       const accountDetail = await dispatch(
         getAccountDetails(account.id)
       ).unwrap();
+      console.log("Account detail received:", accountDetail);
       saveAccountDetail(accountDetail);
+      console.log("Navigating to certificates page...");
       navigate("/certificates");
     } catch (error) {
       console.error("Error selecting account:", error);
+      // Add user feedback for the error
+      alert("Error selecting account. Please try again.");
     }
   };
 
-  const handleRequestAccount = () => {
-    window.open(
-      "https://docs.google.com/forms/d/e/1FAIpQLSdSkHMAYSu43VJFevngfVT5hvnWRZvwkelIf9QaPtpLVrIlxA/viewform?usp=sf_link",
-      "_blank",
-      "noopener,noreferrer"
-    );
-  };
-
   return (
-    <div className={styles["account-picker-container"]}>
-      <div className={styles["account-picker"]}>
-        <div className={styles["header"]}>
+    <div style={{
+      width: "100vw",
+      height: "100vh",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "#f5f5f5"
+    }}>
+      <div style={{
+        maxWidth: "420px",
+        maxHeight: "390px",
+        backgroundColor: "white",
+        padding: "20px",
+        borderRadius: "10px",
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+        textAlign: "center",
+        width: "100%",
+        boxSizing: "border-box"
+      }}>
+        <div style={{
+          marginBottom: "20px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
           <img 
             src={registryLogo} 
             alt="Registry Logo" 
@@ -59,11 +83,32 @@ const AccountPicker = () => {
         {userData?.accounts?.map((account, index) => (
           <React.Fragment key={account.id}>
             <div
-              className={styles["account-card"]}
+              style={{
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                height: "72px",
+                width: "380px",
+                border: "none",
+                borderRadius: "8px",
+                display: "flex",
+                alignItems: "center",
+                paddingLeft: "12px"
+              }}
               onClick={() => handleAccountSelection(account)}
             >
               <Space align="center" style={{ width: "100%" }}>
-                <div className={styles["account-initial"]}>
+                <div style={{
+                  width: "40px",
+                  height: "40px",
+                  borderRadius: "50%",
+                  backgroundColor: "#043DDC",
+                  color: "white",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "18px",
+                  fontWeight: "500"
+                }}>
                   {account.account_name.charAt(0).toUpperCase()}
                 </div>
                 <div>
@@ -74,23 +119,14 @@ const AccountPicker = () => {
               </Space>
             </div>
             {index < userData.accounts.length - 1 && (
-              <Divider className={styles["account-card-divider"]} />
+              <Divider style={{
+                margin: "0 24px 0 12px",
+                minWidth: "auto",
+                width: "360px"
+              }} />
             )}
           </React.Fragment>
         ))}
-
-        {/* Request Account Card */}
-        <Divider className={styles["account-card-divider"]} />
-        <div className={styles["account-card"]} onClick={handleRequestAccount}>
-          <Space align="center" style={{ width: "100%" }}>
-            <img
-              src={addUserBtn}
-              alt="Request Account"
-              className={styles["logo-img"]}
-            />
-            <Text strong>Request another account</Text>
-          </Space>
-        </div>
       </div>
     </div>
   );

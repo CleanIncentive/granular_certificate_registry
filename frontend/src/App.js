@@ -1,4 +1,4 @@
-import React, { StrictMode } from "react";
+import React, { StrictMode, Suspense } from "react";
 import { Provider } from "react-redux";
 import { BrowserRouter as Router } from "react-router-dom";
 import { AccountProvider } from "./context/AccountContext";
@@ -12,8 +12,10 @@ const App = () => {
       <UserProvider>
         <AccountProvider>
           <StrictMode>
-            <Router>
-              <AppRoutes />
+            <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <Suspense fallback={<div style={{ padding: "20px", textAlign: "center" }}>Loading...</div>}>
+                <AppRoutes />
+              </Suspense>
             </Router>
           </StrictMode>
         </AccountProvider>

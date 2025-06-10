@@ -1,5 +1,7 @@
 const path = require('path');
 
+const isDevelopment = process.env.NODE_ENV === "development";
+
 module.exports = {
   presets: [
     '@babel/preset-env',
@@ -7,6 +9,7 @@ module.exports = {
   ],
   plugins: [
     '@babel/plugin-transform-runtime',
+    isDevelopment && 'react-refresh/babel',
     ['module-resolver', {
       root: ['./src'],
       alias: {
@@ -17,5 +20,5 @@ module.exports = {
         '@store': './src/store'
       }
     }]
-  ],
+  ].filter(Boolean),
 }; 

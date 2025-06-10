@@ -8,7 +8,7 @@ body {
   }
   
   * {
-    box-sizing: inherit;
+    box-sizing: border-box;
   }
   
   .ant-btn, .ant-input, .ant-select, .ant-typography {

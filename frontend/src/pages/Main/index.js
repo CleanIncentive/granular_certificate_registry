@@ -25,7 +25,9 @@ const Main = () => {
       case "/devices":
         return "Device  management ";
       case "/account-management":
-        return "Setting";
+        return "Account Management";
+      case "/settings":
+        return "Settings";
       case "/transfer-history":
         return "Transfer history";
     }

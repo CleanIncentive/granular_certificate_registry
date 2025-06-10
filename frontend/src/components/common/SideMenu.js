@@ -9,34 +9,72 @@ import {
 import { DeviceIcon } from "../../assets/icon/DeviceIcon";
 import { CertificateIcon } from "../../assets/icon/CertificateIcon";
 import { TransferIcon } from "../../assets/icon/TransferIcon";
+import { AccountIcon } from "../../assets/icon/AccountIcon";
 import "../../assets/styles/sidemenu.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import sampleAvatar from "../../assets/images/sample-avatar.jpeg";
 import registryLogo from "../../assets/images/registry-logo.png";
 import Cookies from "js-cookie";
 import { useUser } from "../../context/UserContext";
+import { getSessionStorage } from "../../utils";
 
 const { Text } = Typography;
 
 const SideMenu = () => {
+  // All hooks must be called first, before any conditional logic
   const navigate = useNavigate();
   const location = useLocation();
+  const { userData } = useUser();
+  
   const [dropDownVisible, setDropDownVisible] = useState(false);
   const [isAccountPickerAllowed, setIsAccountPickerAllowed] = useState(false);
   const [isShowDevices, setIsShowDevices] = useState(false);
-  const { userData } = useUser();
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Always call useEffect
   useEffect(() => {
-    console.log(userData);
-    if (!!userData) {
-      setIsAccountPickerAllowed(userData.accounts.length > 1);
-      setIsShowDevices(
-        userData.userInfo.role !== "TRADING_USER" &&
-          userData.userInfo.role !== "AUDIT_USER"
-      );
-    }
+    const loadUserData = () => {
+      try {
+        const storedUserData = getSessionStorage('user_data');
+        if (storedUserData) {
+          console.log('SideMenu using sessionStorage user data:', storedUserData);
+          setIsAccountPickerAllowed(storedUserData.accounts.length > 1);
+          setIsShowDevices(
+            storedUserData.userInfo.role !== "TRADING_USER" &&
+              storedUserData.userInfo.role !== "AUDIT_USER"
+          );
+          setIsLoading(false);
+        } else if (userData && userData.userInfo) {
+          console.log('SideMenu using context user data:', userData);
+          setIsAccountPickerAllowed(userData.accounts.length > 1);
+          setIsShowDevices(
+            userData.userInfo.role !== "TRADING_USER" &&
+              userData.userInfo.role !== "AUDIT_USER"
+          );
+          setIsLoading(false);
+        } else {
+          // If no data available, still show the sidebar with default settings
+          console.log('SideMenu no user data available, using defaults');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('SideMenu error loading user data:', error);
+        setIsLoading(false);
+      }
+    };
+
+    // Try to load data immediately
+    loadUserData();
+
+    // Also set a timeout to ensure the sidebar loads even if there are API issues
+    const timeout = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(timeout);
   }, [userData]);
 
+  // Helper functions
   const generateMenuStyle = (path, isVisible = true) => ({
     display: isVisible ? "flex" : "none",
     backgroundColor: location.pathname === path ? "#0057FF" : undefined,
@@ -50,6 +88,29 @@ const SideMenu = () => {
     lineHeight: "20px",
   });
 
+  const deleteAllCookies = () => {
+    const allCookies = Cookies.get();
+    Object.keys(allCookies).forEach((cookieName) => {
+      Cookies.remove(cookieName);
+    });
+    console.log("All cookies have been deleted.");
+  };
+
+  const handleMenuClick = ({ key }) => {
+    setDropDownVisible(false);
+    if (key === "setting") {
+      navigate("/settings");
+    } else if (key === "switch") {
+      navigate("/account-picker");
+    } else if (key === "logout") {
+      console.log("Logging out...");
+      deleteAllCookies();
+      navigate("/login");
+      message.success("Logout successful 🎉", 2);
+    }
+  };
+
+  // Memoized values
   const menuItems = useMemo(
     () => [
       {
@@ -69,10 +130,17 @@ const SideMenu = () => {
         className: "custom-menu-item",
       },
       {
+        key: "account-management",
+        icon: <AccountIcon />,
+        label: "Account Management",
+        onClick: () => navigate("/account-management"),
+        style: generateMenuStyle("/account-management"),
+        className: "custom-menu-item",
+      },
+      {
         key: "transfer",
         icon: <TransferIcon />,
         label: "Transfer History",
-        // onClick: () => navigate("/transfer-history"),
         style: generateMenuStyle("/transfer-history"),
         className: "custom-menu-item",
         disabled: true,
@@ -81,31 +149,7 @@ const SideMenu = () => {
     [location.pathname, isShowDevices, navigate]
   );
 
-  const deleteAllCookies = () => {
-    const allCookies = Cookies.get(); // Get all cookies as an object
-
-    Object.keys(allCookies).forEach((cookieName) => {
-      Cookies.remove(cookieName); // Remove each cookie
-    });
-
-    console.log("All cookies have been deleted.");
-  };
-
-  const handleMenuClick = ({ key }) => {
-    setDropDownVisible(false); // Close dropdown when an option is selected
-    if (key === "setting") {
-      navigate("/account-management");
-    } else if (key === "switch") {
-      navigate("/account-picker");
-    } else if (key === "logout") {
-      console.log("Logging out...");
-      deleteAllCookies();
-      navigate("/login");
-      message.success("Logout successful 🎉", 2);
-    }
-  };
-
-  const menu = [
+  const menu = useMemo(() => [
     {
       key: "setting",
       label: "Setting",
@@ -123,7 +167,18 @@ const SideMenu = () => {
       icon: <LogoutOutlined />,
       danger: true,
     },
-  ];
+  ], [isAccountPickerAllowed]);
+
+  // Early return after all hooks
+  if (isLoading) {
+    return (
+      <div style={{ padding: "16px", textAlign: "center" }}>
+        <div style={{ height: "40px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          Loading...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -192,7 +247,6 @@ const SideMenu = () => {
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
-
                 display: "inline-block",
               }}
             >
@@ -206,7 +260,7 @@ const SideMenu = () => {
                       : "#202124",
                 }}
               >
-                {userData?.userInfo.username}
+                {userData?.userInfo?.username || "Loading..."}
               </Text>
               <div
                 style={{
@@ -225,7 +279,7 @@ const SideMenu = () => {
                     fontWeight: "500",
                   }}
                 >
-                  {userData?.userInfo.organisation || "Wind Farm Company"}
+                  {userData?.userInfo?.organisation || "Loading..."}
                 </Text>
               </div>
             </div>

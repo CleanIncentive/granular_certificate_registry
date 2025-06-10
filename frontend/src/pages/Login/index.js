@@ -49,12 +49,35 @@ const Login = () => {
     }
   };
   return (
-    <Layout>
-      <Content className={styles["login-container"]}>
-        <div className={styles["login-left"]}>
-          <div
-            style={{ maxWidth: 720, margin: "50px auto", textAlign: "center" }}
-          >
+    <Layout style={{ minHeight: '100vh' }}>
+      <Content style={{
+        display: 'flex',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflow: 'hidden'
+      }}>
+        {/* Left side - Login form */}
+        <div style={{
+          width: '50%',
+          height: '100%',
+          backgroundColor: '#fff',
+          boxShadow: '2px 0 10px rgba(0, 0, 0, 0.1)',
+          position: 'relative',
+          zIndex: 2,
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center'
+        }}>
+          <div style={{ 
+            maxWidth: 720, 
+            margin: '50px auto', 
+            textAlign: 'center',
+            padding: '0 20px'
+          }}>
             <Title className={styles["font-color"]} level={3}>
               Login to Account
             </Title>
@@ -174,18 +197,25 @@ const Login = () => {
             </div>
           </div>
         </div>
-        <div className={styles["login-right"]}>
+
+        {/* Right side - Image */}
+        <div style={{
+          width: '50%',
+          height: '100%',
+          position: 'relative',
+          zIndex: 1
+        }}>
           <img 
             src={require("../../assets/images/login-background.png")} 
             alt="Background"
             style={{
-              position: "absolute",
-              right: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              display: 'block',
+              position: 'absolute',
               top: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              objectPosition: "center"
+              left: 0
             }}
           />
         </div>
